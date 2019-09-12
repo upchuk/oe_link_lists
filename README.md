@@ -1,6 +1,6 @@
 # OpenEuropa oe_link_lists
 
-The OpenEuropa Link Lists allows to manage lists of links.
+The OpenEuropa Link Lists handles manual and dynamic lists of links.
 
 ## Development setup
 
