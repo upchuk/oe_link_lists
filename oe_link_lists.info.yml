@@ -1,0 +1,6 @@
+name: OpenEuropa Link Lists
+description: OpenEuropa Link Lists is a Drupal module to handle lists of links.
+package: OpenEuropa
+
+type: module
+core: 8.x
