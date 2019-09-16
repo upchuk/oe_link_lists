@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * OpenEuropa Link Lists.
+ */
+
+declare(strict_types = 1);
