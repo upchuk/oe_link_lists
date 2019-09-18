@@ -1,0 +1,16 @@
+# Link list link routing definition
+entity.link_list_link.canonical:
+  route_name: entity.link_list_link.canonical
+  base_route: entity.link_list_link.canonical
+  title: 'View'
+
+entity.link_list_link.edit_form:
+  route_name: entity.link_list_link.edit_form
+  base_route: entity.link_list_link.canonical
+  title: 'Edit'
+
+entity.link_list_link.delete_form:
+  route_name:  entity.link_list_link.delete_form
+  base_route:  entity.link_list_link.canonical
+  title: Delete
+  weight: 10
