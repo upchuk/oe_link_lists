@@ -7,6 +7,7 @@ namespace Drupal\oe_link_lists\Entity;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Defines the LinkListLink entity.
@@ -41,7 +42,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "vid",
- *     "label" = "name",
  *     "uuid" = "uuid",
  *     "langcode" = "langcode",
  *     "published" = "status",
@@ -57,24 +57,25 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "edit-form" = "/admin/content/link_list_link/{link_list_link}/edit",
  *     "delete-form" = "/admin/content/link_list_link/{link_list_link}/delete",
  *     "collection" = "/admin/content/link_list_link",
+ *   },
+ *   constraints = {
+ *     "LinkListLinkFieldsRequired" = {}
  *   }
  * )
  */
 class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInterface {
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
    */
-  public function getName(): string {
-    return $this->get('name')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setName(string $name): LinkListLinkInterface {
-    $this->set('name', $name);
-    return $this;
+  public function label() {
+    if ($this->getUrl()) {
+      return $this->t('External link to: @external_url', ['@external_url' => $this->getUrl()]);
+    }
+    else {
+      return $this->t('Internal link to: @internal_entity', ['@internal_entity' => $this->getTargetEntity()->label()]);
+    }
   }
 
   /**
@@ -95,12 +96,124 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
+  public function getTargetEntity() {
+    return $this->get('target')->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTargetId() {
+    return $this->get('target')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTargetId(int $target_id): LinkListLinkInterface {
+    $this->set('target', $target_id);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTeaser() {
+    return $this->get('teaser')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTeaser(string $teaser): LinkListLinkInterface {
+    $this->set('teaser', $teaser);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTitle() {
+    return $this->get('title')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTitle(string $title): LinkListLinkInterface {
+    $this->set('title', $title);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUrl() {
+    return $this->get('url')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUrl(string $url): LinkListLinkInterface {
+    $this->set('url', $url);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name'))
-      ->setDescription(t('The name of the Link list link entity.'))
+    $fields['url'] = BaseFieldDefinition::create('uri')
+      ->setLabel('Url')
+      ->setDescription(t('An external Url'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
+      ->setDefaultValue('')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => -4,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -4,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(FALSE);
+
+    $fields['target'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Target'))
+      ->setDescription(t('Target of the internal link.'))
+      ->setSetting('target_type', 'node')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'entity_reference_label',
+        'weight' => -4,
+        'settings' => [
+          'link' => TRUE,
+        ],
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'settings' => [
+          'match_operator' => 'CONTAINS',
+          'size' => 60,
+          'placeholder' => '',
+        ],
+        'weight' => -4,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(FALSE)
+      ->setDefaultValue(0);
+
+    $fields['title'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Title'))
+      ->setDescription(t('The title of the Link list link entity.'))
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setSettings([
@@ -119,7 +232,30 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
-      ->setRequired(TRUE);
+      ->setRequired(FALSE);
+
+    $fields['teaser'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Teaser'))
+      ->setDescription(t('The teaser of the Link list link entity.'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
+      ->setSettings([
+        'max_length' => 2000,
+        'text_processing' => 0,
+      ])
+      ->setDefaultValue('')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => -4,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -4,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(FALSE);
 
     $fields['status']->setDescription(t('A boolean indicating whether the Link list link is published.'))
       ->setDisplayOptions('form', [

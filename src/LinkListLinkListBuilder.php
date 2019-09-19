@@ -30,6 +30,7 @@ class LinkListLinkListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity): array {
     /* @var \Drupal\oe_link_lists\Entity\LinkListLink $entity */
     $row['id'] = $entity->id();
+
     $row['name'] = Link::createFromRoute(
       $entity->label(),
       'entity.link_list_link.edit_form',
