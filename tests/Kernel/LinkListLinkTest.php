@@ -5,11 +5,9 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists\Kernel;
 
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
-use Drupal\node\Entity\Node;
-use Drupal\node\Entity\NodeType;
 
 /**
- * Tests the Link list Link entity.
+ * Tests the Link list link entity.
  */
 class LinkListLinkTest extends EntityKernelTestBase {
 
@@ -27,7 +25,7 @@ class LinkListLinkTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
@@ -45,8 +43,12 @@ class LinkListLinkTest extends EntityKernelTestBase {
    * Tests Link list link entities.
    */
   public function testLinkListLink(): void {
-    // Create content type.
-    $type = NodeType::create(['name' => 'Test content type', 'type' => 'test_ct']);
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+    $entity_type_manager = $this->container->get('entity_type.manager');
+
+    // Create a content type.
+    $node_type_storage = $entity_type_manager->getStorage('node_type');
+    $type = $node_type_storage->create(['name' => 'Test content type', 'type' => 'test_ct']);
     $type->save();
 
     $values = [
@@ -58,14 +60,15 @@ class LinkListLinkTest extends EntityKernelTestBase {
       'oe_content_legacy_link' => 'http://legacy-link.com',
     ];
 
-    // Create node.
-    $node = Node::create($values);
+    // Create a node.
+    $node_storage = $entity_type_manager->getStorage('node');
+    $node = $node_storage->create($values);
     $node->save();
 
     /** @var \Drupal\oe_link_lists\LinkListLinkStorage $link_storage */
-    $link_storage = $this->container->get('entity_type.manager')->getStorage('link_list_link');
+    $link_storage = $entity_type_manager->getStorage('link_list_link');
 
-    // Create empty link to trigger initial validation.
+    // Create an empty link.
     $link_entity = $link_storage->create([]);
     $link_entity->save();
 
@@ -75,6 +78,20 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $this->assertEquals(1, $violations->count());
     $violation = $violations->get(0);
     $this->assertEquals('A link needs to have a Url or a Target.', $violation->getMessage());
+
+    // Create a link with both a url and a target.
+    $link_entity = $link_storage->create([
+      'url' => 'htttp://example.com',
+      'target' => 1,
+    ]);
+    $link_entity->save();
+
+    // Assert that a link can't have both an external Url and a internal Target.
+    /** @var \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations */
+    $violations = $link_entity->validate();
+    $this->assertEquals(1, $violations->count());
+    $violation = $violations->get(0);
+    $this->assertEquals('A link can\'t have both a Url and a Target.', $violation->getMessage());
 
     // Create an internal link.
     /** @var \Drupal\oe_link_lists\Entity\LinkListLink $link_entity */
@@ -113,7 +130,6 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $link_entity->save();
 
     $link_entity = $link_storage->load($link_entity->id());
-    // Asserts that external link was correctly saved.
     // Assert that an external link needs a title and a teaser.
     /** @var \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations */
     $violations = $link_entity->validate();

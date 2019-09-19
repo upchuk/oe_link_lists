@@ -19,7 +19,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
   /**
    * Gets the external Link list link url.
    *
-   * @return string
+   * @return string|null
    *   External url of the Link list link.
    */
   public function getUrl();
@@ -46,7 +46,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
   /**
    * Gets the internal Link list link reference ID.
    *
-   * @return int
+   * @return int|null
    *   Internal referenced Id of the Link list link.
    */
   public function getTargetId();
@@ -65,8 +65,8 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
   /**
    * Gets the Link list link teaser.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   Internal reference of the Link list link.
+   * @return string|null
+   *   Teaser of the Link list link.
    */
   public function getTeaser();
 
@@ -84,7 +84,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
   /**
    * Gets the Link list link title.
    *
-   * @return string
+   * @return string|null
    *   Title of the Link list link.
    */
   public function getTitle();

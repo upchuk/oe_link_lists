@@ -8,6 +8,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the LinkListLink entity.
@@ -69,7 +70,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function label() {
+  public function label(): TranslatableMarkup {
     if ($this->getUrl()) {
       return $this->t('External link to: @external_url', ['@external_url' => $this->getUrl()]);
     }
@@ -213,7 +214,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
-      ->setDescription(t('The title of the Link list link entity.'))
+      ->setDescription(t('The title of the link.'))
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setSettings([
@@ -236,7 +237,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
 
     $fields['teaser'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Teaser'))
-      ->setDescription(t('The teaser of the Link list link entity.'))
+      ->setDescription(t('The teaser of the link.'))
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setSettings([

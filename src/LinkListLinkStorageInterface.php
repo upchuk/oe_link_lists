@@ -12,9 +12,6 @@ use Drupal\oe_link_lists\Entity\LinkListLinkInterface;
 /**
  * Defines an interface for Link list link entity storage classes.
  *
- * This extends the base storage class, adding required special handling for
- * Link list link entities.
- *
  * @ingroup oe_link_lists
  */
 interface LinkListLinkStorageInterface extends ContentEntityStorageInterface {

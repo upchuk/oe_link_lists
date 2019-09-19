@@ -10,7 +10,7 @@ use Drupal\Core\Language\LanguageInterface;
 use Drupal\oe_link_lists\Entity\LinkListLinkInterface;
 
 /**
- * Defines an interface for Link list link entity storage classes.
+ * Defines the storage handler class for Link list links.
  *
  * This extends the base storage class, adding required special handling for
  * Link list link entities.
@@ -24,7 +24,7 @@ class LinkListLinkStorage extends SqlContentEntityStorage implements LinkListLin
    */
   public function revisionIds(LinkListLinkInterface $entity): array {
     return $this->database->query(
-      'SELECT vid FROM {link_list_link_revision} WHERE id=:id ORDER BY vid',
+      'SELECT vid FROM {' . $this->getRevisionTable() . '} WHERE id=:id ORDER BY vid',
       [':id' => $entity->id()]
     )->fetchCol();
   }
@@ -34,7 +34,7 @@ class LinkListLinkStorage extends SqlContentEntityStorage implements LinkListLin
    */
   public function userRevisionIds(AccountInterface $account): array {
     return $this->database->query(
-      'SELECT vid FROM {link_list_link_field_revision} WHERE uid = :uid ORDER BY vid',
+      'SELECT vid FROM {' . $this->getRevisionDataTable() . '} WHERE uid = :uid ORDER BY vid',
       [':uid' => $account->id()]
     )->fetchCol();
   }
@@ -43,7 +43,7 @@ class LinkListLinkStorage extends SqlContentEntityStorage implements LinkListLin
    * {@inheritdoc}
    */
   public function countDefaultLanguageRevisions(LinkListLinkInterface $entity): int {
-    return $this->database->query('SELECT COUNT(*) FROM {link_list_link_field_revision} WHERE id = :id AND default_langcode = 1', [':id' => $entity->id()])
+    return $this->database->query('SELECT COUNT(*) FROM {' . $this->getRevisionDataTable() . '} WHERE id = :id AND default_langcode = 1', [':id' => $entity->id()])
       ->fetchField();
   }
 
