@@ -54,10 +54,6 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $values = [
       'type' => 'test_ct',
       'title' => 'My node title',
-      'oe_content_short_title' => 'My short title',
-      'oe_content_navigation_title' => 'My navigation title',
-      'oe_content_content_owner' => 'http://publications.europa.eu/resource/authority/corporate-body/DIGIT',
-      'oe_content_legacy_link' => 'http://legacy-link.com',
     ];
 
     // Create a node.
