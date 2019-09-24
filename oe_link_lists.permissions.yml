@@ -1,0 +1,3 @@
+administer linkt_list types:
+  title: 'Administer Link List types'
+  restrict access: true

@@ -1,4 +1,15 @@
-# Link list link menu items definition
+entity.link_list.collection:
+  title: 'Link list list'
+  route_name: entity.link_list.collection
+  description: 'List of Link lists'
+  parent: system.admin_content
+
+entity.link_list_type.collection:
+  title: 'Link list Types'
+  route_name: entity.link_list_type.collection
+  description: 'List of Link list types (bundles)'
+  parent: system.admin_structure
+
 entity.link_list_link.collection:
   title: 'Link list links'
   route_name: entity.link_list_link.collection
