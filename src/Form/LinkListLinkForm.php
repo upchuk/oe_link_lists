@@ -110,6 +110,7 @@ class LinkListLinkForm extends ContentEntityForm {
           '%label' => $entity->label(),
         ]));
     }
+
     $form_state->setRedirect('entity.link_list_link.edit_form', ['link_list_link' => $entity->id()]);
   }
 
