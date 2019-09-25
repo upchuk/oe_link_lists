@@ -19,7 +19,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   id = "link_list_link",
  *   label = @Translation("Link list link"),
  *   handlers = {
- *     "storage" = "Drupal\oe_link_lists\LinkListLinkStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\oe_link_lists\LinkListLinkListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
@@ -53,7 +52,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *     "revision_log_message" = "revision_log"
  *   },
  *   links = {
- *     "canonical" = "/link_list_link/{link_list_link}",
  *     "add-form" = "/admin/content/link_list_link/add",
  *     "edit-form" = "/admin/content/link_list_link/{link_list_link}/edit",
  *     "delete-form" = "/admin/content/link_list_link/{link_list_link}/delete",
