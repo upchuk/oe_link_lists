@@ -189,9 +189,9 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['list_settings'] = BaseFieldDefinition::create('string_long')
-      ->setLabel(t('List settings'))
-      ->setDescription(t('The list settings'))
+    $fields['configuration'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Configuration'))
+      ->setDescription(t('The list settings.'))
       ->setRevisionable(TRUE)
       ->setDefaultValue(serialize([]));
 
