@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists;
+namespace Drupal\oe_link_lists\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityDescriptionInterface;

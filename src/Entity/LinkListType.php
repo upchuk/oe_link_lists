@@ -30,7 +30,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "default" = "Drupal\oe_link_lists\Form\LinkListTypeForm",
  *       "add" = "Drupal\oe_link_lists\Form\LinkListTypeForm",
  *       "edit" = "Drupal\oe_link_lists\Form\LinkListTypeForm",
- *       "delete" = "Drupal\Core\Entity\EntityDeleteForm",
+ *       "delete" = "Drupal\oe_link_lists\Form\LinkListTypeDeleteForm",
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
@@ -71,7 +71,7 @@ class LinkListType extends ConfigEntityBundleBase {
   /**
    * {@inheritdoc}
    */
-  public function getDescription(): string {
+  public function getDescription() {
     return $this->description;
   }
 

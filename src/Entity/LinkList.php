@@ -7,7 +7,6 @@ namespace Drupal\oe_link_lists\Entity;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\oe_link_lists\LinkListInterface;
 
 /**
  * Defines the LinkList entity.
@@ -127,7 +126,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime(): int {
+  public function getCreatedTime(): string {
     return $this->get('created')->value;
   }
 
