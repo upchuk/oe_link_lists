@@ -148,7 +148,6 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
     $fields['administrative_title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Administrative title (identifier)'))
       ->setRequired(TRUE)
-      ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('view', [
@@ -199,7 +198,6 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
       ->setLabel(t('Authored on'))
       ->setDescription(t('The time that the list was created.'))
       ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',
@@ -214,8 +212,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the list was last edited.'))
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE);
+      ->setRevisionable(TRUE);
 
     return $fields;
   }
