@@ -37,8 +37,7 @@ class LinkListTest extends KernelTestBase {
   /**
    * Tests Link list link entities.
    */
-  public function testLinkListLink(): void {
-
+  public function testLinkList(): void {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
     $entity_type_manager = $this->container->get('entity_type.manager');
 
