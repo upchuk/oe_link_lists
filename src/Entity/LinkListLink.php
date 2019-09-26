@@ -174,13 +174,11 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => -4,
       ])
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
-        'weight' => -4,
+        'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
 
@@ -191,21 +189,19 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'entity_reference_label',
-        'weight' => -4,
         'settings' => [
           'link' => TRUE,
         ],
       ])
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
+        'weight' => 0,
         'settings' => [
           'match_operator' => 'CONTAINS',
           'size' => 60,
           'placeholder' => '',
         ],
-        'weight' => -4,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE)
       ->setDefaultValue(0);
@@ -223,17 +219,15 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => -4,
       ])
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
-        'weight' => -4,
+        'weight' => 10,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
 
-    $fields['teaser'] = BaseFieldDefinition::create('string')
+    $fields['teaser'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Teaser'))
       ->setDescription(t('The teaser of the link.'))
       ->setRevisionable(TRUE)
@@ -246,20 +240,17 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => -4,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
+        'type' => 'string_textarea',
+        'weight' => 11,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
 
     $fields['status']->setDescription(t('A boolean indicating whether the Link list link is published.'))
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
-        'weight' => -3,
       ]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
