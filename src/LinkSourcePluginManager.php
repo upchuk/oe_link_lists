@@ -39,7 +39,7 @@ class LinkSourcePluginManager extends DefaultPluginManager implements LinkSource
   /**
    * {@inheritdoc}
    */
-  public function getSelectOptions(): array {
+  public function getPluginsAsOptions(): array {
     $definitions = $this->getDefinitions();
     $options = [];
     foreach ($definitions as $name => $definition) {

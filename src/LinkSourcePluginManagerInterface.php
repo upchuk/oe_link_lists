@@ -12,11 +12,13 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 interface LinkSourcePluginManagerInterface extends PluginManagerInterface {
 
   /**
-   * Returns a list of plugins to be used as select options.
+   * Returns a list of plugins to be used as form options.
+   *
+   * It uses plugin id as key and plugin label as value.
    *
    * @return array
    *   The options.
    */
-  public function getSelectOptions(): array;
+  public function getPluginsAsOptions(): array;
 
 }

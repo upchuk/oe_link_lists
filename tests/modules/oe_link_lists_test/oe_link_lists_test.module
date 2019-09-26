@@ -23,7 +23,7 @@ function oe_link_lists_test_form_node_type_edit_form_alter(&$form, FormStateInte
   /** @var \Drupal\oe_link_lists\LinkSourcePluginManagerInterface $manager */
   $manager = \Drupal::service('plugin.manager.link_source');
 
-  $options = $manager->getSelectOptions();
+  $options = $manager->getPluginsAsOptions();
 
   /** @var \Drupal\node\NodeTypeInterface $node_type */
   $node_type = $form_state->getBuildInfo()['callback_object']->getEntity();
