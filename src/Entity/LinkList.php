@@ -75,21 +75,21 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getType() {
+  public function getType(): string {
     return $this->bundle();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAdministrativeTitle() {
+  public function getAdministrativeTitle(): string {
     return $this->get('administrative_title')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setAdministrativeTitle($administrativeTitle) {
+  public function setAdministrativeTitle($administrativeTitle): LinkListInterface {
     $this->set('administrative_title', $administrativeTitle);
     return $this;
   }
@@ -97,29 +97,29 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSettings() {
-    return $this->get('settings')->value;
+  public function getConfiguration(): string {
+    return $this->get('configuration')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSettings($settings) {
-    $this->set('settings', $settings);
+  public function setConfiguration($settings): LinkListInterface {
+    $this->set('configuration', $settings);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getTitle() {
+  public function getTitle(): string {
     return $this->get('title')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle($title): LinkListInterface {
     $this->set('title', $title);
     return $this;
   }
@@ -127,14 +127,14 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() {
+  public function getCreatedTime(): int {
     return $this->get('created')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime($timestamp): LinkListInterface {
     $this->set('created', $timestamp);
     return $this;
   }

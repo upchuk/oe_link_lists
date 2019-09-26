@@ -71,14 +71,14 @@ class LinkListType extends ConfigEntityBundleBase {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): string {
     return $this->description;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setDescription($description) {
+  public function setDescription(string $description): LinkListType {
     $this->description = $description;
     return $this;
   }

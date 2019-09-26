@@ -17,7 +17,7 @@ interface LinkListInterface {
    * @return string
    *   The link list type.
    */
-  public function getType();
+  public function getType(): string;
 
   /**
    * Gets the link list title.
@@ -25,7 +25,7 @@ interface LinkListInterface {
    * @return string
    *   Title of the link list.
    */
-  public function getTitle();
+  public function getTitle(): string;
 
   /**
    * Sets the link list title.
@@ -36,7 +36,7 @@ interface LinkListInterface {
    * @return \Drupal\oe_link_lists\LinkListInterface
    *   The called link list entity.
    */
-  public function setTitle($title);
+  public function setTitle($title): LinkListInterface;
 
   /**
    * Gets the link list administrative title.
@@ -44,7 +44,7 @@ interface LinkListInterface {
    * @return string
    *   Administrative title of the link list.
    */
-  public function getAdministrativeTitle();
+  public function getAdministrativeTitle(): string;
 
   /**
    * Sets the link list administrative title.
@@ -55,26 +55,26 @@ interface LinkListInterface {
    * @return \Drupal\oe_link_lists\LinkListInterface
    *   The called link list entity.
    */
-  public function setAdministrativeTitle($administrativeTitle);
+  public function setAdministrativeTitle($administrativeTitle): LinkListInterface;
 
   /**
-   * Gets the link list settings.
+   * Gets the link list configuration.
    *
    * @return string
-   *   Settings of the link list.
+   *   Configuration of the link list.
    */
-  public function getSettings();
+  public function getConfiguration(): string;
 
   /**
-   * Sets the link list settings.
+   * Sets the link list configuration.
    *
    * @param string $settings
-   *   The link list settings.
+   *   The link list configuration.
    *
    * @return \Drupal\oe_link_lists\LinkListInterface
    *   The called link list entity.
    */
-  public function setSettings($settings);
+  public function setConfiguration($settings): LinkListInterface;
 
   /**
    * Gets the link list creation timestamp.
@@ -82,7 +82,7 @@ interface LinkListInterface {
    * @return int
    *   Creation timestamp of the link list.
    */
-  public function getCreatedTime();
+  public function getCreatedTime(): int;
 
   /**
    * Sets the link list creation timestamp.
@@ -93,7 +93,7 @@ interface LinkListInterface {
    * @return \Drupal\oe_link_lists\LinkListInterface
    *   The called link list entity.
    */
-  public function setCreatedTime($timestamp);
+  public function setCreatedTime($timestamp): LinkListInterface;
 
   /**
    * Gets the link list revision creation timestamp.
@@ -101,7 +101,7 @@ interface LinkListInterface {
    * @return int
    *   The UNIX timestamp of when this revision was created.
    */
-  public function getRevisionCreationTime();
+  public function getRevisionCreationTime(): int;
 
   /**
    * Sets the link list revision creation timestamp.
@@ -112,6 +112,6 @@ interface LinkListInterface {
    * @return \Drupal\oe_link_lists\LinkListInterface
    *   The called link list entity.
    */
-  public function setRevisionCreationTime($timestamp);
+  public function setRevisionCreationTime($timestamp): LinkListInterface;
 
 }
