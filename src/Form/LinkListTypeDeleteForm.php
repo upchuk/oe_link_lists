@@ -24,7 +24,7 @@ class LinkListTypeDeleteForm extends EntityDeleteForm {
   protected $queryFactory;
 
   /**
-   * Constructs a new NodeTypeDeleteConfirm object.
+   * Constructs a new LinkListTypeDeleteForm object.
    *
    * @param \Drupal\Core\Entity\Query\QueryFactory $query_factory
    *   The entity query object.
@@ -52,7 +52,7 @@ class LinkListTypeDeleteForm extends EntityDeleteForm {
       ->execute();
     if ($num_lists) {
       $caption = '<p>' . $this
-        ->formatPlural($num_lists, '%type is used by 1 link list on your site. You can not remove this link list type until you have removed all of the %type link list.', '%type is used by @count link lists on your site. You may not remove %type until you have removed all of the %type link lists.', [
+        ->formatPlural($num_lists, '%type is used by 1 link list on your site. You can not remove this link list type until you have removed the %type link list.', '%type is used by @count link lists on your site. You may not remove %type until you have removed all of the %type link lists.', [
           '%type' => $this->entity
             ->label(),
         ]) . '</p>';

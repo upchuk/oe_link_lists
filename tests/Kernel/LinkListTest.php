@@ -46,14 +46,17 @@ class LinkListTest extends KernelTestBase {
     $link_list_type = $link_list_type_storage->create(['label' => 'Test link list type', 'id' => 'test_link_list_type']);
     $link_list_type->save();
 
+    $link_list_type = $link_list_type_storage->load($link_list_type->id());
+    $this->assertEquals('Test link list type', $link_list_type->label());
+    $this->assertEquals('test_link_list_type', $link_list_type->id());
+
+    // Create a link list.
+    $link_list_storage = $entity_type_manager->getStorage('link_list');
     $values = [
       'bundle' => $link_list_type->id(),
       'title' => 'My link list',
       'administrative_title' => 'Link list 1',
     ];
-
-    // Create a link list.
-    $link_list_storage = $entity_type_manager->getStorage('link_list');
     /** @var \Drupal\oe_link_lists\LinkListInterface $link_list */
     $link_list = $link_list_storage->create($values);
     $link_list->save();

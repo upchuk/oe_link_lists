@@ -1,3 +1,7 @@
-administer linkt_list types:
+administer link_lists:
+  title: 'Administer Link Lists'
+  restrict access: true
+
+administer link_list types:
   title: 'Administer Link List types'
   restrict access: true

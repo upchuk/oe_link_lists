@@ -36,7 +36,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     },
  *   },
- *   admin_permission = "administer link_list_type types",
+ *   admin_permission = "administer link_list types",
  *   links = {
  *     "canonical" = "/admin/structure/link_list_type/{link_list_type}",
  *     "add-form" = "/admin/structure/link_list_type/add",

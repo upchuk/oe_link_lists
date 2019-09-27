@@ -37,7 +37,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   revision_table = "link_list_revision",
  *   revision_data_table = "link_list_field_revision",
  *   translatable = TRUE,
- *   admin_permission = "administer link_list entities",
+ *   admin_permission = "administer link_lists",
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "vid",
@@ -64,8 +64,6 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "edit-form" = "/link_list/{link_list}/edit",
  *     "delete-form" = "/link_list/{link_list}/delete",
  *     "delete-multiple-form" = "/admin/content/link_list/delete",
- *     "version-history" = "/link_list/{link_list}/revisions",
- *     "revision" = "/link_list/{link_list}/revisions/{link_list_revision}/view",
  *   }
  * )
  */
@@ -88,7 +86,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAdministrativeTitle($administrativeTitle): LinkListInterface {
+  public function setAdministrativeTitle(string $administrativeTitle): LinkListInterface {
     $this->set('administrative_title', $administrativeTitle);
     return $this;
   }
@@ -103,7 +101,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration($settings): LinkListInterface {
+  public function setConfiguration(string $settings): LinkListInterface {
     $this->set('configuration', $settings);
     return $this;
   }
@@ -118,7 +116,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title): LinkListInterface {
+  public function setTitle(string $title): LinkListInterface {
     $this->set('title', $title);
     return $this;
   }
@@ -126,14 +124,14 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime(): string {
-    return $this->get('created')->value;
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp): LinkListInterface {
+  public function setCreatedTime(int $timestamp): LinkListInterface {
     $this->set('created', $timestamp);
     return $this;
   }
