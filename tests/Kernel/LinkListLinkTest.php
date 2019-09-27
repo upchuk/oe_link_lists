@@ -78,7 +78,7 @@ class LinkListLinkTest extends EntityKernelTestBase {
     // Create a link with both a url and a target.
     $link_entity = $link_storage->create([
       'url' => 'htttp://example.com',
-      'target' => 1,
+      'target' => $node->id(),
     ]);
     $link_entity->save();
 

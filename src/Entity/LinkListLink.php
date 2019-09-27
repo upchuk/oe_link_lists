@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Entity;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -95,7 +96,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getTargetEntity() {
+  public function getTargetEntity(): ?EntityInterface {
     return $this->get('target')->entity;
   }
 
@@ -109,7 +110,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function setTargetId(int $target_id): LinkListLinkInterface {
+  public function setTargetId($target_id): LinkListLinkInterface {
     $this->set('target', $target_id);
     return $this;
   }
@@ -117,7 +118,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getTeaser() {
+  public function getTeaser(): ?string {
     return $this->get('teaser')->value;
   }
 
@@ -132,7 +133,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getTitle() {
+  public function getTitle(): ?string {
     return $this->get('title')->value;
   }
 
@@ -147,7 +148,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getUrl() {
+  public function getUrl(): ?string {
     return $this->get('url')->value;
   }
 

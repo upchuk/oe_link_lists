@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
@@ -22,7 +23,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @return string|null
    *   External url of the Link list link.
    */
-  public function getUrl();
+  public function getUrl(): ?string;
 
   /**
    * Sets the Link list link external url.
@@ -41,12 +42,12 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @return \Drupal\Core\Entity\EntityInterface|null
    *   Internal referenced entity of the Link list link.
    */
-  public function getTargetEntity();
+  public function getTargetEntity(): ?EntityInterface;
 
   /**
    * Gets the internal Link list link reference ID.
    *
-   * @return int|null
+   * @return string|int|null
    *   Internal referenced Id of the Link list link.
    */
   public function getTargetId();
@@ -54,13 +55,13 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
   /**
    * Sets the Link list link internal target id.
    *
-   * @param int $target_id
+   * @param string|int $target_id
    *   The Link list link target id.
    *
    * @return \Drupal\oe_link_lists\Entity\LinkListLinkInterface
    *   The called Link list link entity.
    */
-  public function setTargetId(int $target_id): LinkListLinkInterface;
+  public function setTargetId($target_id): LinkListLinkInterface;
 
   /**
    * Gets the Link list link teaser.
@@ -68,7 +69,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @return string|null
    *   Teaser of the Link list link.
    */
-  public function getTeaser();
+  public function getTeaser(): ?string;
 
   /**
    * Sets the Link list link teaser.
@@ -87,7 +88,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @return string|null
    *   Title of the Link list link.
    */
-  public function getTitle();
+  public function getTitle(): ?string;
 
   /**
    * Sets the Link list link title.
