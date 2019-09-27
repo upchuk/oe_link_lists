@@ -4,9 +4,11 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_rss\Plugin\LinkSource;
 
-use Drupal\aggregator\Entity\Feed;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Link source plugin that handles external RSS sources.
@@ -14,64 +16,80 @@ use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
  * @LinkSource(
  *   id = "rss",
  *   label = @Translation("RSS"),
- *   description = @Translation("RSS.")
+ *   description = @Translation("Source plugin that handles external RSS sources.")
  * )
  */
-class RssLinkSource extends ExternalLinkSourcePluginBase {
+class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * {@inheritdoc}
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  public function defaultConfiguration() {
-    return [
-      'aggregator_feed_id' => '',
-    ];
+  protected $entityTypeManager;
+
+  /**
+   * Constructs a RssLinkSource object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
-   * {@inheritdoc}
+   * Creates an instance of the plugin.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container to pull out services used in the plugin.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   *
+   * @return static
+   *   Returns an instance of this plugin.
    */
-  public function processConfigurationForm(array &$form, FormStateInterface $form_state): array {
-    if (!empty($this->configuration['aggregator_feed_id'])) {
-      $url = Feed::load($this->configuration['aggregator_feed_id'])->get('url')->value;
-    }
-
-    $form['url'] = [
-      '#type' => 'url',
-      '#title' => $this->t('The resource URL'),
-      '#description' => $this->t('Add the URL where the external resources can be found.'),
-      '#default_value' => $url ?? '',
-    ];
-
-    return $form;
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager')
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $url = $form_state->getValue('url');
+    parent::submitConfigurationForm($form, $form_state);
 
-    $feed_storage = \Drupal::entityTypeManager()->getStorage('aggregator_feed');
-    if ($this->configuration['aggregator_feed_id']) {
-      $feed = $feed_storage->load($this->configuration['aggregator_feed_id']);
+    $feed_storage = $this->entityTypeManager->getStorage('aggregator_feed');
+    // Check if a feed entity already exists for the provided URL.
+    $feeds = $feed_storage->loadByProperties(['url' => $this->configuration['url']]);
+    if (!empty($feeds)) {
+      return;
     }
-    else {
-      $feed = $feed_storage->create([
-        'title' => $url,
-      ]);
-    }
-
-    $feed_is_new = $feed->isNew();
 
     /** @var \Drupal\aggregator\FeedInterface $feed */
-    $feed->set('url', $url);
+    $feed = $feed_storage->create([
+      'title' => $this->configuration['url'],
+      'url' => $this->configuration['url'],
+    ]);
     $feed->save();
-    $this->configuration['aggregator_feed_id'] = $feed->id();
-
-    if ($feed_is_new) {
-      $feed->refreshItems();
-    }
+    $feed->refreshItems();
   }
 
 }
