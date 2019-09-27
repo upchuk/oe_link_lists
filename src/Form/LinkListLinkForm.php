@@ -204,7 +204,7 @@ class LinkListLinkForm extends ContentEntityForm {
       $entity->set('url', '');
     }
     else {
-      $entity->set('target', '');
+      $entity->set('target', NULL);
     }
 
     return $entity;
