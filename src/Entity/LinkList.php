@@ -143,7 +143,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['administrative_title'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Administrative title (identifier)'))
+      ->setLabel(t('Administrative title'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 255)
