@@ -110,6 +110,7 @@ class LinkListLinkForm extends ContentEntityForm {
       '#weight' => 1,
     ];
 
+    // We move all entity fields present in the form to the container element.
     foreach ($link->getFields() as $field_name => $field) {
       if (isset($form[$field_name])) {
         $form['link_content'][$field_name] = $form[$field_name];
@@ -200,7 +201,7 @@ class LinkListLinkForm extends ContentEntityForm {
     // We need to make sure when building the entity to not have both a url and
     // a target, so we check the link type and remove the field that is not
     // required.
-    if ($values['link_type'] == 'internal') {
+    if ($values['link_type'] === 'internal') {
       $entity->set('url', '');
     }
     else {
