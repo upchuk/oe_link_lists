@@ -136,12 +136,6 @@ class LinkListLinkForm extends ContentEntityForm {
             'name' => 'override',
           ],
           '#default_value' => $link->getTitle() || $link->getTeaser() ? TRUE : FALSE,
-          '#states' => [
-            'disabled' => [
-              [':input[name="title[0][value]"]' => ['empty' => FALSE]],
-              [':input[name="teaser[0][value]"]' => ['empty' => FALSE]],
-            ],
-          ],
           '#weight' => 1,
         ];
         $form['link_content']['title']['#states'] = [
@@ -206,6 +200,11 @@ class LinkListLinkForm extends ContentEntityForm {
     }
     else {
       $entity->set('target', NULL);
+    }
+
+    if (!$values['override']) {
+      $entity->set('title', '');
+      $entity->set('teaser', '');
     }
 
     return $entity;
