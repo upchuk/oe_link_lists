@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_rss\Plugin\LinkSource;
 
+use Drupal\aggregator\FeedInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -76,20 +77,40 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
 
-    $feed_storage = $this->entityTypeManager->getStorage('aggregator_feed');
     // Check if a feed entity already exists for the provided URL.
-    $feeds = $feed_storage->loadByProperties(['url' => $this->configuration['url']]);
-    if (!empty($feeds)) {
+    if (!empty($this->getFeed())) {
       return;
     }
 
     /** @var \Drupal\aggregator\FeedInterface $feed */
+    $feed_storage = $this->entityTypeManager->getStorage('aggregator_feed');
     $feed = $feed_storage->create([
       'title' => $this->configuration['url'],
       'url' => $this->configuration['url'],
     ]);
     $feed->save();
     $feed->refreshItems();
+  }
+
+  /**
+   * Returns a feed entity that matches the current plugin configuration.
+   *
+   * @return \Drupal\aggregator\FeedInterface|null
+   *   A feed entity if a matching one is found, NULL otherwise.
+   */
+  protected function getFeed(): ?FeedInterface {
+    if (empty($this->configuration['url'])) {
+      NULL;
+    }
+
+    $feed_storage = $this->entityTypeManager->getStorage('aggregator_feed');
+    $feeds = $feed_storage->loadByProperties(['url' => $this->configuration['url']]);
+
+    if (empty($feeds)) {
+      return NULL;
+    }
+
+    return reset($feeds);
   }
 
 }
