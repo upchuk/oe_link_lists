@@ -1,7 +1,19 @@
-# Link list link menu items definition
+entity.link_list.collection:
+  title: 'Link lists'
+  route_name: entity.link_list.collection
+  description: 'List of Link lists'
+  parent: system.admin_content
+  weight: 100
+
 entity.link_list_link.collection:
   title: 'Link list links'
   route_name: entity.link_list_link.collection
   description: 'List Link list link entities'
   parent: system.admin_content
-  weight: 100
+  weight: 101
+
+entity.link_list_type.collection:
+  title: 'Link list types'
+  route_name: entity.link_list_type.collection
+  description: 'Create and manage types of Link lists'
+  parent: system.admin_structure
