@@ -19,7 +19,7 @@ use Psr\Http\Message\RequestInterface;
  * Tests the RSS link source plugin.
  *
  * @group oe_link_lists
- * @covers \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource
+ * @coversDefaultClass \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource
  */
 class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
 
@@ -128,11 +128,27 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   }
 
   /**
-   * Tests the plugin.
+   * Tests the plugin form.
    */
-  public function testPlugin() {
+  public function testPluginForm() {
+    // Provide an existing plugin configuration.
+    $form_state = new FormState();
+    $form_state->set('plugin_configuration', ['url' => 'http://www.example.com/test.xml']);
+
     /** @var \Drupal\Core\Form\FormBuilderInterface $form_builder */
     $form_builder = $this->container->get('form_builder');
+    $form = $form_builder->buildForm($this, $form_state);
+    $this->render($form);
+
+    // Verify that the plugin subform is under a main "plugin" tree and that is
+    // using the existing configuration value.
+    $this->assertFieldByName('plugin[url]', 'http://www.example.com/test.xml');
+
+    // The default value for new plugins is empty.
+    $form = $form_builder->buildForm($this, $form_state);
+    $this->render($form);
+    $this->assertFieldByName('plugin[url]', '');
+
     $form_state = new FormState();
     $form_builder->submitForm($this, $form_state);
     // Assert that the URL form field is required.
@@ -144,27 +160,38 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     // Assert that the URL form element expects valid URLs.
     $this->assertEquals(['plugin][url' => 'The URL <em class="placeholder">invalid url</em> is not valid.'], $form_state->getErrors());
 
-    // No feeds should exist.
+    // The form submits correctly when a valid URL is provided.
+    $form_state = new FormState();
+    $form_state->setValue(['plugin', 'url'], 'http://www.example.com/atom.xml');
+    $form_builder->submitForm($this, $form_state);
+    $this->assertEmpty($form_state->getErrors());
+  }
+
+  /**
+   * Tests the plugin submit handler.
+   *
+   * @covers ::submitConfigurationForm
+   */
+  public function testPluginSubmitConfiguration() {
+    /** @var \Drupal\Core\Form\FormBuilderInterface $form_builder */
+    $form_builder = $this->container->get('form_builder');
     $entity_type_manager = $this->container->get('entity_type.manager');
     $feed_storage = $entity_type_manager->getStorage('aggregator_feed');
     $item_storage = $entity_type_manager->getStorage('aggregator_item');
-    $this->assertEmpty($feed_storage->loadMultiple());
-    $this->assertEmpty($item_storage->loadMultiple());
 
-    // Add a "real" feed URL.
+    // Add a valid RSS feed.
     $form_state = new FormState();
     $form_state->setValue(['plugin', 'url'], 'http://www.example.com/atom.xml');
     $form_builder->submitForm($this, $form_state);
     $this->assertEmpty($form_state->getErrors());
 
     // Verify the configuration of the plugin.
+    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $form_state->get('plugin');
     $this->assertEquals([
       'url' => 'http://www.example.com/atom.xml',
     ], $plugin->getConfiguration());
 
-    $feed_storage->resetCache();
-    $item_storage->resetCache();
     // One feed with two items should be imported.
     $this->assertCount(1, $feed_storage->loadMultiple());
     $this->assertCount(2, $item_storage->loadMultiple());
@@ -209,22 +236,6 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertCount(9, $item_storage->loadMultiple());
     $this->assertCount(1, $feed_storage->loadByProperties(['url' => 'http://www.example.com/atom.xml']));
     $this->assertCount(1, $feed_storage->loadByProperties(['url' => 'http://www.example.com/rss.xml']));
-  }
-
-  /**
-   * Tests the plugin form.
-   */
-  public function testPluginForm() {
-    // Provide an existing plugin configuration.
-    $form_state = new FormState();
-    $form_state->set('plugin_configuration', ['url' => 'http://www.example.com/test.xml']);
-
-    $form = $this->container->get('form_builder')->buildForm($this, $form_state);
-    $this->render($form);
-
-    // Verify that the plugin subform is under a main "plugin" tree and that is
-    // using the existing configuration value.
-    $this->assertFieldByName('plugin[url]', 'http://www.example.com/test.xml');
   }
 
 }
