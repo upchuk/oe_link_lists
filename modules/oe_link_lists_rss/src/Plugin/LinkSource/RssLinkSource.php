@@ -106,7 +106,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
    */
   protected function getFeed(): ?FeedInterface {
     if (empty($this->configuration['url'])) {
-      NULL;
+      return NULL;
     }
 
     $feed_storage = $this->entityTypeManager->getStorage('aggregator_feed');
