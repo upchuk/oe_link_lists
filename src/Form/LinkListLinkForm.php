@@ -111,7 +111,7 @@ class LinkListLinkForm extends ContentEntityForm {
     ];
 
     // We move all entity fields present in the form to the container element.
-    foreach ($link->getFields() as $field_name => $field) {
+    foreach (array_keys($this->getFormDisplay($form_state)->getComponents()) as $field_name) {
       if (isset($form[$field_name])) {
         $form['link_content'][$field_name] = $form[$field_name];
         unset($form[$field_name]);
