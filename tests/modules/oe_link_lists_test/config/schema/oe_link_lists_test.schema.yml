@@ -1,0 +1,9 @@
+node.type.*.third_party.oe_link_lists_test:
+  type: mapping
+  label: 'Node type link list plugin'
+  mapping:
+    plugin:
+      type: string
+      label: 'Plugin id'
+    plugin_configuration:
+      type: oe_link_lists.plugin.link_source.[%parent.plugin]

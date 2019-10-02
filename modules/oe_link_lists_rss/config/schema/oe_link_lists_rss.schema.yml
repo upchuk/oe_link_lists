@@ -1,0 +1,7 @@
+oe_link_lists.plugin.link_source.rss:
+  type: oe_link_lists.plugin.link_source
+  label: 'RSS'
+  mapping:
+    url:
+      type: uri
+      label: 'RSS URL'
