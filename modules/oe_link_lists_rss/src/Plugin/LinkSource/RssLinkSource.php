@@ -77,13 +77,19 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
 
+    // Never allow empty values as URL.
+    if (empty($this->configuration['url'])) {
+      return;
+    }
+
     // Check if a feed entity already exists for the provided URL.
     if (!empty($this->getFeed())) {
       return;
     }
 
-    /** @var \Drupal\aggregator\FeedInterface $feed */
+    // Create a new feed and run an initial import of its items.
     $feed_storage = $this->entityTypeManager->getStorage('aggregator_feed');
+    /** @var \Drupal\aggregator\FeedInterface $feed */
     $feed = $feed_storage->create([
       'title' => $this->configuration['url'],
       'url' => $this->configuration['url'],
