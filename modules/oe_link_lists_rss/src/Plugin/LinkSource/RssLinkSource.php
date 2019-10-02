@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_rss\Plugin\LinkSource;
 
 use Drupal\aggregator\FeedInterface;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -21,6 +22,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFactoryPluginInterface {
+
+  use DependencySerializationTrait;
 
   /**
    * The entity type manager.
