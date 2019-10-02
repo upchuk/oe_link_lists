@@ -130,7 +130,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   /**
    * Tests the plugin form.
    */
-  public function testPluginForm() {
+  public function testPluginForm(): void {
     // Provide an existing plugin configuration.
     $form_state = new FormState();
     $form_state->set('plugin_configuration', ['url' => 'http://www.example.com/test.xml']);
@@ -172,22 +172,29 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
    *
    * @covers ::submitConfigurationForm
    */
-  public function testPluginSubmitConfiguration() {
-    /** @var \Drupal\Core\Form\FormBuilderInterface $form_builder */
-    $form_builder = $this->container->get('form_builder');
+  public function testPluginSubmitConfiguration(): void {
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
     $entity_type_manager = $this->container->get('entity_type.manager');
     $feed_storage = $entity_type_manager->getStorage('aggregator_feed');
     $item_storage = $entity_type_manager->getStorage('aggregator_item');
 
-    // Add a valid RSS feed.
+    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('rss');
+    $this->assertEquals(['url' => ''], $plugin->getConfiguration());
+
+    // Try to submit the plugin with an empty URL.
+    $form = [];
     $form_state = new FormState();
-    $form_state->setValue(['plugin', 'url'], 'http://www.example.com/atom.xml');
-    $form_builder->submitForm($this, $form_state);
-    $this->assertEmpty($form_state->getErrors());
+    $form_state->setValue('url', '');
+    $plugin->submitConfigurationForm($form, $form_state);
+
+    // Add a valid RSS feed.
+    $form = [];
+    $form_state = new FormState();
+    $form_state->setValue('url', 'http://www.example.com/atom.xml');
+    $plugin->submitConfigurationForm($form, $form_state);
 
     // Verify the configuration of the plugin.
-    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
-    $plugin = $form_state->get('plugin');
     $this->assertEquals([
       'url' => 'http://www.example.com/atom.xml',
     ], $plugin->getConfiguration());
@@ -203,9 +210,11 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $last_checked_time = $feed->getLastCheckedTime();
 
     // Run a new instance of the plugin and refer to the same RSS feed.
+    $plugin = $plugin_manager->createInstance('rss');
+    $form = [];
     $form_state = new FormState();
-    $form_state->setValue(['plugin', 'url'], 'http://www.example.com/atom.xml');
-    $form_builder->submitForm($this, $form_state);
+    $form_state->setValue('url', 'http://www.example.com/atom.xml');
+    $plugin->submitConfigurationForm($form, $form_state);
 
     $feed_storage->resetCache();
     $item_storage->resetCache();
@@ -219,12 +228,12 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertEquals($last_checked_time, $feed->getLastCheckedTime());
 
     // Add a new feed.
+    $form = [];
     $form_state = new FormState();
-    $form_state->setValue(['plugin', 'url'], 'http://www.example.com/rss.xml');
-    $form_builder->submitForm($this, $form_state);
+    $form_state->setValue('url', 'http://www.example.com/rss.xml');
+    $plugin->submitConfigurationForm($form, $form_state);
 
     // Verify the configuration of the plugin.
-    $plugin = $form_state->get('plugin');
     $this->assertEquals([
       'url' => 'http://www.example.com/rss.xml',
     ], $plugin->getConfiguration());
