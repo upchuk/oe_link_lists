@@ -247,4 +247,49 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertCount(1, $feed_storage->loadByProperties(['url' => 'http://www.example.com/rss.xml']));
   }
 
+  /**
+   * Tests that the plugin returns the referenced entities.
+   *
+   * @covers ::getReferencedEntities
+   * @covers ::getFeed
+   */
+  public function testReferencedEntities(): void {
+    // Create two test feeds.
+    $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
+    $feeds = [
+      'atom' => 'http://www.example.com/atom.xml',
+      'rss' => 'http://www.example.com/rss.xml',
+    ];
+    foreach ($feeds as $name => $url) {
+      $feed = $feed_storage->create([
+        'title' => $this->randomString(),
+        'url' => $url,
+      ]);
+      $feed->save();
+      $feed->refreshItems();
+      $feeds[$name] = $feed->id();
+    }
+
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+
+    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('rss');
+    // Test a plugin with empty configuration.
+    $this->assertEquals([], $plugin->getReferencedEntities());
+
+    // Tests that the plugin doesn't break if it's referring a non-existing
+    // feed, for example one that existed in the system and has been removed.
+    $plugin->setConfiguration(['url' => 'http://www.example.com/deleted.xml']);
+    $this->assertEquals([], $plugin->getReferencedEntities());
+
+    /** @var \Drupal\aggregator\ItemStorageInterface $item_storage */
+    $item_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_item');
+
+    // Check that the correct entities are retrieved.
+    $plugin->setConfiguration(['url' => 'http://www.example.com/atom.xml']);
+    $this->assertSame($item_storage->loadByFeed($feeds['atom']), $plugin->getReferencedEntities());
+    $plugin->setConfiguration(['url' => 'http://www.example.com/rss.xml']);
+    $this->assertSame($item_storage->loadByFeed($feeds['rss']), $plugin->getReferencedEntities());
+  }
+
 }
