@@ -20,4 +20,12 @@ interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface
    */
   public function label(): string;
 
+  /**
+   * Returns a list of entities that the plugin references.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]
+   *   A list of entities referenced by the plugin.
+   */
+  public function getReferencedEntities(): array;
+
 }

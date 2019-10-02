@@ -99,6 +99,20 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getReferencedEntities(): array {
+    $feed = $this->getFeed();
+
+    if (empty($feed)) {
+      return [];
+    }
+
+    $storage = $this->entityTypeManager->getStorage('aggregator_item');
+    return $storage->loadByFeed($feed->id());
+  }
+
+  /**
    * Returns a feed entity that matches the current plugin configuration.
    *
    * @return \Drupal\aggregator\FeedInterface|null

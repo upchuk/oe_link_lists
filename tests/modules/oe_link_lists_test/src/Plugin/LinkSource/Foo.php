@@ -15,4 +15,13 @@ use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
  *   description = @Translation("Foo description.")
  * )
  */
-class Foo extends ExternalLinkSourcePluginBase {}
+class Foo extends ExternalLinkSourcePluginBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getReferencedEntities(): array {
+    return [];
+  }
+
+}
