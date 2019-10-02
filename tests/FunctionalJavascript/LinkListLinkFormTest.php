@@ -84,13 +84,16 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->assertSession()->fieldExists('Target');
     $this->assertSession()->fieldExists('Override');
     $this->assertSession()->fieldExists('Title');
-    $this->assertSession()->fieldDisabled('Title');
-    $this->assertSession()->fieldDisabled('Teaser');
+
+    $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-title')->isVisible());
+    $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-teaser')->isVisible());
 
     // Assert checking the override option enables the title and the teaser.
     $this->getSession()->getPage()->checkField('Override');
     $this->assertSession()->fieldEnabled('Title');
     $this->assertSession()->fieldEnabled('Teaser');
+    $this->assertTrue($this->getSession()->getPage()->find('css', '.field--name-title')->isVisible());
+    $this->assertTrue($this->getSession()->getPage()->find('css', '.field--name-teaser')->isVisible());
 
     // Create an external link.
     $this->getSession()->getPage()->selectFieldOption('External', 'external');
@@ -114,12 +117,12 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->assertSession()->fieldValueEquals('Title', 'Test title');
     $this->assertSession()->fieldValueEquals('Teaser', 'Test teaser');
 
-    // Convert the link to internal and assert title and teaser values are kept.
+    // Convert the link to internal and assert title and teaser aren't kept.
     $this->getSession()->getPage()->selectFieldOption('Internal', 'internal');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->fieldDisabled('Override');
-    $this->assertSession()->fieldValueEquals('Title', 'Test title');
-    $this->assertSession()->fieldValueEquals('Teaser', 'Test teaser');
+    $this->assertSession()->fieldValueEquals('Override', FALSE);
+    $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-title')->isVisible());
+    $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-teaser')->isVisible());
 
     // Save the internal link.
     $this->getSession()->getPage()->fillField('Target', 'Page (1)');
@@ -130,8 +133,8 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->linkStorage->resetCache();
     $link = $this->linkStorage->load(1);
     $this->assertEquals('', $link->getUrl());
-    $this->assertEquals('Test title', $link->getTitle());
-    $this->assertEquals('Test teaser', $link->getTeaser());
+    $this->assertEmpty($link->getTitle());
+    $this->assertEmpty($link->getTeaser());
     $this->assertEquals(1, $link->getTargetId());
   }
 

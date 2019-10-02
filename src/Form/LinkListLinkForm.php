@@ -135,17 +135,17 @@ class LinkListLinkForm extends ContentEntityForm {
           '#attributes' => [
             'name' => 'override',
           ],
-          '#default_value' => $link->getTitle() || $link->getTeaser() ? TRUE : FALSE,
+          '#default_value' => empty($link->getUrl()) && $link->getTitle() && $link->getTeaser() ? TRUE : FALSE,
           '#weight' => 1,
         ];
         $form['link_content']['title']['#states'] = [
-          'disabled' => [
-            ':input[name="override"]' => ['checked' => FALSE],
+          'visible' => [
+            ':input[name="override"]' => ['checked' => TRUE],
           ],
         ];
         $form['link_content']['teaser']['#states'] = [
-          'disabled' => [
-            ':input[name="override"]' => ['checked' => FALSE],
+          'visible' => [
+            ':input[name="override"]' => ['checked' => TRUE],
           ],
         ];
         break;
@@ -197,14 +197,14 @@ class LinkListLinkForm extends ContentEntityForm {
     // required.
     if ($values['link_type'] === 'internal') {
       $entity->set('url', '');
+
+      if (!$values['override']) {
+        $entity->set('title', '');
+        $entity->set('teaser', '');
+      }
     }
     else {
       $entity->set('target', NULL);
-    }
-
-    if (!$values['override']) {
-      $entity->set('title', '');
-      $entity->set('teaser', '');
     }
 
     return $entity;
