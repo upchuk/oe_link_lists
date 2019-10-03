@@ -290,6 +290,13 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertSame($item_storage->loadByFeed($feeds['atom']), $plugin->getReferencedEntities());
     $plugin->setConfiguration(['url' => 'http://www.example.com/rss.xml']);
     $this->assertSame($item_storage->loadByFeed($feeds['rss']), $plugin->getReferencedEntities());
+
+    // Check that the limit parameter is used correctly.
+    $limit = 2;
+    $plugin->setConfiguration(['url' => 'http://www.example.com/atom.xml']);
+    $this->assertSame($item_storage->loadByFeed($feeds['atom'], $limit), $plugin->getReferencedEntities($limit));
+    $plugin->setConfiguration(['url' => 'http://www.example.com/rss.xml']);
+    $this->assertSame($item_storage->loadByFeed($feeds['rss'], $limit), $plugin->getReferencedEntities($limit));
   }
 
 }

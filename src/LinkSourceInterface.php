@@ -23,9 +23,12 @@ interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface
   /**
    * Returns a list of entities that the plugin references.
    *
+   * @param int|null $limit
+   *   The number of items to return.
+   *
    * @return \Drupal\Core\Entity\EntityInterface[]
    *   A list of entities referenced by the plugin.
    */
-  public function getReferencedEntities(): array;
+  public function getReferencedEntities(int $limit = NULL): array;
 
 }

@@ -20,7 +20,7 @@ class Foo extends ExternalLinkSourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getReferencedEntities(): array {
+  public function getReferencedEntities(int $limit = NULL): array {
     return [];
   }
 

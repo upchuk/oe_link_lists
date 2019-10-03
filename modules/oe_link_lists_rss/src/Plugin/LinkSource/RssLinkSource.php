@@ -104,7 +104,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getReferencedEntities(): array {
+  public function getReferencedEntities(int $limit = NULL): array {
     $feed = $this->getFeed();
 
     if (empty($feed)) {
@@ -112,7 +112,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
     }
 
     $storage = $this->entityTypeManager->getStorage('aggregator_item');
-    return $storage->loadByFeed($feed->id());
+    return $storage->loadByFeed($feed->id(), $limit);
   }
 
   /**
