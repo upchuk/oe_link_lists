@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.link_list.manual_link_list.field_links
+    - oe_link_lists.link_list_type.manual_link_list
+id: link_list.manual_link_list.default
+targetEntityType: link_list
+bundle: manual_link_list
+mode: default
+content:
+  field_links:
+    weight: 1
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    type: entity_reference_entity_view
+    region: content
+hidden: {  }

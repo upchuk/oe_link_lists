@@ -6,3 +6,75 @@
  */
 
 declare(strict_types = 1);
+
+use Drupal\Core\Entity\ContentEntityFormInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function oe_link_lists_form_link_list_form_alter(&$form, FormStateInterface $form_state) {
+  // Bail out if the link list is not manual.
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof ContentEntityFormInterface) {
+    return;
+  }
+  $link_list = $form_object->getEntity();
+  if ($link_list->bundle() !== 'manual_link_list') {
+    return;
+  }
+  // Get the values for the display options.
+  $default_values = unserialize($link_list->get('configuration')->getString());
+
+  // Add custom display options.
+  $form['display_options'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Display options'),
+    '#weight' => 1,
+  ];
+
+  // Gather the views modes for the links to provide as display options.
+  $query = \Drupal::entityQuery('entity_view_mode')
+    ->condition('targetEntityType', 'link_list_link');
+  $view_mode_ids = $query->execute();
+  $storage = \Drupal::entityTypeManager()->getStorage('entity_view_mode');
+  $view_modes = $storage->loadMultiple($view_mode_ids);
+  $view_mode_options = [];
+  foreach ($view_modes as $view_mode) {
+    $view_mode_options[$view_mode->id()] = $view_mode->label();
+  }
+  $form['display_options']['mode'] = [
+    '#title' => t('Display mode'),
+    '#type' => 'select',
+    '#options' => $view_mode_options,
+    '#default_value' => isset($default_values['mode']) ? $default_values['mode'] : '',
+  ];
+
+  $layout_options = [
+    1 => 'One column',
+    2 => 'Two column',
+    3 => 'Three column',
+  ];
+  $form['display_options']['columns'] = [
+    '#title' => t('Layout'),
+    '#type' => 'select',
+    '#options' => $layout_options,
+    '#default_value' => isset($default_values['columns']) ? $default_values['columns'] : '',
+  ];
+
+  $form['actions']['submit']['#submit'][] = '_oe_link_lists_store_manual_link_configuration';
+}
+
+/**
+ * Helper method to store the manual link list configuration.
+ */
+function _oe_link_lists_store_manual_link_configuration(array $form, FormStateInterface $form_state) {
+  $values = $form_state->getValues();
+  $custom_options = [
+    'mode' => $values['mode'],
+    'columns' => $values['columns'],
+  ];
+  $link_list = $form_state->getFormObject()->getEntity();
+  $link_list->set('configuration', serialize($custom_options));
+  $link_list->save();
+}
