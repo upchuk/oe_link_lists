@@ -2,6 +2,11 @@
 
 The OpenEuropa Link Lists handles manual and dynamic lists of links.
 
+## Submodules
+
+- **OpenEuropa RSS Link Lists**: Provides support for dynamic link lists extracted from an RSS source. [More info](modules/oe_link_lists_rss/README.md)
+
+
 ## Development setup
 
 You can build the development site by running the following steps:
