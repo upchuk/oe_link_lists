@@ -2,3 +2,6 @@ services:
   plugin.manager.link_source:
     class: Drupal\oe_link_lists\LinkSourcePluginManager
     parent: default_plugin_manager
+  plugin.manager.link_list_display_options:
+    class: Drupal\oe_link_lists\LinkListDisplayOptionsPluginManager
+    parent: default_plugin_manager

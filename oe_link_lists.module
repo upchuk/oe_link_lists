@@ -9,72 +9,89 @@ declare(strict_types = 1);
 
 use Drupal\Core\Entity\ContentEntityFormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\SubformState;
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
+ * We use LinkListDisplayOptions plugins to generate the form elements for
+ * each of the different bundles. This options are then stored in the link list
+ * configuration field.
  */
 function oe_link_lists_form_link_list_form_alter(&$form, FormStateInterface $form_state) {
-  // Bail out if the link list is not manual.
   $form_object = $form_state->getFormObject();
   if (!$form_object instanceof ContentEntityFormInterface) {
     return;
   }
   $link_list = $form_object->getEntity();
-  if ($link_list->bundle() !== 'manual_link_list') {
-    return;
-  }
-  // Get the values for the display options.
-  $default_values = unserialize($link_list->get('configuration')->getString());
 
-  // Add custom display options.
+  // Get the values for the display options.
+  $configuration = unserialize($link_list->get('configuration')->getString());
+
+  // A simple fieldset for wrapping the display options.
   $form['display_options'] = [
     '#type' => 'fieldset',
     '#title' => t('Display options'),
     '#weight' => 1,
   ];
+  // If the is an applicable plugin for the current entity bundle
+  // create the form element for its configuration. For this
+  // we pass potentially existing configuration to the plugin so that it can
+  // use it in its form elements' default values.
+  /** @var \Drupal\oe_link_lists\LinkListDisplayOptionsPluginManager $manager */
+  $manager = \Drupal::service('plugin.manager.link_list_display_options');
+  $plugin_id = $manager->getApplicablePlugin($link_list->bundle());
+  if ($plugin_id) {
+    /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
+    $plugin = $manager->createInstance($plugin_id, $configuration);
 
-  // Gather the views modes for the links to provide as display options.
-  $query = \Drupal::entityQuery('entity_view_mode')
-    ->condition('targetEntityType', 'link_list_link');
-  $view_mode_ids = $query->execute();
-  $storage = \Drupal::entityTypeManager()->getStorage('entity_view_mode');
-  $view_modes = $storage->loadMultiple($view_mode_ids);
-  $view_mode_options = [];
-  foreach ($view_modes as $view_mode) {
-    $view_mode_options[$view_mode->id()] = $view_mode->label();
+    // When working with embedded forms, we need to create a subform state
+    // based on the form element that will be the parent to the form which will
+    // be embedded - in our case the plugin configuration form. And we pass
+    // to the plugin only that part of the form as well (not the entire thing).
+    // Moreover, we make sure we nest the individual plugin configuration form
+    // within their own "namespace" to avoid naming collisions if one provides
+    // form elements with the same name as the others.
+    $plugin_form = &$form['display_options'];
+    $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state);
+    $form['display_options'] = $plugin->buildConfigurationForm($plugin_form, $subform_state);
+    // Submit callback to handler the saving of the data.
+    $form['actions']['submit']['#submit'][] = '_oe_link_lists_store_manual_link_display_configuration';
   }
-  $form['display_options']['mode'] = [
-    '#title' => t('Display mode'),
-    '#type' => 'select',
-    '#options' => $view_mode_options,
-    '#default_value' => isset($default_values['mode']) ? $default_values['mode'] : '',
-  ];
-
-  $layout_options = [
-    1 => 'One column',
-    2 => 'Two column',
-    3 => 'Three column',
-  ];
-  $form['display_options']['columns'] = [
-    '#title' => t('Layout'),
-    '#type' => 'select',
-    '#options' => $layout_options,
-    '#default_value' => isset($default_values['columns']) ? $default_values['columns'] : '',
-  ];
-
-  $form['actions']['submit']['#submit'][] = '_oe_link_lists_store_manual_link_configuration';
 }
 
 /**
  * Helper method to store the manual link list configuration.
  */
-function _oe_link_lists_store_manual_link_configuration(array $form, FormStateInterface $form_state) {
-  $values = $form_state->getValues();
-  $custom_options = [
-    'mode' => $values['mode'],
-    'columns' => $values['columns'],
-  ];
-  $link_list = $form_state->getFormObject()->getEntity();
-  $link_list->set('configuration', serialize($custom_options));
+function _oe_link_lists_store_manual_link_display_configuration(array $form, FormStateInterface $form_state) {
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof ContentEntityFormInterface) {
+    return;
+  }
+  $link_list = $form_object->getEntity();
+
+  /** @var \Drupal\oe_link_lists\LinkListDisplayOptionsPluginManager $manager */
+  $manager = \Drupal::service('plugin.manager.link_list_display_options');
+  $plugin_id = $manager->getApplicablePlugin($link_list->bundle());
+  if (!$plugin_id) {
+    $link_list->set('configuration', '');
+    $link_list->save();
+    return;
+  }
+  // Similar to when we embedded the form, we need to use a subform state
+  // when handling the submission. The plugin's form submit handler should
+  // receive only the bit of the form that concerns it and it's responsibility
+  // is to process and save the data into its own configuration array. From
+  // there, we read it and store it wherever we want.
+  // Normally this step would happen directly on the form of a config entity
+  // and the values would be stored automatically into one of its fields. But
+  // since we are altering configs that do not belong to us, we need to store
+  // the values manually.
+  /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
+  $plugin = $manager->createInstance($plugin_id);
+  $subform_state = SubformState::createForSubform($form['display_options'], $form, $form_state);
+  $plugin->submitConfigurationForm($form['display_options'], $subform_state);
+  $configuration = $plugin->getConfiguration();
+  $link_list->set('configuration', serialize($configuration));
   $link_list->save();
 }
