@@ -73,12 +73,12 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $violations = $link_entity->validate();
     $this->assertEquals(1, $violations->count());
     $violation = $violations->get(0);
-    $this->assertEquals('A link needs to have a Url or a Target.', $violation->getMessage());
+    $this->assertEquals('A link needs to have a URL or a target.', $violation->getMessage());
 
     // Create a link with both a url and a target.
     $link_entity = $link_storage->create([
       'url' => 'htttp://example.com',
-      'target' => 1,
+      'target' => $node->id(),
     ]);
     $link_entity->save();
 
@@ -87,7 +87,7 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $violations = $link_entity->validate();
     $this->assertEquals(1, $violations->count());
     $violation = $violations->get(0);
-    $this->assertEquals('A link can\'t have both a Url and a Target.', $violation->getMessage());
+    $this->assertEquals('A link can\'t have both a URL and a target.', $violation->getMessage());
 
     // Create an internal link.
     /** @var \Drupal\oe_link_lists\Entity\LinkListLink $link_entity */

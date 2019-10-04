@@ -13,9 +13,10 @@ use Symfony\Component\Validator\Constraint;
  * Validates a Link list link entity's requirements.
  *
  * The required fields of a Link list link entity depend on the contents of the
- * Url and Target fields.
+ * URL and Target fields.
  */
 class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
+
   use StringTranslationTrait;
 
   /**
@@ -26,12 +27,12 @@ class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
       return;
     }
     if (!$value->getUrl() && !$value->getTargetId()) {
-      $this->context->buildViolation($this->t('A link needs to have a Url or a Target.'))
+      $this->context->buildViolation($this->t('A link needs to have a URL or a target.'))
         ->addViolation();
       return;
     }
     if ($value->getUrl() && $value->getTargetId()) {
-      $this->context->buildViolation($this->t("A link can't have both a Url and a Target."))
+      $this->context->buildViolation($this->t("A link can't have both a URL and a target."))
         ->addViolation();
       return;
     }
@@ -44,7 +45,7 @@ class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
   /**
    * Helper function to validate the fields of external links.
    *
-   * External links (links that have a Url value but not a Target value) need
+   * External links (links that have a URL value but not a target value) need
    * to have a title and a teaser.
    *
    * @param \Symfony\Component\Validator\Constraint $constraint

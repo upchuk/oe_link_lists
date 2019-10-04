@@ -5,3 +5,7 @@ administer link_lists:
 administer link_list types:
   title: 'Administer Link List types'
   restrict access: true
+
+administer link list link entities:
+  title: 'Administer Link list links'
+  restrict access: true

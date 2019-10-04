@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Entity;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -63,6 +64,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * )
  */
 class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInterface {
+
   use StringTranslationTrait;
 
   /**
@@ -95,7 +97,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getTargetEntity() {
+  public function getTargetEntity(): ?EntityInterface {
     return $this->get('target')->entity;
   }
 
@@ -109,7 +111,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function setTargetId(int $target_id): LinkListLinkInterface {
+  public function setTargetId($target_id): LinkListLinkInterface {
     $this->set('target', $target_id);
     return $this;
   }
@@ -117,7 +119,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getTeaser() {
+  public function getTeaser(): ?string {
     return $this->get('teaser')->value;
   }
 
@@ -132,7 +134,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getTitle() {
+  public function getTitle(): ?string {
     return $this->get('title')->value;
   }
 
@@ -147,7 +149,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getUrl() {
+  public function getUrl(): ?string {
     return $this->get('url')->value;
   }
 
@@ -166,46 +168,42 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['url'] = BaseFieldDefinition::create('uri')
-      ->setLabel('Url')
-      ->setDescription(t('An external Url'))
+      ->setLabel('URL')
+      ->setDescription(t('An external URL.'))
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setDefaultValue('')
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => -4,
       ])
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
-        'weight' => -4,
+        'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
 
     $fields['target'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Target'))
-      ->setDescription(t('Target of the internal link.'))
+      ->setDescription(t('The target node of the internal link.'))
       ->setSetting('target_type', 'node')
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'entity_reference_label',
-        'weight' => -4,
         'settings' => [
           'link' => TRUE,
         ],
       ])
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
+        'weight' => 0,
         'settings' => [
           'match_operator' => 'CONTAINS',
           'size' => 60,
           'placeholder' => '',
         ],
-        'weight' => -4,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE)
       ->setDefaultValue(0);
@@ -223,17 +221,15 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => -4,
       ])
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
-        'weight' => -4,
+        'weight' => 10,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
 
-    $fields['teaser'] = BaseFieldDefinition::create('string')
+    $fields['teaser'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Teaser'))
       ->setDescription(t('The teaser of the link.'))
       ->setRevisionable(TRUE)
@@ -246,20 +242,17 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => -4,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
+        'type' => 'string_textarea',
+        'weight' => 11,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
 
     $fields['status']->setDescription(t('A boolean indicating whether the Link list link is published.'))
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
-        'weight' => -3,
       ]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
