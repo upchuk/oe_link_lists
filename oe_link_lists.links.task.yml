@@ -18,9 +18,3 @@ entity.link_list.collection:
   route_name:  entity.link_list.collection
   base_route: system.admin_content
   weight: 10
-
-entity.link_list_link.collection:
-  title: Link list links
-  route_name:  entity.link_list_link.collection
-  base_route: system.admin_content
-  weight: 11

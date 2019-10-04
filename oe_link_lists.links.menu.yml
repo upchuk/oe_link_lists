@@ -5,13 +5,6 @@ entity.link_list.collection:
   parent: system.admin_content
   weight: 100
 
-entity.link_list_link.collection:
-  title: 'Link list links'
-  route_name: entity.link_list_link.collection
-  description: 'List Link list link entities'
-  parent: system.admin_content
-  weight: 101
-
 entity.link_list_type.collection:
   title: 'Link list types'
   route_name: entity.link_list_type.collection

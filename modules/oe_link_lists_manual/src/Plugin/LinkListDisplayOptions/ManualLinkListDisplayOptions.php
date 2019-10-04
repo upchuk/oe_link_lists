@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Plugin\LinkListDisplayOptions;
+namespace Drupal\oe_link_lists_manual\Plugin\LinkListDisplayOptions;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
