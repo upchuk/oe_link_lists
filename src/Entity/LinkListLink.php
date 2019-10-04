@@ -64,6 +64,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * )
  */
 class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInterface {
+
   use StringTranslationTrait;
 
   /**
@@ -168,7 +169,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
 
     $fields['url'] = BaseFieldDefinition::create('uri')
       ->setLabel('Url')
-      ->setDescription(t('An external Url'))
+      ->setDescription(t('An external URL.'))
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setDefaultValue('')
@@ -185,7 +186,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
 
     $fields['target'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Target'))
-      ->setDescription(t('Target of the internal link.'))
+      ->setDescription(t('The target node of the internal link.'))
       ->setSetting('target_type', 'node')
       ->setDisplayOptions('view', [
         'label' => 'above',

@@ -192,7 +192,7 @@ class LinkListLinkForm extends ContentEntityForm {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
     $values = $form_state->getValues();
-    // We need to make sure when building the entity to not have both a url and
+    // We need to make sure when building the entity to not have both a URL and
     // a target, so we check the link type and remove the field that is not
     // required.
     if ($values['link_type'] === 'internal') {
