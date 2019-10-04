@@ -1,0 +1,3 @@
+oe_link_lists.plugin.link_source:
+  type: mapping
+  label: 'Link source plugin'

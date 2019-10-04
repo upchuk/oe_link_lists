@@ -1,0 +1,10 @@
+name: OpenEuropa RSS Link Lists
+description: Provides support for dynamic link lists extracted from an RSS source.
+package: OpenEuropa
+
+type: module
+core: 8.x
+
+dependencies:
+  - oe_link_lists:oe_link_lists
+  - drupal:aggregator

@@ -34,9 +34,10 @@ abstract class ExternalLinkSourcePluginBase extends LinkSourcePluginBase impleme
    */
   public function processConfigurationForm(array &$form, FormStateInterface $form_state): array {
     $form['url'] = [
-      '#type' => 'textfield',
+      '#type' => 'url',
       '#title' => $this->t('The resource URL'),
       '#description' => $this->t('Add the URL where the external resources can be found.'),
+      '#required' => TRUE,
       '#default_value' => $this->configuration['url'],
     ];
 

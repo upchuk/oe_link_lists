@@ -15,4 +15,13 @@ use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
  *   description = @Translation("Bar description.")
  * )
  */
-class Bar extends ExternalLinkSourcePluginBase {}
+class Bar extends ExternalLinkSourcePluginBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getReferencedEntities(int $limit = NULL): array {
+    return [];
+  }
+
+}
