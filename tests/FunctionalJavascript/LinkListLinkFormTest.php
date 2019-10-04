@@ -83,15 +83,11 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->assertSession()->fieldNotExists('Url');
     $this->assertSession()->fieldExists('Target');
     $this->assertSession()->fieldExists('Override');
-    $this->assertSession()->fieldExists('Title');
-
     $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-title')->isVisible());
     $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-teaser')->isVisible());
 
     // Assert checking the override option enables the title and the teaser.
     $this->getSession()->getPage()->checkField('Override');
-    $this->assertSession()->fieldEnabled('Title');
-    $this->assertSession()->fieldEnabled('Teaser');
     $this->assertTrue($this->getSession()->getPage()->find('css', '.field--name-title')->isVisible());
     $this->assertTrue($this->getSession()->getPage()->find('css', '.field--name-teaser')->isVisible());
 
