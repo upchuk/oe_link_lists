@@ -118,7 +118,7 @@ class LinkListLinkForm extends ContentEntityForm {
       }
     }
 
-    // Show the target or url field depending on the link type.
+    // Show the target or URL field depending on the link type.
     switch ($link_type) {
       case 'external':
         $form['link_content']['target']['#access'] = FALSE;

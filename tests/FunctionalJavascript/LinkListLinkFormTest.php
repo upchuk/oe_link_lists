@@ -60,17 +60,17 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->drupalGet('admin/content/link_list_link/add');
     $this->assertSession()->fieldExists('External');
     $this->assertSession()->fieldExists('Internal');
-    $this->assertSession()->fieldNotExists('Url');
+    $this->assertSession()->fieldNotExists('URL');
     $this->assertSession()->fieldNotExists('Target');
     $this->assertSession()->fieldNotExists('Override');
     $this->assertSession()->fieldNotExists('Title');
     $this->assertSession()->fieldNotExists('Teaser');
 
-    // Choose the external type and assert that the url is available together
+    // Choose the external type and assert that the URL is available together
     // with the title and teaser.
     $this->getSession()->getPage()->selectFieldOption('External', 'external');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->fieldExists('Url');
+    $this->assertSession()->fieldExists('URL');
     $this->assertSession()->fieldNotExists('Target');
     $this->assertSession()->fieldNotExists('Override');
     $this->assertSession()->fieldExists('Title');
@@ -80,7 +80,7 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     // with the title, teaser and override options.
     $this->getSession()->getPage()->selectFieldOption('Internal', 'internal');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->fieldNotExists('Url');
+    $this->assertSession()->fieldNotExists('URL');
     $this->assertSession()->fieldExists('Target');
     $this->assertSession()->fieldExists('Override');
     $this->assertFalse($this->getSession()->getPage()->find('css', '.field--name-title')->isVisible());
@@ -94,7 +94,7 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     // Create an external link.
     $this->getSession()->getPage()->selectFieldOption('External', 'external');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->getSession()->getPage()->fillField('Url', 'http://example/com');
+    $this->getSession()->getPage()->fillField('URL', 'http://example/com');
     $this->getSession()->getPage()->fillField('Title', 'Test title');
     $this->getSession()->getPage()->fillField('Teaser', 'Test teaser');
     $this->getSession()->getPage()->pressButton('Save');
@@ -109,7 +109,7 @@ class LinkListLinkFormTest extends WebDriverTestBase {
 
     // Edit the external link and assert the values are shown.
     $this->drupalGet('admin/content/link_list_link/1/edit');
-    $this->assertSession()->fieldValueEquals('Url', 'http://example/com');
+    $this->assertSession()->fieldValueEquals('URL', 'http://example/com');
     $this->assertSession()->fieldValueEquals('Title', 'Test title');
     $this->assertSession()->fieldValueEquals('Teaser', 'Test teaser');
 

@@ -168,7 +168,7 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['url'] = BaseFieldDefinition::create('uri')
-      ->setLabel('Url')
+      ->setLabel('URL')
       ->setDescription(t('An external URL.'))
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)

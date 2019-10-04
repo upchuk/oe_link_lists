@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraint;
  * Validates a Link list link entity's requirements.
  *
  * The required fields of a Link list link entity depend on the contents of the
- * Url and Target fields.
+ * URL and Target fields.
  */
 class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
 
