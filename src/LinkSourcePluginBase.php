@@ -6,6 +6,7 @@ namespace Drupal\oe_link_lists;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\SubformState;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -57,7 +58,7 @@ abstract class LinkSourcePluginBase extends PluginBase implements LinkSourceInte
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['#tree'] = TRUE;
-    $form['#process'][] = [$this, 'processConfigurationForm'];
+    $form['#process'][] = [$this, 'handlePluginConfigurationForm'];
 
     return $form;
   }
@@ -67,6 +68,26 @@ abstract class LinkSourcePluginBase extends PluginBase implements LinkSourceInte
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
     // Empty in many cases.
+  }
+
+  /**
+   * Process callback that invokes the plugin configuration form callback.
+   *
+   * This ensures a proper subform state to be passed to the plugin.
+   *
+   * @param array $form
+   *   An associative array containing the initial structure of the plugin form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The form structure.
+   */
+  public function handlePluginConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $sub_form_state = SubformState::createForSubform($form, $form_state->getCompleteForm(), $form_state);
+    $form = $this->processConfigurationForm($form, $sub_form_state);
+
+    return $form;
   }
 
   /**
