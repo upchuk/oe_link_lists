@@ -1,0 +1,3 @@
+services:
+  oe_link_lists_manual.list_link_form_builder:
+    class: Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder

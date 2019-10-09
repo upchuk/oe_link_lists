@@ -5,12 +5,14 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_manual\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -28,6 +30,11 @@ class LinkListLinkForm extends ContentEntityForm {
   protected $account;
 
   /**
+   * @var \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder
+   */
+  protected $linkFormBuilder;
+
+  /**
    * Constructs a new LinkListLinkForm.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
@@ -40,12 +47,15 @@ class LinkListLinkForm extends ContentEntityForm {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
+   * @param \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder $linkFormBuilder
+   *   The list link form builder.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, ListLinkFormBuilder $linkFormBuilder) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
 
     $this->account = $account;
     $this->messenger = $messenger;
+    $this->linkFormBuilder = $linkFormBuilder;
   }
 
   /**
@@ -57,7 +67,8 @@ class LinkListLinkForm extends ContentEntityForm {
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
       $container->get('current_user'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('oe_link_lists_manual.list_link_form_builder')
     );
   }
 
@@ -73,90 +84,8 @@ class LinkListLinkForm extends ContentEntityForm {
     $form['revision_log']['#access'] = FALSE;
     $form['status']['#access'] = FALSE;
 
-    /** @var \Drupal\oe_link_lists\Entity\LinkListLinkInterface $link */
-    $link = $this->entity;
-
-    $link_type = $link->getUrl() ? 'external' : ($link->getTargetId() ? 'internal' : '');
-    if ($form_state->getValue('link_type')) {
-      // Get the link type in case of an Ajax choice.
-      $link_type = $form_state->getValue('link_type');
-    }
-
-    // Add a field to select the type of link.
-    $form['link_type'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Link type'),
-      '#options' => [
-        'external' => $this->t('External'),
-        'internal' => $this->t('Internal'),
-      ],
-      '#ajax' => [
-        'callback' => '::rebuildLinkContent',
-        'wrapper' => 'link-content',
-      ],
-      '#default_value' => $link_type,
-      '#attributes' => [
-        'name' => 'link_type',
-      ],
-      '#weight' => 0,
-    ];
-
-    // A wrapper for the whole link content.
-    $form['link_content'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => 'link-content',
-      ],
-      '#weight' => 1,
-    ];
-
-    // We move all entity fields present in the form to the container element.
-    foreach (array_keys($this->getFormDisplay($form_state)->getComponents()) as $field_name) {
-      if (isset($form[$field_name])) {
-        $form['link_content'][$field_name] = $form[$field_name];
-        unset($form[$field_name]);
-      }
-    }
-
-    // Show the target or URL field depending on the link type.
-    switch ($link_type) {
-      case 'external':
-        $form['link_content']['target']['#access'] = FALSE;
-        break;
-
-      case 'internal':
-        $form['link_content']['url']['#access'] = FALSE;
-        // Add a field to override the title and teaser of an internal link,
-        // it should only be visible if the link is internal. It should be
-        // disabled if the title or the teaser have a value.
-        $form['link_content']['override'] = [
-          '#type' => 'checkbox',
-          '#title' => $this->t('Override'),
-          '#attributes' => [
-            'name' => 'override',
-          ],
-          '#default_value' => empty($link->getUrl()) && $link->getTitle() && $link->getTeaser() ? TRUE : FALSE,
-          '#weight' => 1,
-        ];
-        $form['link_content']['title']['#states'] = [
-          'visible' => [
-            ':input[name="override"]' => ['checked' => TRUE],
-          ],
-        ];
-        $form['link_content']['teaser']['#states'] = [
-          'visible' => [
-            ':input[name="override"]' => ['checked' => TRUE],
-          ],
-        ];
-        break;
-
-      default:
-        $form['link_content']['target']['#access'] = FALSE;
-        $form['link_content']['url']['#access'] = FALSE;
-        $form['link_content']['title']['#access'] = FALSE;
-        $form['link_content']['teaser']['#access'] = FALSE;
-        break;
-    }
+    $form_state->set('link_form_display', $this->getFormDisplay($form_state));
+    $this->linkFormBuilder->buildForm($form, $form_state, $this->entity);
 
     if (!$this->entity->isNew()) {
       $form['new_revision'] = [
@@ -171,43 +100,13 @@ class LinkListLinkForm extends ContentEntityForm {
   }
 
   /**
-   * Rebuild the link content form after choosing a type.
-   *
-   * @param array $form
-   *   The form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @return array
-   *   The wrapper form element.
-   */
-  public function rebuildLinkContent(array &$form, FormStateInterface $form_state) {
-    return $form['link_content'];
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildEntity(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
-    $values = $form_state->getValues();
-    // We need to make sure when building the entity to not have both a URL and
-    // a target, so we check the link type and remove the field that is not
-    // required.
-    if ($values['link_type'] === 'internal') {
-      $entity->set('url', '');
-
-      if (!$values['override']) {
-        $entity->set('title', '');
-        $entity->set('teaser', '');
-      }
-    }
-    else {
-      $entity->set('target', NULL);
-    }
-
-    return $entity;
+    $form_builder = \Drupal::service('oe_link_lists_manual.list_link_form_builder');
+    return $form_builder->buildEntity($entity, $form, $form_state);
   }
 
   /**

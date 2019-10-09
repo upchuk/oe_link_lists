@@ -1,9 +1,0 @@
-langcode: en
-status: false
-dependencies:
-  module:
-    - oe_link_lists
-id: link_list_link.featured
-label: 'Featured'
-targetEntityType: link_list_link
-cache: true

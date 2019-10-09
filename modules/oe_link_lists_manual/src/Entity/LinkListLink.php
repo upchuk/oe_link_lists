@@ -74,9 +74,12 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
     if ($this->getUrl()) {
       return $this->t('External link to: @external_url', ['@external_url' => $this->getUrl()]);
     }
-    else {
+
+    if ($this->getTargetEntity()) {
       return $this->t('Internal link to: @internal_entity', ['@internal_entity' => $this->getTargetEntity()->label()]);
     }
+
+    return $this->t('Internal link');
   }
 
   /**
