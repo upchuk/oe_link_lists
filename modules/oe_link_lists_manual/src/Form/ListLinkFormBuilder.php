@@ -17,6 +17,15 @@ class ListLinkFormBuilder {
 
   use StringTranslationTrait;
 
+  /**
+   * Builds the form for link list link entities.
+   *
+   * Link list links need to have conditional fields based on whether the
+   * link is internal or external.
+   *
+   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+   * @SuppressWarnings(PHPMD.NPathComplexity)
+   */
   public function buildForm(&$form, FormStateInterface $form_state, LinkListLinkInterface $link): void {
     $form['#tree'] = TRUE;
 
@@ -84,12 +93,12 @@ class ListLinkFormBuilder {
 
     $form['link_content']['title']['#states'] = [
       'visible' => [
-        ':input[name="' . $name .'"]' => ['checked' => TRUE],
+        ':input[name="' . $name . '"]' => ['checked' => TRUE],
       ],
     ];
     $form['link_content']['teaser']['#states'] = [
       'visible' => [
-        ':input[name="' . $name .'"]' => ['checked' => TRUE],
+        ':input[name="' . $name . '"]' => ['checked' => TRUE],
       ],
     ];
 

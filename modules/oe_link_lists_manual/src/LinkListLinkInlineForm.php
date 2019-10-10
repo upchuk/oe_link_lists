@@ -13,9 +13,14 @@ use Drupal\inline_entity_form\Form\EntityInlineForm;
 use Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Callback for inline entity forms for link list link entities.
+ */
 class LinkListLinkInlineForm extends EntityInlineForm {
 
   /**
+   * A custom link form builder.
+   *
    * @var \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder
    */
   protected $linkFormBuilder;
@@ -32,6 +37,7 @@ class LinkListLinkInlineForm extends EntityInlineForm {
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
    * @param \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder $linkFormBuilder
+   *   A custom link form builder.
    */
   public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityTypeInterface $entity_type, ListLinkFormBuilder $linkFormBuilder) {
     parent::__construct($entity_field_manager, $entity_type_manager, $module_handler, $entity_type);

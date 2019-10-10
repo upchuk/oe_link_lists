@@ -5,14 +5,12 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_manual\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,6 +28,8 @@ class LinkListLinkForm extends ContentEntityForm {
   protected $account;
 
   /**
+   * A custom link form builder.
+   *
    * @var \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder
    */
   protected $linkFormBuilder;

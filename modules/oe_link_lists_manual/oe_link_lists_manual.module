@@ -1,11 +1,18 @@
 <?php
 
 /**
+ * @file
+ * Contains Drupal hooks.
+ */
+
+use Drupal\oe_link_lists_manual\LinkListLinkInlineForm;
+
+/**
  * Implements hook_entity_type_build().
  */
 function oe_link_lists_manual_entity_type_build(array &$entity_types) {
   /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
   if (isset($entity_types['link_list_link'])) {
-    $entity_types['link_list_link']->setHandlerClass('inline_form', \Drupal\oe_link_lists_manual\LinkListLinkInlineForm::class);
+    $entity_types['link_list_link']->setHandlerClass('inline_form', LinkListLinkInlineForm::class);
   }
 }
