@@ -26,6 +26,7 @@ class LinkListLinkFormTest extends WebDriverTestBase {
   protected static $modules = [
     'node',
     'oe_link_lists',
+    'oe_link_lists_manual',
   ];
 
   /**

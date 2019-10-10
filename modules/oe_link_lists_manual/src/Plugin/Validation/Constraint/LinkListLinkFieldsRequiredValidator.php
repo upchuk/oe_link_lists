@@ -2,10 +2,10 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Plugin\Validation\Constraint;
+namespace Drupal\oe_link_lists_manual\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\oe_link_lists\Entity\LinkListLinkInterface;
+use Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Constraint;
 
@@ -50,7 +50,7 @@ class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
    *
    * @param \Symfony\Component\Validator\Constraint $constraint
    *   The constraint for the validation.
-   * @param \Drupal\oe_link_lists\Entity\LinkListLinkInterface $link
+   * @param \Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface $link
    *   The entity being validated.
    */
   protected function validateExternalLink(Constraint $constraint, LinkListLinkInterface $link): void {
