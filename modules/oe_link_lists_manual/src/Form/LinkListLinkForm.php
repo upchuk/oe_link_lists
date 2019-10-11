@@ -74,8 +74,6 @@ class LinkListLinkForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
-   *
-   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
@@ -105,8 +103,7 @@ class LinkListLinkForm extends ContentEntityForm {
   public function buildEntity(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
-    $form_builder = \Drupal::service('oe_link_lists_manual.list_link_form_builder');
-    return $form_builder->buildEntity($entity, $form, $form_state);
+    return $this->linkFormBuilder->buildEntity($entity, $form, $form_state);
   }
 
   /**

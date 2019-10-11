@@ -23,10 +23,17 @@ class ListLinkFormBuilder {
    * Link list links need to have conditional fields based on whether the
    * link is internal or external.
    *
+   * @param array $form
+   *   Tye main form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The main form state.
+   * @param \Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface $link
+   *   The list link.
+   *
    * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    * @SuppressWarnings(PHPMD.NPathComplexity)
    */
-  public function buildForm(&$form, FormStateInterface $form_state, LinkListLinkInterface $link): void {
+  public function buildForm(array &$form, FormStateInterface $form_state, LinkListLinkInterface $link): void {
     $form['#tree'] = TRUE;
 
     $link_type = $link->getUrl() ? 'external' : ($link->getTargetId() ? 'internal' : '');

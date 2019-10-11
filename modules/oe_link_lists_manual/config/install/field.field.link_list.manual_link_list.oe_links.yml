@@ -2,10 +2,10 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.link_list.field_links
+    - field.storage.link_list.oe_links
     - oe_link_lists.link_list_type.manual_link_list
-id: link_list.manual_link_list.field_links
-field_name: field_links
+id: link_list.manual_link_list.oe_links
+field_name: oe_links
 entity_type: link_list
 bundle: manual_link_list
 label: Links

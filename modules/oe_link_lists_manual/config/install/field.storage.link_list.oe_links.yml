@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - oe_link_lists
-id: link_list.field_links
-field_name: field_links
+id: link_list.oe_links
+field_name: oe_links
 entity_type: link_list
 type: entity_reference
 settings:
