@@ -86,23 +86,23 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAdministrativeTitle(string $administrativeTitle): LinkListInterface {
-    $this->set('administrative_title', $administrativeTitle);
+  public function setAdministrativeTitle(string $administrative_title): LinkListInterface {
+    $this->set('administrative_title', $administrative_title);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfiguration(): string {
-    return $this->get('configuration')->value;
+  public function getConfiguration(): array {
+    return !$this->get('configuration')->isEmpty() ? unserialize($this->get('configuration')->value) : [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(string $settings): LinkListInterface {
-    $this->set('configuration', $settings);
+  public function setConfiguration(array $configuration): LinkListInterface {
+    $this->set('configuration', serialize($configuration));
     return $this;
   }
 

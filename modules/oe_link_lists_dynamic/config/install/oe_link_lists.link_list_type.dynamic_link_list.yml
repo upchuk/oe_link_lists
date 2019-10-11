@@ -1,0 +1,6 @@
+langcode: en
+status: true
+dependencies: {  }
+id: dynamic_link_list
+label: 'Dynamic link list'
+description: 'Lists of dynamically created links.'
