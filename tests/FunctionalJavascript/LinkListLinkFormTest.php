@@ -101,7 +101,7 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->getSession()->getPage()->pressButton('Save');
 
     // Assert link is stored properly.
-    /** @var \Drupal\oe_link_lists\Entity\LinkListLinkInterface $link */
+    /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link */
     $link = $this->linkStorage->load(1);
     $this->assertEquals('http://example/com', $link->getUrl());
     $this->assertEquals('Test title', $link->getTitle());
@@ -126,8 +126,8 @@ class LinkListLinkFormTest extends WebDriverTestBase {
     $this->getSession()->getPage()->pressButton('Save');
 
     // Assert link is stored properly.
-    /** @var \Drupal\oe_link_lists\Entity\LinkListLinkInterface $link */
     $this->linkStorage->resetCache();
+    /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link */
     $link = $this->linkStorage->load(1);
     $this->assertEquals('', $link->getUrl());
     $this->assertEmpty($link->getTitle());

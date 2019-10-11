@@ -4,12 +4,14 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Entity;
 
+use Drupal\Core\Entity\ContentEntityInterface;
+
 /**
  * Provides an interface for Link list entities.
  *
  * @ingroup oe_link_lists
  */
-interface LinkListInterface {
+interface LinkListInterface extends ContentEntityInterface {
 
   /**
    * Gets the link list type.
