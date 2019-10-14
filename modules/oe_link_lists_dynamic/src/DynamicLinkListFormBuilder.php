@@ -66,9 +66,6 @@ class DynamicLinkListFormBuilder {
       // If we are just loading the form without a user making a choice, try to
       // get the plugin from the link list itself.
       $plugin_id = $this->getConfigurationPluginId($link_list);
-    }
-
-    if ($plugin_id === $this->getConfigurationPluginId($link_list)) {
       // If the plugin is the same as the one in storage, prepare the stored
       // plugin configuration to pass to the plugin form a bit later.
       $existing_config = $this->getConfigurationPluginConfiguration($link_list);
@@ -173,7 +170,7 @@ class DynamicLinkListFormBuilder {
   }
 
   /**
-   * Te Ajax callback for configuring the plugin.
+   * The Ajax callback for configuring the plugin.
    *
    * @param array $form
    *   The form.
