@@ -66,7 +66,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
   /**
    * Tests that the link list link form has conditional fields based on type.
    */
-  public function testManualLinkListWithPluginConfiguration(): void {
+  public function testManualLinkList(): void {
     $web_user = $this->drupalCreateUser([
       'bypass node access',
       'administer link list link entities',

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_manual;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -72,6 +73,14 @@ class LinkListLinkInlineForm extends EntityInlineForm {
     $this->linkFormBuilder->buildForm($entity_form, $form_state, $entity);
 
     return $entity_form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function buildEntity(array $entity_form, ContentEntityInterface $entity, FormStateInterface $form_state) {
+    parent::buildEntity($entity_form, $entity, $form_state);
+    $this->linkFormBuilder->buildEntity($entity, $entity_form, $form_state);
   }
 
 }

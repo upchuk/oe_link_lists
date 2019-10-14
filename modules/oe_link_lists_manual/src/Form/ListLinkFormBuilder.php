@@ -36,10 +36,18 @@ class ListLinkFormBuilder {
   public function buildForm(array &$form, FormStateInterface $form_state, LinkListLinkInterface $link): void {
     $form['#tree'] = TRUE;
 
-    $link_type = $link->getUrl() ? 'external' : ($link->getTargetId() ? 'internal' : '');
-    if ($form_state_link_type = $form_state->getValue(array_merge($form['#parents'], ['link_type']))) {
-      // Get the link type in case of an Ajax choice.
-      $link_type = $form_state_link_type;
+    $link_type = $link->getUrl() ? 'external' : ($link->getTargetId() ? 'internal' : NULL);
+
+    // Unfortunately we have to rely on the user input and cannot "wait" for the
+    // form state values to be finalized. This is because te form can be built
+    // inside a #process which means that the form state gets cached and we
+    // no longer can make changes to it after Ajax requests. And since we are
+    // showing/hiding elements with #access, the form system does not recognize
+    // them anymore.
+    $input = $form_state->getUserInput();
+    $input_link_type = NestedArray::getValue($input, array_merge($form['#parents'], ['link_type']));
+    if (in_array($input_link_type, ['internal', 'external'])) {
+      $link_type = $input_link_type;
     }
 
     $wrapper_suffix = $form['#parents'] ? '-' . implode('-', $form['#parents']) : '';
@@ -112,27 +120,21 @@ class ListLinkFormBuilder {
     // Show the target or URL field depending on the link type.
     switch ($link_type) {
       case 'external':
-        if ((!$form_state->isProcessingInput() && empty($form_state->getTriggeringElement())) || !empty($form_state->getTriggeringElement())) {
-          $form['link_content']['target']['#access'] = FALSE;
-          $form['link_content']['override']['#access'] = FALSE;
-        }
+        $form['link_content']['target']['#access'] = FALSE;
+        $form['link_content']['override']['#access'] = FALSE;
         break;
 
       case 'internal':
-        if ((!$form_state->isProcessingInput() && empty($form_state->getTriggeringElement())) || !empty($form_state->getTriggeringElement())) {
-          $form['link_content']['url']['#access'] = FALSE;
-        }
+        $form['link_content']['url']['#access'] = FALSE;
 
         break;
 
       default:
-        if ((!$form_state->isProcessingInput() && empty($form_state->getTriggeringElement())) || !empty($form_state->getTriggeringElement())) {
-          $form['link_content']['target']['#access'] = FALSE;
-          $form['link_content']['url']['#access'] = FALSE;
-          $form['link_content']['title']['#access'] = FALSE;
-          $form['link_content']['teaser']['#access'] = FALSE;
-          $form['link_content']['override']['#access'] = FALSE;
-        }
+        $form['link_content']['target']['#access'] = FALSE;
+        $form['link_content']['url']['#access'] = FALSE;
+        $form['link_content']['title']['#access'] = FALSE;
+        $form['link_content']['teaser']['#access'] = FALSE;
+        $form['link_content']['override']['#access'] = FALSE;
         break;
     }
   }
