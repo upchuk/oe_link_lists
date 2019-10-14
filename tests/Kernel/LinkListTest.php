@@ -96,9 +96,11 @@ class LinkListTest extends KernelTestBase {
     foreach ($values as $value) {
       $link_list = $link_list_storage->create($value);
       $link_list->save();
+
       $uuid = $link_list->uuid();
       $definition = $block_manager->getDefinition("oe_link_list_block:$uuid");
       $this->assertEqual($definition['admin_label'], $value['administrative_title']);
+
       /** @var \Drupal\Core\Block\BlockPluginInterface $plugin */
       $plugin = $block_manager->createInstance("oe_link_list_block:$uuid");
       $this->assertTrue($plugin->access(\Drupal::currentUser()) === $link_list->access('view'));

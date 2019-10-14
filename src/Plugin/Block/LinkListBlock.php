@@ -95,12 +95,12 @@ class LinkListBlock extends BlockBase implements ContainerFactoryPluginInterface
     $uuid = $this->getDerivativeId();
     $link_lists = $this->entityTypeManager->getStorage('link_list')->loadByProperties(['uuid' => $uuid]);
     if (!$link_lists) {
-      // This should not normally happen but in case te entity was deleted.
+      // Normally, this should not happen but in case the entity has been
+      // deleted.
       return NULL;
     }
 
-    $link_list = reset($link_lists);
-    return $link_list;
+    return reset($link_lists);
   }
 
 }
