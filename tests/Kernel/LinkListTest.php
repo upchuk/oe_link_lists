@@ -12,9 +12,16 @@ use Drupal\KernelTests\KernelTestBase;
 class LinkListTest extends KernelTestBase {
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'oe_link_lists',
     'user',
     'system',
@@ -32,26 +39,24 @@ class LinkListTest extends KernelTestBase {
       'system',
     ]);
 
+    $this->entityTypeManager = $this->container->get('entity_type.manager');
+
+    // Create a link list type.
+    $link_list_type_storage = $this->entityTypeManager->getStorage('link_list_type');
+    $link_list_type = $link_list_type_storage->create(['label' => 'Test link list type', 'id' => 'test_link_list_type']);
+    $link_list_type->save();
   }
 
   /**
    * Tests Link list link entities.
    */
   public function testLinkList(): void {
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
-    $entity_type_manager = $this->container->get('entity_type.manager');
-
-    // Create a link list type.
-    $link_list_type_storage = $entity_type_manager->getStorage('link_list_type');
-    $link_list_type = $link_list_type_storage->create(['label' => 'Test link list type', 'id' => 'test_link_list_type']);
-    $link_list_type->save();
-
-    $link_list_type = $link_list_type_storage->load($link_list_type->id());
+    $link_list_type = $this->entityTypeManager->getStorage('link_list_type')->load('test_link_list_type');
     $this->assertEquals('Test link list type', $link_list_type->label());
     $this->assertEquals('test_link_list_type', $link_list_type->id());
 
     // Create a link list.
-    $link_list_storage = $entity_type_manager->getStorage('link_list');
+    $link_list_storage = $this->entityTypeManager->getStorage('link_list');
     $values = [
       'bundle' => $link_list_type->id(),
       'title' => 'My link list',
@@ -65,6 +70,45 @@ class LinkListTest extends KernelTestBase {
     $this->assertEquals('Link list 1', $link_list->getAdministrativeTitle());
     $this->assertEquals('My link list', $link_list->getTitle());
     $this->assertEquals($link_list_type->id(), $link_list->bundle());
+  }
+
+  /**
+   * Tests that we have a block derivative for each link list.
+   */
+  public function testBlockDerivatives(): void {
+    $link_list_storage = $this->entityTypeManager->getStorage('link_list');
+    $values = [
+      [
+        'bundle' => 'test_link_list_type',
+        'title' => 'First list',
+        'administrative_title' => 'Admin 1',
+      ],
+      [
+        'bundle' => 'test_link_list_type',
+        'title' => 'Second list',
+        'administrative_title' => 'Admin 2',
+      ],
+    ];
+
+    /** @var \Drupal\Core\Block\BlockManagerInterface $block_manager */
+    $block_manager = $this->container->get('plugin.manager.block');
+
+    foreach ($values as $value) {
+      $link_list = $link_list_storage->create($value);
+      $link_list->save();
+
+      $uuid = $link_list->uuid();
+      $definition = $block_manager->getDefinition("oe_link_list_block:$uuid");
+      $this->assertEqual($definition['admin_label'], $value['administrative_title']);
+
+      /** @var \Drupal\Core\Block\BlockPluginInterface $plugin */
+      $plugin = $block_manager->createInstance("oe_link_list_block:$uuid");
+      $this->assertTrue($plugin->access(\Drupal::currentUser()) === $link_list->access('view'));
+      $build = $plugin->build();
+      $this->assertEqual('full', $build['#view_mode']);
+      $this->assertTrue(isset($build['#link_list']));
+    }
+
   }
 
 }

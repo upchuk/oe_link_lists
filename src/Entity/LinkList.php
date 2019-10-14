@@ -139,6 +139,26 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
+  public function save() {
+    parent::save();
+
+    // Invalidate the block cache to update the derivatives.
+    \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    parent::delete();
+
+    // Invalidate the block cache to update the derivatives.
+    \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
