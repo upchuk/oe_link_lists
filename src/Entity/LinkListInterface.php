@@ -62,21 +62,21 @@ interface LinkListInterface extends ContentEntityInterface {
   /**
    * Gets the link list configuration.
    *
-   * @return string
+   * @return array
    *   Configuration of the link list.
    */
-  public function getConfiguration(): string;
+  public function getConfiguration(): array;
 
   /**
    * Sets the link list configuration.
    *
-   * @param string $settings
+   * @param array $settings
    *   The link list configuration.
    *
    * @return \Drupal\oe_link_lists\Entity\LinkListInterface
    *   The called link list entity.
    */
-  public function setConfiguration(string $settings): LinkListInterface;
+  public function setConfiguration(array $settings): LinkListInterface;
 
   /**
    * Gets the link list creation timestamp.
