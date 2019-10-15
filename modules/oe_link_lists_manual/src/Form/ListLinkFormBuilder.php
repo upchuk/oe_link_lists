@@ -39,7 +39,7 @@ class ListLinkFormBuilder {
     $link_type = $link->getUrl() ? 'external' : ($link->getTargetId() ? 'internal' : NULL);
 
     // Unfortunately we have to rely on the user input and cannot "wait" for the
-    // form state values to be finalized. This is because te form can be built
+    // form state values to be finalized. This is because the form can be built
     // inside a #process which means that the form state gets cached and we
     // no longer can make changes to it after Ajax requests. And since we are
     // showing/hiding elements with #access, the form system does not recognize
