@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Plugin\Validation\Constraint;
+namespace Drupal\oe_link_lists_manual\Plugin\Validation\Constraint;
 
 use Symfony\Component\Validator\Constraint;
 

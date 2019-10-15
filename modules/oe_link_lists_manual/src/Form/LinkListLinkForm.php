@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Form;
+namespace Drupal\oe_link_lists_manual\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
@@ -14,17 +14,25 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form controller for Link list edit forms.
+ * Form controller for Link list link edit forms.
  *
  * @ingroup oe_link_lists
  */
-class LinkListForm extends ContentEntityForm {
+class LinkListLinkForm extends ContentEntityForm {
+
   /**
    * The current user account.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $account;
+
+  /**
+   * A custom link form builder.
+   *
+   * @var \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder
+   */
+  protected $linkFormBuilder;
 
   /**
    * Constructs a new LinkListLinkForm.
@@ -39,11 +47,15 @@ class LinkListForm extends ContentEntityForm {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
+   * @param \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder $linkFormBuilder
+   *   The list link form builder.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, ListLinkFormBuilder $linkFormBuilder) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+
     $this->account = $account;
     $this->messenger = $messenger;
+    $this->linkFormBuilder = $linkFormBuilder;
   }
 
   /**
@@ -55,8 +67,43 @@ class LinkListForm extends ContentEntityForm {
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
       $container->get('current_user'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('oe_link_lists_manual.list_link_form_builder')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state): array {
+    $form = parent::buildForm($form, $form_state);
+
+    // Hide revision options.
+    $form['revision_log']['#access'] = FALSE;
+    $form['status']['#access'] = FALSE;
+
+    $form_state->set('link_form_display', $this->getFormDisplay($form_state));
+    $this->linkFormBuilder->buildForm($form, $form_state, $this->entity);
+
+    if (!$this->entity->isNew()) {
+      $form['new_revision'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Create new revision'),
+        '#default_value' => TRUE,
+        '#weight' => 21,
+      ];
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildEntity(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    $entity = parent::buildEntity($form, $form_state);
+    return $this->linkFormBuilder->buildEntity($entity, $form, $form_state);
   }
 
   /**
@@ -74,21 +121,20 @@ class LinkListForm extends ContentEntityForm {
       $entity->setRevisionCreationTime($this->time->getRequestTime());
       $entity->setRevisionUserId($this->account->id());
     }
-
     $status = parent::save($form, $form_state);
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger->addMessage($this->t('Created the %label Link list.', [
+        $this->messenger->addMessage($this->t('Created the %label Link list link.', [
           '%label' => $entity->label(),
         ]));
         break;
 
       default:
-        $this->messenger->addMessage($this->t('Saved the %label Link list.', [
+        $this->messenger->addMessage($this->t('Saved the %label Link list link.', [
           '%label' => $entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.link_list.canonical', ['link_list' => $entity->id()]);
+    $form_state->setRedirect('entity.link_list_link.edit_form', ['link_list_link' => $entity->id()]);
   }
 
 }

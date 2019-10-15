@@ -1,0 +1,6 @@
+langcode: en
+status: true
+dependencies: {  }
+id: manual_link_list
+label: 'Manual link list'
+description: 'Lists of manually created links.'

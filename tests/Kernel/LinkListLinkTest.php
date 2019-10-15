@@ -16,6 +16,7 @@ class LinkListLinkTest extends EntityKernelTestBase {
    */
   public static $modules = [
     'oe_link_lists',
+    'oe_link_lists_manual',
     'node',
     'user',
     'field',

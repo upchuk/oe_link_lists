@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Entity;
+namespace Drupal\oe_link_lists_manual\Entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -21,13 +21,13 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   label = @Translation("Link list link"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\oe_link_lists\LinkListLinkListBuilder",
+ *     "list_builder" = "Drupal\oe_link_lists_manual\LinkListLinkListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler",
  *     "form" = {
- *       "default" = "Drupal\oe_link_lists\Form\LinkListLinkForm",
- *       "add" = "Drupal\oe_link_lists\Form\LinkListLinkForm",
- *       "edit" = "Drupal\oe_link_lists\Form\LinkListLinkForm",
+ *       "default" = "Drupal\oe_link_lists_manual\Form\LinkListLinkForm",
+ *       "add" = "Drupal\oe_link_lists_manual\Form\LinkListLinkForm",
+ *       "edit" = "Drupal\oe_link_lists_manual\Form\LinkListLinkForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *     },
  *     "route_provider" = {
@@ -74,9 +74,12 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
     if ($this->getUrl()) {
       return $this->t('External link to: @external_url', ['@external_url' => $this->getUrl()]);
     }
-    else {
+
+    if ($this->getTargetEntity()) {
       return $this->t('Internal link to: @internal_entity', ['@internal_entity' => $this->getTargetEntity()->label()]);
     }
+
+    return $this->t('Internal link');
   }
 
   /**
