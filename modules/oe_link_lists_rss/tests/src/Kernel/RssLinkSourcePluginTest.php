@@ -50,7 +50,9 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss', $form_state->get('plugin_configuration') ?? []);
 
-    $form['plugin'] = [];
+    $form['plugin'] = [
+      '#tree' => TRUE,
+    ];
     $sub_form_state = SubformState::createForSubform($form['plugin'], $form, $form_state);
     $form['plugin'] = $plugin->buildConfigurationForm($form['plugin'], $sub_form_state);
 

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Plugin\LinkSource;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
@@ -100,8 +101,10 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function processConfigurationForm(array &$form, FormStateInterface $form_state): array {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $entity_type = $form_state->getValue('entity_type') ?? $this->configuration['entity_type'];
+
+    $form['#id'] = $form['#id'] ?? Html::getUniqueId('internal-link-source');
 
     $form['entity_type'] = [
       '#type' => 'select',
@@ -109,6 +112,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       '#required' => TRUE,
       '#options' => $this->getReferenceableEntityTypes(),
       '#default_value' => $entity_type,
+      '#empty_value' => '',
       '#ajax' => [
         'callback' => [$this, 'updateBundleSelect'],
         'wrapper' => $form['#id'],
