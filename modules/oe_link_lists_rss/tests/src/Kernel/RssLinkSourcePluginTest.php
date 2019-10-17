@@ -10,7 +10,9 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Http\ClientFactory;
+use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\oe_link_lists\DefaultLink;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
@@ -248,12 +250,12 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   }
 
   /**
-   * Tests that the plugin returns the referenced entities.
+   * Tests that the plugin returns the links.
    *
-   * @covers ::getReferencedEntities
+   * @covers ::getLinks()
    * @covers ::getFeed
    */
-  public function testReferencedEntities(): void {
+  public function testLinks(): void {
     // Create two test feeds.
     $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
     $feeds = [
@@ -267,7 +269,6 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       ]);
       $feed->save();
       $feed->refreshItems();
-      $feeds[$name] = $feed->id();
     }
 
     $plugin_manager = $this->container->get('plugin.manager.link_source');
@@ -275,28 +276,55 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');
     // Test a plugin with empty configuration.
-    $this->assertEquals([], $plugin->getReferencedEntities());
+    $this->assertEquals([], $plugin->getLinks());
 
     // Tests that the plugin doesn't break if it's referring a non-existing
     // feed, for example one that existed in the system and has been removed.
     $plugin->setConfiguration(['url' => 'http://www.example.com/deleted.xml']);
-    $this->assertEquals([], $plugin->getReferencedEntities());
+    $this->assertEquals([], $plugin->getLinks());
 
-    /** @var \Drupal\aggregator\ItemStorageInterface $item_storage */
-    $item_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_item');
+    // Check that the correct links are retrieved.
+    $plugin->setConfiguration(['url' => $feeds['atom']]);
+    $expected = $this->getExpectedLinks($feeds['atom']);
+    $this->assertEquals($expected, $plugin->getLinks());
+    $plugin->setConfiguration(['url' => $feeds['rss']]);
+    $expected = $this->getExpectedLinks($feeds['rss']);
+    $this->assertEquals($expected, $plugin->getLinks());
 
-    // Check that the correct entities are retrieved.
-    $plugin->setConfiguration(['url' => 'http://www.example.com/atom.xml']);
-    $this->assertSame($item_storage->loadByFeed($feeds['atom']), $plugin->getReferencedEntities());
-    $plugin->setConfiguration(['url' => 'http://www.example.com/rss.xml']);
-    $this->assertSame($item_storage->loadByFeed($feeds['rss']), $plugin->getReferencedEntities());
+    // Check the limit and offset parameters.
+    $links = $plugin->getLinks(5);
+    $this->assertEquals(array_slice($expected, 0, 5), $links);
 
-    // Check that the limit parameter is used correctly.
-    $limit = 2;
-    $plugin->setConfiguration(['url' => 'http://www.example.com/atom.xml']);
-    $this->assertSame($item_storage->loadByFeed($feeds['atom'], $limit), $plugin->getReferencedEntities($limit));
-    $plugin->setConfiguration(['url' => 'http://www.example.com/rss.xml']);
-    $this->assertSame($item_storage->loadByFeed($feeds['rss'], $limit), $plugin->getReferencedEntities($limit));
+    $links = $plugin->getLinks(5, 2);
+    $this->assertEquals(array_slice($expected, 2, 5), $links);
+  }
+
+  /**
+   * Returns expected feed data.
+   *
+   * @param string $feed_url
+   *   The feed URL the data is expected from.
+   *
+   * @return array
+   *   List of LinkInterface objects.
+   */
+  protected function getExpectedLinks(string $feed_url): array {
+    $links = [
+      'http://www.example.com/atom.xml' => [
+        new DefaultLink(Url::fromUri('http://example.org/2003/12/14/atom03'), 'We tried to stop them, but we failed.', ['#markup' => 'Some other text.']),
+        new DefaultLink(Url::fromUri('http://example.org/2003/12/13/atom03'), 'Atom-Powered Robots Run Amok', ['#markup' => 'Some text.']),
+      ],
+    ];
+
+    $feeds = $this->container->get('entity_type.manager')->getStorage('aggregator_feed')->loadByProperties(['url' => 'http://www.example.com/rss.xml']);
+    $feed = reset($feeds);
+    /** @var \Drupal\aggregator\ItemInterface $item */
+    foreach ($this->container->get('entity_type.manager')->getStorage('aggregator_item')->loadByFeed($feed->id()) as $item) {
+      $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
+      $links['http://www.example.com/rss.xml'][] = new DefaultLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+    }
+
+    return $links[$feed_url];
   }
 
 }

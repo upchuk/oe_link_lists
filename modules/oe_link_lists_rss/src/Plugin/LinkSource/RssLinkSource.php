@@ -9,6 +9,8 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Url;
+use Drupal\oe_link_lists\DefaultLink;
 use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -104,15 +106,29 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getReferencedEntities(int $limit = NULL): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): array {
     $feed = $this->getFeed();
 
     if (empty($feed)) {
       return [];
     }
 
+    /** @var \Drupal\aggregator\ItemStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('aggregator_item');
-    return $storage->loadByFeed($feed->id(), $limit);
+    $query = $storage->getQuery()
+      ->condition('fid', $feed->id())
+      ->sort('timestamp', 'DESC')
+      ->sort('iid', 'DESC');
+    if ($limit) {
+      $query->range($offset, $limit);
+    }
+
+    $ids = $query->execute();
+    if (!$ids) {
+      return [];
+    }
+
+    return $this->prepareLinks($storage->loadMultiple($ids));
   }
 
   /**
@@ -134,6 +150,32 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
     }
 
     return reset($feeds);
+  }
+
+  /**
+   * Prepares the links from the aggregator items.
+   *
+   * @param \Drupal\aggregator\ItemInterface[] $entities
+   *   Aggregator items
+   *
+   * @return \Drupal\oe_link_lists\LinkInterface[]
+   */
+  protected function prepareLinks(array $entities): array {
+    $links = [];
+    foreach ($entities as $entity) {
+      $teaser = [
+        '#markup' => $entity->getDescription(),
+      ];
+      try {
+        $url = Url::fromUri($entity->getLink());
+      }
+      catch (\InvalidArgumentException $exception) {
+        $url = Url::fromRoute('<front>');
+      }
+      $links[] = new DefaultLink($url, $entity->getTitle(), $teaser);
+    }
+
+    return $links;
   }
 
 }

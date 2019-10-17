@@ -20,8 +20,7 @@ class Bar extends ExternalLinkSourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getReferencedEntities(int $limit = NULL): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): array {
     return [];
   }
-
 }
