@@ -19,12 +19,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @ingroup oe_link_lists
  */
 class LinkListForm extends ContentEntityForm {
+
   /**
    * The current user account.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $account;
+
+  /**
+   * @var \Drupal\oe_link_lists\Form\LinkListFormBuilder
+   */
+  protected $linkListFormBuilder;
 
   /**
    * Constructs a new LinkListLinkForm.
@@ -39,11 +45,13 @@ class LinkListForm extends ContentEntityForm {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
+   * @param \Drupal\oe_link_lists\Form\LinkListFormBuilder $link_list_form_builder
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, LinkListFormBuilder $link_list_form_builder) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->account = $account;
     $this->messenger = $messenger;
+    $this->linkListFormBuilder = $link_list_form_builder;
   }
 
   /**
@@ -55,8 +63,39 @@ class LinkListForm extends ContentEntityForm {
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
       $container->get('current_user'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('oe_link_lists.link_list_form_builder')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state): array {
+    $form = parent::buildForm($form, $form_state);
+
+    $form['#tree'] = TRUE;
+
+    $this->linkListFormBuilder->buildForm($form, $form_state, $this->entity);
+
+    if (!$this->entity->isNew()) {
+      $form['new_revision'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Create new revision'),
+        '#default_value' => TRUE,
+        '#weight' => 10,
+      ];
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $this->linkListFormBuilder->submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
   /**

@@ -30,7 +30,7 @@ class LinkListLinkForm extends ContentEntityForm {
   /**
    * A custom link form builder.
    *
-   * @var \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder
+   * @var \Drupal\oe_link_lists_manual\Form\LinkListLinkFormBuilder
    */
   protected $linkFormBuilder;
 
@@ -47,10 +47,10 @@ class LinkListLinkForm extends ContentEntityForm {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
-   * @param \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder $linkFormBuilder
+   * @param \Drupal\oe_link_lists_manual\Form\LinkListLinkFormBuilder $linkFormBuilder
    *   The list link form builder.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, ListLinkFormBuilder $linkFormBuilder) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, LinkListLinkFormBuilder $linkFormBuilder) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
 
     $this->account = $account;

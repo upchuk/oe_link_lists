@@ -2,66 +2,65 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists_dynamic;
+namespace Drupal\oe_link_lists\Form;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
-use Drupal\oe_link_lists\LinkSourcePluginManagerInterface;
+use Drupal\oe_link_lists\LinkDisplayPluginManager;
+use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
+use Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface;
 
 /**
- * Builds the form elements for the dynamic link list entity form.
+ * Helper class to build the form elements for the Link List entity form.
  */
-class DynamicLinkListFormBuilder {
+class LinkListFormBuilder {
 
-  use DependencySerializationTrait;
   use StringTranslationTrait;
+  use DependencySerializationTrait;
 
   /**
-   * The link source plugin manager.
-   *
-   * @var \Drupal\oe_link_lists\LinkSourcePluginManagerInterface
+   * @var \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface
    */
-  protected $linkSourcePluginManager;
+  protected $linkDisplayPluginManager;
 
   /**
-   * DynamicLinkListFormBuilder constructor.
+   * LinkListFormBuilder constructor.
    *
-   * @param \Drupal\oe_link_lists\LinkSourcePluginManagerInterface $linkSourcePluginManager
-   *   The link source plugin manager.
+   * @param \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface $linkDisplayPluginManager
    */
-  public function __construct(LinkSourcePluginManagerInterface $linkSourcePluginManager) {
-    $this->linkSourcePluginManager = $linkSourcePluginManager;
+  public function __construct(LinkDisplayPluginManagerInterface $linkDisplayPluginManager) {
+    $this->linkDisplayPluginManager = $linkDisplayPluginManager;
   }
 
   /**
-   * Builds the form elements.
+   * Builds the form for link list entities.
    *
    * @param array $form
-   *   The main form.
+   *   Tye main form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The main form state.
+   * @param \Drupal\oe_link_lists\Entity\LinkListInterface $link_list
+   *   The link list.
    */
-  public function buildForm(array &$form, FormStateInterface $form_state): void {
-    $form['link_source'] = [
+  public function buildForm(array &$form, FormStateInterface $form_state, LinkListInterface $link_list): void {
+    $form['link_display'] = [
       '#type' => 'details',
-      '#title' => $this->t('The source of the links'),
+      '#title' => $this->t('Display options'),
       '#open' => TRUE,
     ];
 
-    $options = $this->linkSourcePluginManager->getPluginsAsOptions();
-
-    /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-    $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
+    $options = $this->linkDisplayPluginManager->getPluginsAsOptions();
 
     $plugin_id = NULL;
     $existing_config = [];
-    if ($form_state->getValue(['link_source', 'plugin']) && $form_state->getValue(['link_source', 'plugin']) !== '_none') {
+    if ($form_state->getValue(['link_display', 'plugin']) && $form_state->getValue(['link_display', 'plugin']) !== '_none') {
       // Get the plugin in case of an Ajax choice.
-      $plugin_id = $form_state->getValue(['link_source', 'plugin']);
+      $plugin_id = $form_state->getValue(['link_display', 'plugin']);
     }
 
     if (!$plugin_id && !$form_state->isProcessingInput()) {
@@ -74,24 +73,24 @@ class DynamicLinkListFormBuilder {
     }
 
     $wrapper_suffix = $form['#parents'] ? '-' . implode('-', $form['#parents']) : '';
-    $form['link_source']['plugin'] = [
+    $form['link_display']['plugin'] = [
       '#type' => 'select',
-      '#title' => t('The link source'),
-      '#empty_option' => t('None'),
+      '#title' => $this->t('The display'),
+      '#empty_option' => $this->t('None'),
       '#empty_value' => '_none',
       '#options' => $options,
       '#ajax' => [
         'callback' => [$this, 'pluginConfigurationAjaxCallback'],
-        'wrapper' => 'link-source-plugin-configuration' . $wrapper_suffix,
+        'wrapper' => 'link-display-plugin-configuration' . $wrapper_suffix,
       ],
       '#default_value' => $plugin_id,
     ];
 
     // A wrapper that the Ajax callback will replace.
-    $form['link_source']['plugin_configuration_wrapper'] = [
+    $form['link_display']['plugin_configuration_wrapper'] = [
       '#type' => 'container',
       '#attributes' => [
-        'id' => 'link-source-plugin-configuration' . $wrapper_suffix,
+        'id' => 'link-display-plugin-configuration' . $wrapper_suffix,
       ],
       '#weight' => 10,
     ];
@@ -102,10 +101,10 @@ class DynamicLinkListFormBuilder {
     // use it in its form elements' default values.
     if ($plugin_id) {
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
-      $plugin = $this->linkSourcePluginManager->createInstance($plugin_id, $existing_config);
+      $plugin = $this->linkDisplayPluginManager->createInstance($plugin_id, $existing_config);
 
       // A simple fieldset for wrapping the plugin configuration form elements.
-      $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = [
+      $form['link_display']['plugin_configuration_wrapper'][$plugin_id] = [
         '#type' => 'fieldset',
         '#title' => t('@plugin configuration', ['@plugin' => $plugin->label()]),
       ];
@@ -118,9 +117,9 @@ class DynamicLinkListFormBuilder {
       // configuration form within their own "namespace" to avoid naming
       // collisions if one provides form elements with the same name as the
       // others.
-      $plugin_form = &$form['link_source']['plugin_configuration_wrapper'][$plugin_id];
+      $plugin_form = &$form['link_display']['plugin_configuration_wrapper'][$plugin_id];
       $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state);
-      $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = $plugin->buildConfigurationForm($plugin_form, $subform_state);
+      $form['link_display']['plugin_configuration_wrapper'][$plugin_id] = $plugin->buildConfigurationForm($plugin_form, $subform_state);
     }
   }
 
@@ -140,11 +139,9 @@ class DynamicLinkListFormBuilder {
    *   The form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
-   *
-   * @see oe_link_lists_dynamic_apply_link_list_form_alterations()
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $plugin_id = $form_state->getValue(['link_source', 'plugin']);
+    $plugin_id = $form_state->getValue(['link_display', 'plugin']);
     if (!$plugin_id) {
       return;
     }
@@ -163,12 +160,12 @@ class DynamicLinkListFormBuilder {
     // is to process and save the data into its own configuration array. From
     // there, we read it and store it wherever we want (the link list entity).
     /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
-    $plugin = $this->linkSourcePluginManager->createInstance($plugin_id);
-    $subform_state = SubformState::createForSubform($form['link_source']['plugin_configuration_wrapper'][$plugin_id], $form, $form_state);
-    $plugin->submitConfigurationForm($form['link_source']['plugin_configuration_wrapper'][$plugin_id], $subform_state);
+    $plugin = $this->linkDisplayPluginManager->createInstance($plugin_id);
+    $subform_state = SubformState::createForSubform($form['link_display']['plugin_configuration_wrapper'][$plugin_id], $form, $form_state);
+    $plugin->submitConfigurationForm($form['link_display']['plugin_configuration_wrapper'][$plugin_id], $subform_state);
     $configuration = $link_list->getConfiguration();
-    $configuration['source']['plugin'] = $plugin_id;
-    $configuration['source']['plugin_configuration'] = $plugin->getConfiguration();;
+    $configuration['display']['plugin'] = $plugin_id;
+    $configuration['display']['plugin_configuration'] = $plugin->getConfiguration();
     $link_list->setConfiguration($configuration);
   }
 
@@ -186,7 +183,7 @@ class DynamicLinkListFormBuilder {
   public function pluginConfigurationAjaxCallback(array &$form, FormStateInterface $form_state): array {
     $triggering_element = $form_state->getTriggeringElement();
     $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -2));
-    return $element['link_source']['plugin_configuration_wrapper'];;
+    return $element['link_display']['plugin_configuration_wrapper'];
   }
 
   /**
@@ -200,7 +197,7 @@ class DynamicLinkListFormBuilder {
    */
   protected function getConfigurationPluginId(LinkListInterface $link_list): ?string {
     $configuration = $link_list->getConfiguration();
-    return $configuration['source']['plugin'] ?? NULL;
+    return $configuration['display']['plugin'] ?? NULL;
   }
 
   /**
@@ -214,7 +211,7 @@ class DynamicLinkListFormBuilder {
    */
   protected function getConfigurationPluginConfiguration(LinkListInterface $link_list): array {
     $configuration = $link_list->getConfiguration();
-    return $configuration['source']['plugin_configuration'] ?? [];
+    return $configuration['display']['plugin_configuration'] ?? [];
   }
 
 }

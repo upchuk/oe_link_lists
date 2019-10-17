@@ -18,7 +18,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   label = @Translation("Link list"),
  *   bundle_label = @Translation("Link list type"),
  *   handlers = {
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "view_builder" = "Drupal\oe_link_lists\LinkListViewBuilder",
  *     "list_builder" = "Drupal\oe_link_lists\LinkListListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler",

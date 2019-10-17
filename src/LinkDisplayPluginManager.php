@@ -9,14 +9,14 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 
 /**
- * LinkSource plugin manager.
+ * LinkDisplay plugin manager.
  */
-class LinkSourcePluginManager extends DefaultPluginManager implements LinkSourcePluginManagerInterface {
+class LinkDisplayPluginManager extends DefaultPluginManager implements LinkDisplayPluginManagerInterface {
 
   use LinkListPluginManagerTrait;
 
   /**
-   * Constructs LinkSourcePluginManager object.
+   * Constructs LinkDisplayPluginManager object.
    *
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
@@ -28,14 +28,14 @@ class LinkSourcePluginManager extends DefaultPluginManager implements LinkSource
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
     parent::__construct(
-      'Plugin/LinkSource',
+      'Plugin/LinkDisplay',
       $namespaces,
       $module_handler,
-      'Drupal\oe_link_lists\LinkSourceInterface',
-      'Drupal\oe_link_lists\Annotation\LinkSource'
+      'Drupal\oe_link_lists\LinkDisplayInterface',
+      'Drupal\oe_link_lists\Annotation\LinkDisplay'
     );
-    $this->alterInfo('link_source_info');
-    $this->setCacheBackend($cache_backend, 'link_source_plugins');
+    $this->alterInfo('link_display_info');
+    $this->setCacheBackend($cache_backend, 'link_display_plugins');
   }
 
 }

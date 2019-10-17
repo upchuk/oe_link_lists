@@ -13,7 +13,7 @@ use Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface;
 /**
  * Helper class to build the form elements for the Link List Link entity form.
  */
-class ListLinkFormBuilder {
+class LinkListLinkFormBuilder {
 
   use StringTranslationTrait;
 
@@ -28,7 +28,7 @@ class ListLinkFormBuilder {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The main form state.
    * @param \Drupal\oe_link_lists_manual\Entity\LinkListLinkInterface $link
-   *   The list link.
+   *   The link list link.
    *
    * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    * @SuppressWarnings(PHPMD.NPathComplexity)

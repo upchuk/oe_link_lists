@@ -11,7 +11,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\inline_entity_form\Form\EntityInlineForm;
-use Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder;
+use Drupal\oe_link_lists_manual\Form\LinkListLinkFormBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,7 +22,7 @@ class LinkListLinkInlineForm extends EntityInlineForm {
   /**
    * A custom link form builder.
    *
-   * @var \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder
+   * @var \Drupal\oe_link_lists_manual\Form\LinkListLinkFormBuilder
    */
   protected $linkFormBuilder;
 
@@ -37,10 +37,10 @@ class LinkListLinkInlineForm extends EntityInlineForm {
    *   The module handler.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Drupal\oe_link_lists_manual\Form\ListLinkFormBuilder $linkFormBuilder
+   * @param \Drupal\oe_link_lists_manual\Form\LinkListLinkFormBuilder $linkFormBuilder
    *   A custom link form builder.
    */
-  public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityTypeInterface $entity_type, ListLinkFormBuilder $linkFormBuilder) {
+  public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityTypeInterface $entity_type, LinkListLinkFormBuilder $linkFormBuilder) {
     parent::__construct($entity_field_manager, $entity_type_manager, $module_handler, $entity_type);
     $this->linkFormBuilder = $linkFormBuilder;
   }
