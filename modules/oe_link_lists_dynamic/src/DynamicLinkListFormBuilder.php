@@ -7,8 +7,8 @@ namespace Drupal\oe_link_lists_dynamic;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\SubformState;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
+use Drupal\oe_link_lists\Form\SubformState;
 use Drupal\oe_link_lists\LinkSourcePluginManagerInterface;
 
 /**
@@ -106,6 +106,7 @@ class DynamicLinkListFormBuilder {
       $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = [
         '#type' => 'fieldset',
         '#title' => t('@plugin configuration', ['@plugin' => $plugin->label()]),
+        '#tree' => TRUE,
       ];
 
       // When working with embedded forms, we need to create a subform state
