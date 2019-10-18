@@ -198,6 +198,12 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
         continue;
       }
 
+      // Remove bundleable entities that have no bundles declared.
+      $bundle_info = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
+      if (empty($bundle_info)) {
+        continue;
+      }
+
       $entity_types[$entity_type_id] = $entity_type->getLabel();
     }
 
