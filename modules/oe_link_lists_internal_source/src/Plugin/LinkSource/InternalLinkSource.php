@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Plugin\LinkSource;
+namespace Drupal\oe_link_lists_internal_source\Plugin\LinkSource;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
