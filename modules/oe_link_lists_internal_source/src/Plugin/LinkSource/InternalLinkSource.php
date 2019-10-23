@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_internal_source\Plugin\LinkSource;
 
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
@@ -161,7 +162,33 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function getReferencedEntities(int $limit = NULL): array {
-    return [];
+    $entity_type_id = $this->configuration['entity_type'];
+    $bundle_id = $this->configuration['bundle'];
+
+    // Bail out if the configuration is not provided.
+    if (empty($entity_type_id) || empty($bundle_id)) {
+      return [];
+    }
+
+    try {
+      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+    }
+    catch (PluginNotFoundException $exception) {
+      // The entity is not available anymore in the system.
+      return [];
+    }
+
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
+    $query = $storage->getQuery();
+
+    if ($entity_type->hasKey('bundle')) {
+      $query->condition($entity_type->getKey('bundle'), $bundle_id);
+    }
+    if ($limit !== NULL) {
+      $query->range(0, $limit);
+    }
+
+    return $storage->loadMultiple($query->execute());
   }
 
   /**
