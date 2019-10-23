@@ -119,7 +119,7 @@ class DynamicLinkListFormBuilder {
       // others.
       $plugin_form = &$form['link_source']['plugin_configuration_wrapper'][$plugin_id];
       $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state);
-      $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = $plugin->buildConfigurationForm($plugin_form, $subform_state);
+      $plugin_form = $plugin->buildConfigurationForm($plugin_form, $subform_state);
     }
   }
 
