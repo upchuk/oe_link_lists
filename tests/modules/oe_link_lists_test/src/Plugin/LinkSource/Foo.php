@@ -23,4 +23,5 @@ class Foo extends ExternalLinkSourcePluginBase {
   public function getLinks(int $limit = NULL, int $offset = 0): array {
     return [];
   }
+
 }

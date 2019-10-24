@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists\Form;
+namespace Drupal\oe_link_lists_manual_source\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
@@ -14,11 +14,11 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form controller for Link list edit forms.
+ * Form controller for Link list link edit forms.
  *
  * @ingroup oe_link_lists
  */
-class LinkListForm extends ContentEntityForm {
+class LinkListLinkForm extends ContentEntityForm {
 
   /**
    * The current user account.
@@ -28,18 +28,11 @@ class LinkListForm extends ContentEntityForm {
   protected $account;
 
   /**
-   * The link list display form builder.
+   * A custom link form builder.
    *
-   * @var \Drupal\oe_link_lists\Form\LinkListDisplayFormBuilder
+   * @var \Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder
    */
-  protected $linkListDisplayFormBuilder;
-
-  /**
-   * The link list source form builder.
-   *
-   * @var \Drupal\oe_link_lists\Form\LinkListSourceFormBuilder
-   */
-  protected $linkListSourceFormBuilder;
+  protected $linkFormBuilder;
 
   /**
    * Constructs a new LinkListLinkForm.
@@ -54,17 +47,15 @@ class LinkListForm extends ContentEntityForm {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
-   * @param \Drupal\oe_link_lists\Form\LinkListDisplayFormBuilder $link_list_display_form_builder
-   *   The link list display form builder.
-   * @param \Drupal\oe_link_lists\Form\LinkListSourceFormBuilder $link_list_source_form_builder
-   *   The link list source form builder.
+   * @param \Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder $linkFormBuilder
+   *   The list link form builder.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, LinkListDisplayFormBuilder $link_list_display_form_builder, LinkListSourceFormBuilder $link_list_source_form_builder) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, LinkListLinkFormBuilder $linkFormBuilder) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+
     $this->account = $account;
     $this->messenger = $messenger;
-    $this->linkListDisplayFormBuilder = $link_list_display_form_builder;
-    $this->linkListSourceFormBuilder = $link_list_source_form_builder;
+    $this->linkFormBuilder = $linkFormBuilder;
   }
 
   /**
@@ -77,8 +68,7 @@ class LinkListForm extends ContentEntityForm {
       $container->get('datetime.time'),
       $container->get('current_user'),
       $container->get('messenger'),
-      $container->get('oe_link_lists.link_list_display_form_builder'),
-      $container->get('oe_link_lists.link_list_source_form_builder')
+      $container->get('oe_link_lists_manual_source.list_link_form_builder')
     );
   }
 
@@ -88,17 +78,19 @@ class LinkListForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
 
-    $form['#tree'] = TRUE;
+    // Hide revision options.
+    $form['revision_log']['#access'] = FALSE;
+    $form['status']['#access'] = FALSE;
 
-    $this->linkListDisplayFormBuilder->buildForm($form, $form_state, $this->entity);
-    $this->linkListSourceFormBuilder->buildForm($form, $form_state, $this->entity);
+    $form_state->set('link_form_display', $this->getFormDisplay($form_state));
+    $this->linkFormBuilder->buildForm($form, $form_state, $this->entity);
 
     if (!$this->entity->isNew()) {
       $form['new_revision'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Create new revision'),
         '#default_value' => TRUE,
-        '#weight' => 10,
+        '#weight' => 21,
       ];
     }
 
@@ -108,10 +100,10 @@ class LinkListForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->linkListDisplayFormBuilder->submitForm($form, $form_state);
-    $this->linkListSourceFormBuilder->submitForm($form, $form_state);
-    parent::submitForm($form, $form_state);
+  public function buildEntity(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    $entity = parent::buildEntity($form, $form_state);
+    return $this->linkFormBuilder->buildEntity($entity, $form, $form_state);
   }
 
   /**
@@ -129,21 +121,20 @@ class LinkListForm extends ContentEntityForm {
       $entity->setRevisionCreationTime($this->time->getRequestTime());
       $entity->setRevisionUserId($this->account->id());
     }
-
     $status = parent::save($form, $form_state);
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger->addMessage($this->t('Created the %label Link list.', [
+        $this->messenger->addMessage($this->t('Created the %label Link list link.', [
           '%label' => $entity->label(),
         ]));
         break;
 
       default:
-        $this->messenger->addMessage($this->t('Saved the %label Link list.', [
+        $this->messenger->addMessage($this->t('Saved the %label Link list link.', [
           '%label' => $entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.link_list.canonical', ['link_list' => $entity->id()]);
+    $form_state->setRedirect('entity.link_list_link.edit_form', ['link_list_link' => $entity->id()]);
   }
 
 }

@@ -156,9 +156,10 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
    * Prepares the links from the aggregator items.
    *
    * @param \Drupal\aggregator\ItemInterface[] $entities
-   *   Aggregator items
+   *   Aggregator items.
    *
    * @return \Drupal\oe_link_lists\LinkInterface[]
+   *   The link objects.
    */
   protected function prepareLinks(array $entities): array {
     $links = [];

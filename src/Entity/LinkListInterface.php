@@ -14,14 +14,6 @@ use Drupal\Core\Entity\ContentEntityInterface;
 interface LinkListInterface extends ContentEntityInterface {
 
   /**
-   * Gets the link list type.
-   *
-   * @return string
-   *   The link list type.
-   */
-  public function getType(): string;
-
-  /**
    * Gets the link list title.
    *
    * @return string

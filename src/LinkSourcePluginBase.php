@@ -56,9 +56,7 @@ abstract class LinkSourcePluginBase extends PluginBase implements LinkSourceInte
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['#tree'] = TRUE;
     $form['#process'][] = [$this, 'processConfigurationForm'];
-
     return $form;
   }
 

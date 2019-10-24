@@ -68,4 +68,5 @@ class DefaultLink implements LinkInterface {
   public function getTeaser(): array {
     return $this->teaser;
   }
+
 }

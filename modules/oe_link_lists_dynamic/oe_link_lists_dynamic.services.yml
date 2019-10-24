@@ -1,4 +1,0 @@
-services:
-  oe_link_lists_dynamic.entity_form_builder:
-    class: Drupal\oe_link_lists_dynamic\DynamicLinkListFormBuilder
-    arguments: ['@plugin.manager.link_source']

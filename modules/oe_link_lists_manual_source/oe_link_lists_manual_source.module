@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * @file
+ * Contains Drupal hooks.
+ */
+
+declare(strict_types = 1);
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\field\FieldStorageConfigInterface;
+use Drupal\oe_link_lists_manual_source\LinkListLinkInlineForm;
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function oe_link_lists_manual_source_entity_type_build(array &$entity_types) {
+  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
+  if (isset($entity_types['link_list_link'])) {
+    $entity_types['link_list_link']->setHandlerClass('inline_form', LinkListLinkInlineForm::class);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for the link list entity type.
+ */
+function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) {
+  if ($entity->get('links')->isEmpty()) {
+    return;
+  }
+
+  /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $entity */
+
+  // For link lists that use the manual plugin we need to copy the links from
+  // the reference field into the plugin configuration. This needs to happen
+  // at this stage to ensure new referenced links have been created.
+  $ids = array_column($entity->get('links')->getValue(), 'target_id');
+  $configuration = $entity->getConfiguration();
+  $configuration['source']['plugin_configuration']['links'] = $ids;
+  $entity->setConfiguration($configuration);
+}
+
+/**
+ * Implements hook_base_field_info().
+ */
+function oe_link_lists_manual_source_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() !== 'link_list') {
+    return;
+  }
+
+  $fields = [];
+
+  $fields['links'] = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Links'))
+    ->setCardinality(FieldStorageConfigInterface::CARDINALITY_UNLIMITED)
+    ->setDescription(t('Manual link entities.'))
+    ->setSetting('target_type', 'link_list_link')
+    ->setDisplayConfigurable('view', TRUE)
+    ->setRequired(FALSE)
+    ->setDisplayOptions('form', [
+      'type' => 'inline_entity_form_complex',
+      'weight' => -5,
+    ])
+    ->setDefaultValue(0);
+
+  return $fields;
+}

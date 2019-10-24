@@ -1,0 +1,7 @@
+services:
+  oe_link_lists_manual_source.list_link_form_builder:
+    class: Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder
+  oe_link_lists.event_subscriber.default_manual_link_resolver:
+    class: Drupal\oe_link_lists_manual_source\EventSubscriber\DefaultManualLinkResolverSubscriber
+    tags:
+      - { name: event_subscriber }

@@ -25,7 +25,6 @@ interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface
    *
    * @param int|null $limit
    *   The number of items to return.
-   *
    * @param int $offset
    *   An offset from the default result set.
    *

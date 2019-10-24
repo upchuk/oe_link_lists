@@ -1,8 +1,0 @@
-name: OpenEuropa Dyanmic Link Lists
-description: OpenEuropa Link Lists provides all the necesary configuration to create dynamic link lists.
-package: OpenEuropa
-
-type: module
-core: 8.x
-dependencies:
-  - oe_link_lists
