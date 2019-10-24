@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists\Kernel;
 
 use Drupal\entity_test\Entity\EntityTest;
+use Drupal\entity_test\Entity\EntityTestNoBundle;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -32,6 +33,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     parent::setUp();
 
     $this->installEntitySchema('entity_test');
+    $this->installEntitySchema('entity_test_no_bundle');
     // Create two bundles for the entity_test entity type.
     entity_test_create_bundle('foo');
     entity_test_create_bundle('bar');
@@ -84,19 +86,19 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'entity_test',
     ]);
-    $this->assertEquals([], $this->extractEntityLabels($plugin->getReferencedEntities()));
+    $this->assertEquals([], $this->extractEntityNames($plugin->getReferencedEntities()));
 
     // Test that only the entities of the specified bundle are returned.
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
     ]);
-    $this->assertEquals($test_entities_by_bundle['foo'], $this->extractEntityLabels($plugin->getReferencedEntities()));
+    $this->assertEquals($test_entities_by_bundle['foo'], $this->extractEntityNames($plugin->getReferencedEntities()));
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
     ]);
-    $this->assertEquals($test_entities_by_bundle['bar'], $this->extractEntityLabels($plugin->getReferencedEntities()));
+    $this->assertEquals($test_entities_by_bundle['bar'], $this->extractEntityNames($plugin->getReferencedEntities()));
 
     // Test that the limit is applied to the results.
     $plugin->setConfiguration([
@@ -105,12 +107,23 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ]);
     $this->assertEquals(
       array_slice($test_entities_by_bundle['foo'], 0, 2, TRUE),
-      $this->extractEntityLabels($plugin->getReferencedEntities(2))
+      $this->extractEntityNames($plugin->getReferencedEntities(2))
     );
+
+    // Test non bundleable entities.
+    $test_entity = EntityTestNoBundle::create(['name' => $this->randomString()]);
+    $test_entity->save();
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test_no_bundle',
+      'bundle' => 'entity_test_no_bundle',
+    ]);
+    $this->assertEquals([
+      $test_entity->id() => $test_entity->getName(),
+    ], $this->extractEntityNames($plugin->getReferencedEntities()));
   }
 
   /**
-   * Helper method to extract entity ID and label from an array of entities.
+   * Helper method to extract entity ID and name from an array of test entities.
    *
    * @param array $entities
    *   A list of entities.
@@ -118,12 +131,12 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
    * @return array
    *   A list of entity labels, keyed by entity ID.
    */
-  protected function extractEntityLabels(array $entities): array {
+  protected function extractEntityNames(array $entities): array {
     $labels = [];
 
-    /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
+    /** @var \Drupal\entity_test\Entity\EntityTest[] $entities */
     foreach ($entities as $entity) {
-      $labels[$entity->id()] = $entity->label();
+      $labels[$entity->id()] = $entity->getName();
     }
 
     return $labels;
