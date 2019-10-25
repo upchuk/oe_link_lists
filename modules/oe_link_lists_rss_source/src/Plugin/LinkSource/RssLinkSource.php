@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\oe_link_lists_rss\Plugin\LinkSource;
+namespace Drupal\oe_link_lists_rss_source\Plugin\LinkSource;
 
 use Drupal\aggregator\FeedInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;

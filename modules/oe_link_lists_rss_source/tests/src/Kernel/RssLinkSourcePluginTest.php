@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\Tests\oe_link_lists_rss\Kernel;
+namespace Drupal\Tests\oe_link_lists_rss_source\Kernel;
 
 use Drupal\aggregator\FeedStorageInterface;
 use Drupal\Core\Form\FormInterface;
@@ -21,7 +21,7 @@ use Psr\Http\Message\RequestInterface;
  * Tests the RSS link source plugin.
  *
  * @group oe_link_lists
- * @coversDefaultClass \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource
+ * @coversDefaultClass \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource
  */
 class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
 
@@ -33,14 +33,14 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     'options',
     'system',
     'oe_link_lists',
-    'oe_link_lists_rss',
+    'oe_link_lists_rss_source',
   ];
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'oe_link_lists_rss_test_form';
+    return 'oe_link_lists_rss_source_test_form';
   }
 
   /**
@@ -49,7 +49,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $plugin_manager = $this->container->get('plugin.manager.link_source');
 
-    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss', $form_state->get('plugin_configuration') ?? []);
 
     $form['#tree'] = TRUE;
@@ -67,7 +67,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $form_state->get('plugin');
     $sub_form_state = SubformState::createForSubform($form['plugin'], $form, $form_state);
     $plugin->validateConfigurationForm($form, $sub_form_state);
@@ -77,7 +77,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $form_state->get('plugin');
     $sub_form_state = SubformState::createForSubform($form['plugin'], $form, $form_state);
     $plugin->submitConfigurationForm($form, $sub_form_state);
@@ -181,7 +181,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $feed_storage = $entity_type_manager->getStorage('aggregator_feed');
     $item_storage = $entity_type_manager->getStorage('aggregator_item');
 
-    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');
     $this->assertEquals(['url' => ''], $plugin->getConfiguration());
 
@@ -274,7 +274,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
 
     $plugin_manager = $this->container->get('plugin.manager.link_source');
 
-    /** @var \Drupal\oe_link_lists_rss\Plugin\LinkSource\RssLinkSource $plugin */
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');
     // Test a plugin with empty configuration.
     $this->assertEquals([], $plugin->getLinks());
