@@ -19,7 +19,7 @@ interface LinkListInterface extends ContentEntityInterface {
    * @return string
    *   Title of the link list.
    */
-  public function getTitle(): string;
+  public function getTitle(): ?string;
 
   /**
    * Sets the link list title.

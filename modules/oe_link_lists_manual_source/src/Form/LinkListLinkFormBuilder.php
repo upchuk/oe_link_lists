@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_manual_source\Form;
 
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -16,6 +17,7 @@ use Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface;
 class LinkListLinkFormBuilder {
 
   use StringTranslationTrait;
+  use DependencySerializationTrait;
 
   /**
    * Builds the form for link list link entities.
@@ -106,16 +108,13 @@ class LinkListLinkFormBuilder {
       $name = 'link_content[override]';
     }
 
-    $form['link_content']['title']['#states'] = [
-      'visible' => [
-        ':input[name="' . $name . '"]' => ['checked' => TRUE],
-      ],
-    ];
-    $form['link_content']['teaser']['#states'] = [
-      'visible' => [
-        ':input[name="' . $name . '"]' => ['checked' => TRUE],
-      ],
-    ];
+    foreach ($this->getInputFields() as $field) {
+      $form['link_content'][$field]['#states'] = [
+        'visible' => [
+          ':input[name="' . $name . '"]' => ['checked' => TRUE],
+        ],
+      ];
+    }
 
     // Show the target or URL field depending on the link type.
     switch ($link_type) {
@@ -132,17 +131,22 @@ class LinkListLinkFormBuilder {
       default:
         $form['link_content']['target']['#access'] = FALSE;
         $form['link_content']['url']['#access'] = FALSE;
-        $form['link_content']['title']['#access'] = FALSE;
-        $form['link_content']['teaser']['#access'] = FALSE;
         $form['link_content']['override']['#access'] = FALSE;
+
+        foreach ($this->getInputFields() as $field) {
+          $form['link_content'][$field]['#access'] = FALSE;
+        }
+
         break;
     }
   }
 
   /**
-   * {@inheritdoc}
+   * Entity builder for the link list link.
+   *
+   * Unsets certain values depending on the values of fields.
    */
-  public function buildEntity(LinkListLinkInterface $link, array $form, FormStateInterface $form_state) {
+  public function buildEntity(LinkListLinkInterface $link, array $form, FormStateInterface $form_state): LinkListLinkInterface {
     // We need to make sure when building the entity to not have both a URL and
     // a target, so we check the link type and remove the field that is not
     // required.
@@ -159,6 +163,21 @@ class LinkListLinkFormBuilder {
     }
 
     return $link;
+  }
+
+  /**
+   * Returns the fields that are used to input link data.
+   *
+   * These are used for external links or overrides for internal ones.
+   *
+   * @return array
+   *   The field names.
+   */
+  protected function getInputFields(): array {
+    return [
+      'title',
+      'teaser',
+    ];
   }
 
   /**

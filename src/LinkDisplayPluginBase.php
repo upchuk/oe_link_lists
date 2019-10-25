@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
@@ -14,6 +15,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 abstract class LinkDisplayPluginBase extends PluginBase implements LinkDisplayInterface {
 
   use StringTranslationTrait;
+  use DependencySerializationTrait;
 
   /**
    * {@inheritdoc}
@@ -36,7 +38,9 @@ abstract class LinkDisplayPluginBase extends PluginBase implements LinkDisplayIn
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    return [];
+    return [
+      'title' => NULL,
+    ];
   }
 
   /**

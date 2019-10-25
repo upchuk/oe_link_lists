@@ -98,7 +98,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTitle(): string {
+  public function getTitle(): ?string {
     return $this->get('title')->value;
   }
 
@@ -169,7 +169,6 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
-      ->setRequired(TRUE)
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 255)

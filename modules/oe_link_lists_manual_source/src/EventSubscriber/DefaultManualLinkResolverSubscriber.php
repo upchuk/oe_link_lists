@@ -84,7 +84,9 @@ class DefaultManualLinkResolverSubscriber implements EventSubscriberInterface {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $referenced_entity */
     $referenced_entity = $link_entity->get('target')->entity;
     $title = $referenced_entity->label();
-    $teaser = '';
+    $teaser = [
+      '#markup' => '',
+    ];
     if ($referenced_entity->hasField('body')) {
       $teaser = [
         '#type' => 'processed_text',

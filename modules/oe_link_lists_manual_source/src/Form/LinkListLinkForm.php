@@ -8,6 +8,7 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -28,11 +29,11 @@ class LinkListLinkForm extends ContentEntityForm {
   protected $account;
 
   /**
-   * A custom link form builder.
+   * The entity type manager.
    *
-   * @var \Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $linkFormBuilder;
+  protected $entityTypeManager;
 
   /**
    * Constructs a new LinkListLinkForm.
@@ -47,15 +48,15 @@ class LinkListLinkForm extends ContentEntityForm {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
-   * @param \Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder $linkFormBuilder
-   *   The list link form builder.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, LinkListLinkFormBuilder $linkFormBuilder) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, AccountProxyInterface $account, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
 
     $this->account = $account;
     $this->messenger = $messenger;
-    $this->linkFormBuilder = $linkFormBuilder;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -68,7 +69,7 @@ class LinkListLinkForm extends ContentEntityForm {
       $container->get('datetime.time'),
       $container->get('current_user'),
       $container->get('messenger'),
-      $container->get('oe_link_lists_manual_source.list_link_form_builder')
+      $container->get('entity_type.manager')
     );
   }
 
@@ -83,7 +84,8 @@ class LinkListLinkForm extends ContentEntityForm {
     $form['status']['#access'] = FALSE;
 
     $form_state->set('link_form_display', $this->getFormDisplay($form_state));
-    $this->linkFormBuilder->buildForm($form, $form_state, $this->entity);
+    $form_builder = $this->entityTypeManager->getHandler('link_list_link', 'form_builder');
+    $form_builder->buildForm($form, $form_state, $this->entity);
 
     if (!$this->entity->isNew()) {
       $form['new_revision'] = [
@@ -103,7 +105,8 @@ class LinkListLinkForm extends ContentEntityForm {
   public function buildEntity(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
-    return $this->linkFormBuilder->buildEntity($entity, $form, $form_state);
+    $form_builder = $this->entityTypeManager->getHandler('link_list_link', 'form_builder');
+    return $form_builder->buildEntity($entity, $form, $form_state);
   }
 
   /**

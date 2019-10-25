@@ -33,6 +33,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     },
+ *     "form_builder" = "Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder"
  *   },
  *   base_table = "link_list_link",
  *   data_table = "link_list_link_field_data",

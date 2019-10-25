@@ -166,6 +166,9 @@ class LinkListViewBuilder extends EntityViewBuilder {
 
     $display_plugin = $configuration['display']['plugin'];
     $display_plugin_configuration = $configuration['display']['plugin_configuration'] ?? [];
+    if ($link_list->getTitle()) {
+      $display_plugin_configuration['title'] = $link_list->getTitle();
+    }
 
     $plugin = $this->linkDisplayManager->createInstance($display_plugin, $display_plugin_configuration);
 
