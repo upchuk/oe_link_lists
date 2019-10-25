@@ -75,7 +75,7 @@ class LinkListDisplayFormBuilder {
     $wrapper_suffix = $form['#parents'] ? '-' . implode('-', $form['#parents']) : '';
     $form['link_display']['plugin'] = [
       '#type' => 'select',
-      '#title' => $this->t('The display'),
+      '#title' => $this->t('Link display'),
       '#empty_option' => $this->t('None'),
       '#empty_value' => '_none',
       '#required' => TRUE,
@@ -94,6 +94,7 @@ class LinkListDisplayFormBuilder {
         'id' => 'link-display-plugin-configuration' . $wrapper_suffix,
       ],
       '#weight' => 10,
+      '#tree' => TRUE,
     ];
 
     // If we have determined a plugin (either by way of default stored value or
@@ -104,12 +105,6 @@ class LinkListDisplayFormBuilder {
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
       $plugin = $this->linkDisplayPluginManager->createInstance($plugin_id, $existing_config);
 
-      // A simple fieldset for wrapping the plugin configuration form elements.
-      $form['link_display']['plugin_configuration_wrapper'][$plugin_id] = [
-        '#type' => 'fieldset',
-        '#title' => t('@plugin configuration', ['@plugin' => $plugin->label()]),
-      ];
-
       // When working with embedded forms, we need to create a subform state
       // based on the form element that will be the parent to the form which
       // will be embedded - in our case the plugin configuration form. And we
@@ -118,10 +113,29 @@ class LinkListDisplayFormBuilder {
       // configuration form within their own "namespace" to avoid naming
       // collisions if one provides form elements with the same name as the
       // others.
-      $plugin_form = &$form['link_display']['plugin_configuration_wrapper'][$plugin_id];
-      $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state);
-      $form['link_display']['plugin_configuration_wrapper'][$plugin_id] = $plugin->buildConfigurationForm($plugin_form, $subform_state);
+      $form['link_display']['plugin_configuration_wrapper'][$plugin_id] = [
+        '#process' => [[get_class($this), 'processPluginConfiguration']],
+        '#plugin' => $plugin,
+      ];
     }
+  }
+
+  /**
+   * For processor to build the plugin configuration form.
+   *
+   * @param array $element
+   *   The element onto which to build the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The full form state.
+   *
+   * @return array
+   *   The processed form.
+   */
+  public static function processPluginConfiguration(array &$element, FormStateInterface $form_state): array {
+    /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
+    $plugin = $element['#plugin'];
+    $subform_state = SubformState::createForSubform($element, $form_state->getCompleteForm(), $form_state);
+    return $plugin->buildConfigurationForm($element, $subform_state);
   }
 
   /**

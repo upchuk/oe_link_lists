@@ -97,7 +97,7 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
   /**
    * {@inheritdoc}
    */
-  public function processConfigurationForm(array &$form, FormStateInterface $form_state): array {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['#tree'] = TRUE;
     $form['links'] = $form_state->get('links_field');
     $form['links']['#parents'] = [];

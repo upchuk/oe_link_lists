@@ -55,13 +55,18 @@ function oe_link_lists_manual_source_entity_base_field_info(EntityTypeInterface 
   $fields['links'] = BaseFieldDefinition::create('entity_reference')
     ->setLabel(t('Links'))
     ->setCardinality(FieldStorageConfigInterface::CARDINALITY_UNLIMITED)
-    ->setDescription(t('Manual link entities.'))
+    ->setDescription(t('Manually defined links'))
     ->setSetting('target_type', 'link_list_link')
     ->setDisplayConfigurable('view', TRUE)
     ->setRequired(FALSE)
     ->setDisplayOptions('form', [
       'type' => 'inline_entity_form_complex',
       'weight' => -5,
+      'settings' => [
+        'override_labels' => TRUE,
+        'label_singular' => t('Link'),
+        'label_plural' => t('Links'),
+      ],
     ])
     ->setDefaultValue(0);
 

@@ -45,7 +45,7 @@ class LinkListTest extends KernelTestBase {
   }
 
   /**
-   * Tests Link list link entities.
+   * Tests Link list entities.
    */
   public function testLinkList(): void {
     // Create a link list.

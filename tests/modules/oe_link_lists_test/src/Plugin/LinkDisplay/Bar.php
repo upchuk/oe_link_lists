@@ -29,7 +29,7 @@ class Bar extends LinkDisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function processConfigurationForm(array &$form, FormStateInterface $form_state): array {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['link'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Link'),

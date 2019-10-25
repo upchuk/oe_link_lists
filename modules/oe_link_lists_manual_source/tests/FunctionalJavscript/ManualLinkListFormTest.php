@@ -96,15 +96,15 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->getSession()->getPage()->fillField('Administrative title', 'List 1');
 
     // Select and configure the display plugin.
-    $this->getSession()->getPage()->selectFieldOption('The display', 'Foo');
+    $this->getSession()->getPage()->selectFieldOption('Link display', 'Foo');
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Select the manual links plugin.
-    $this->getSession()->getPage()->selectFieldOption('The link source', 'Manual links');
+    $this->getSession()->getPage()->selectFieldOption('Link source', 'Manual links');
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Open up the link creation form.
-    $this->getSession()->getPage()->pressButton('Add new link list link');
+    $this->getSession()->getPage()->pressButton('Add new Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $links_wrapper = $this->getSession()->getPage()->find('css', '.ief-form');
     $this->assertNotNull($links_wrapper);
@@ -251,7 +251,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertSession()->fieldValueEquals('Teaser', 'Overridden teaser', $links_wrapper);
     $this->assertSession()->fieldNotExists('Target', $links_wrapper);
     $links_wrapper->fillField('URL', 'https://ec.europa.eu');
-    $this->getSession()->getPage()->pressButton('Update link list link');
+    $this->getSession()->getPage()->pressButton('Update Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->pageTextContains('External link to: https://ec.europa.eu');
     $this->getSession()->getPage()->pressButton('Save');
@@ -294,7 +294,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertFalse($this->getSession()->getPage()->find('css', '.ief-form .field--name-teaser')->isVisible());
     $links_wrapper->fillField('Target', 'Page 2');
     // We don't override and expect no title and teaser.
-    $this->getSession()->getPage()->pressButton('Update link list link');
+    $this->getSession()->getPage()->pressButton('Update Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->pageTextContains('Internal link to: Page 2');
     $this->getSession()->getPage()->pressButton('Save');
@@ -333,7 +333,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
    *   The teaser.
    */
   protected function createInlineInternalLink(string $page, string $title = NULL, string $teaser = NULL): void {
-    $this->getSession()->getPage()->pressButton('Add new link list link');
+    $this->getSession()->getPage()->pressButton('Add new Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->selectFieldOption('Internal', 'internal');
     $this->assertSession()->assertWaitOnAjaxRequest();
@@ -353,7 +353,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
         $links_wrapper->fillField('Teaser', $teaser);
       }
     }
-    $this->getSession()->getPage()->pressButton('Create link list link');
+    $this->getSession()->getPage()->pressButton('Create Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->pageTextContains("Internal link to: Page $page");
   }
@@ -381,7 +381,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $links_wrapper->fillField('URL', $url);
     $links_wrapper->fillField('Title', $title);
     $links_wrapper->fillField('Teaser', $teaser);
-    $this->getSession()->getPage()->pressButton('Create link list link');
+    $this->getSession()->getPage()->pressButton('Create Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->pageTextContains('External link to: http://example/com');
   }

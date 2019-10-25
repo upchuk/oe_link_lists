@@ -31,7 +31,7 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
   protected static $modules = [
     'oe_link_lists',
     'oe_link_lists_manual_source',
-    'oe_link_lists_rss',
+    'oe_link_lists_rss_source',
     'oe_link_lists_test',
   ];
 
@@ -94,16 +94,16 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     $this->drupalGet('link_list/add');
     $this->getSession()->getPage()->fillField('Administrative title', 'The admin title');
     $this->getSession()->getPage()->fillField('Title', 'The title');
-    $this->assertSession()->selectExists('The link source');
+    $this->assertSession()->selectExists('Link source');
 
     // Select and configure the display plugin.
-    $this->getSession()->getPage()->selectFieldOption('The display', 'Foo');
+    $this->getSession()->getPage()->selectFieldOption('Link display', 'Foo');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->pageTextContains('This plugin does not have any configuration options.');
 
     // Select and configure the source plugin. We use the RSS plugin for this
     // test.
-    $this->getSession()->getPage()->selectFieldOption('The link source', 'RSS');
+    $this->getSession()->getPage()->selectFieldOption('Link source', 'RSS');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->fieldExists('The resource URL');
     $this->getSession()->getPage()->fillField('The resource URL', 'http://www.example.com/atom.xml');
@@ -120,11 +120,11 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     ], $configuration['source']['plugin_configuration']);
 
     $this->assertEquals('foo', $configuration['display']['plugin']);
-    $this->assertEmpty($configuration['display']['plugin_configuration']);
+    $this->assertEquals(['title' => NULL], $configuration['display']['plugin_configuration']);
 
     // Change the display plugin to make it configurable.
     $this->drupalGet('link_list/1/edit');
-    $this->getSession()->getPage()->selectFieldOption('The display', 'Bar');
+    $this->getSession()->getPage()->selectFieldOption('Link display', 'Bar');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->checkboxChecked('Link');
     $this->getSession()->getPage()->uncheckField('Link');

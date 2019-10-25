@@ -4,9 +4,3 @@ entity.link_list.collection:
   description: 'List of Link lists'
   parent: system.admin_content
   weight: 100
-
-entity.link_list_type.collection:
-  title: 'Link list types'
-  route_name: entity.link_list_type.collection
-  description: 'Create and manage types of Link lists'
-  parent: system.admin_structure

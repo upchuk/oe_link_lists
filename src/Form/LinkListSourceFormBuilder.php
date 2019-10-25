@@ -81,7 +81,7 @@ class LinkListSourceFormBuilder {
     $wrapper_suffix = $form['#parents'] ? '-' . implode('-', $form['#parents']) : '';
     $form['link_source']['plugin'] = [
       '#type' => 'select',
-      '#title' => t('The link source'),
+      '#title' => t('Link source'),
       '#empty_option' => t('None'),
       '#empty_value' => '_none',
       '#options' => $options,
@@ -100,7 +100,15 @@ class LinkListSourceFormBuilder {
         'id' => 'link-source-plugin-configuration' . $wrapper_suffix,
       ],
       '#weight' => 10,
+      '#tree' => TRUE,
     ];
+
+    // If we have a "links" field, we need to hide it and set it onto the form
+    // state. It might be placed somewhere else by another plugin.
+    if (isset($form['links'])) {
+      $form_state->set('links_field', $form['links']);
+      unset($form['links']);
+    }
 
     // If we have determined a plugin (either by way of default stored value or
     // user selection), create the form element for its configuration. For this
@@ -110,12 +118,6 @@ class LinkListSourceFormBuilder {
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
       $plugin = $this->linkSourcePluginManager->createInstance($plugin_id, $existing_config);
 
-      // A simple fieldset for wrapping the plugin configuration form elements.
-      $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = [
-        '#type' => 'fieldset',
-        '#title' => t('@plugin configuration', ['@plugin' => $plugin->label()]),
-      ];
-
       // When working with embedded forms, we need to create a subform state
       // based on the form element that will be the parent to the form which
       // will be embedded - in our case the plugin configuration form. And we
@@ -124,16 +126,29 @@ class LinkListSourceFormBuilder {
       // configuration form within their own "namespace" to avoid naming
       // collisions if one provides form elements with the same name as the
       // others.
-      $subform_state = SubformState::createForSubform($form['link_source']['plugin_configuration_wrapper'][$plugin_id], $form, $form_state);
-      $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = $plugin->buildConfigurationForm($form['link_source']['plugin_configuration_wrapper'][$plugin_id], $subform_state);
+      $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = [
+        '#process' => [[get_class($this), 'processPluginConfiguration']],
+        '#plugin' => $plugin,
+      ];
     }
+  }
 
-    // If we have a "links" field, we need to hide it and set it onto the form
-    // state. It might be placed somewhere else by another plugin.
-    if (isset($form['links'])) {
-      $form_state->set('links_field', $form['links']);
-      unset($form['links']);
-    }
+  /**
+   * For processor to build the plugin configuration form.
+   *
+   * @param array $element
+   *   The element onto which to build the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The full form state.
+   *
+   * @return array
+   *   The processed form.
+   */
+  public static function processPluginConfiguration(array &$element, FormStateInterface $form_state): array {
+    /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
+    $plugin = $element['#plugin'];
+    $subform_state = SubformState::createForSubform($element, $form_state->getCompleteForm(), $form_state);
+    return $plugin->buildConfigurationForm($element, $subform_state);
   }
 
   /**

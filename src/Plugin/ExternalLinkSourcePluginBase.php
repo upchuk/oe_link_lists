@@ -25,14 +25,7 @@ abstract class ExternalLinkSourcePluginBase extends LinkSourcePluginBase impleme
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['url'] = $form_state->getValue('url');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processConfigurationForm(array &$form, FormStateInterface $form_state): array {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['url'] = [
       '#type' => 'url',
       '#title' => $this->t('The resource URL'),
@@ -42,6 +35,13 @@ abstract class ExternalLinkSourcePluginBase extends LinkSourcePluginBase impleme
     ];
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $this->configuration['url'] = $form_state->getValue('url');
   }
 
 }
