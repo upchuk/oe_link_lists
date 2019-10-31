@@ -8,7 +8,7 @@
 declare(strict_types = 1);
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\SubformState;
+use Drupal\oe_link_lists\Form\SubformState;
 
 /**
  * Implements hook_form_alter().
@@ -81,6 +81,7 @@ function oe_link_lists_test_form_node_type_edit_form_alter(&$form, FormStateInte
     $form['link_source']['plugin_configuration_wrapper']['plugin_configuration'][$plugin_id] = [
       '#type' => 'fieldset',
       '#title' => t('@plugin configuration', ['@plugin' => $plugin->label()]),
+      '#tree' => TRUE,
     ];
 
     // When working with embedded forms, we need to create a subform state
@@ -91,8 +92,8 @@ function oe_link_lists_test_form_node_type_edit_form_alter(&$form, FormStateInte
     // within their own "namespace" to avoid naming collisions if one provides
     // form elements with the same name as the others.
     $plugin_form = &$form['link_source']['plugin_configuration_wrapper']['plugin_configuration'][$plugin_id];
-    $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state);
-    $form['link_source']['plugin_configuration_wrapper']['plugin_configuration'][$plugin_id] = $plugin->buildConfigurationForm($plugin_form, $subform_state);
+    $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state, ['link_source', $plugin_id]);
+    $plugin_form = $plugin->buildConfigurationForm($plugin_form, $subform_state);
   }
 
   // Submit callback to handler the saving of the data.
@@ -138,8 +139,9 @@ function oe_link_lists_test_form_node_type_edit_form_submit(array &$form, FormSt
   // the values manually.
   /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
   $plugin = \Drupal::service('plugin.manager.link_source')->createInstance($plugin_id);
-  $subform_state = SubformState::createForSubform($form['link_source']['plugin_configuration_wrapper']['plugin_configuration'][$plugin_id], $form, $form_state);
-  $plugin->submitConfigurationForm($form['link_source']['plugin_configuration_wrapper']['plugin_configuration'][$plugin_id], $subform_state);
+  $plugin_form = &$form['link_source']['plugin_configuration_wrapper']['plugin_configuration'][$plugin_id];
+  $subform_state = SubformState::createForSubform($plugin_form, $form, $form_state, ['link_source', $plugin_id]);
+  $plugin->submitConfigurationForm($plugin_form, $subform_state);
   $configuration = $plugin->getConfiguration();
   $node_type->setThirdPartySetting('oe_link_lists_test', 'plugin', $plugin_id);
   $node_type->setThirdPartySetting('oe_link_lists_test', 'plugin_configuration', $configuration);

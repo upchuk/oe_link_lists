@@ -1,0 +1,9 @@
+name: OpenEuropa Internal Link Lists
+description: Provides a source plugin that collect links from existing entities.
+package: OpenEuropa
+
+type: module
+core: 8.x
+
+dependencies:
+  - oe_link_lists:oe_link_lists_dynamic

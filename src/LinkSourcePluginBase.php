@@ -55,35 +55,8 @@ abstract class LinkSourcePluginBase extends PluginBase implements LinkSourceInte
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['#tree'] = TRUE;
-    $form['#process'][] = [$this, 'processConfigurationForm'];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
     // Empty in many cases.
   }
-
-  /**
-   * Configuration form process callback.
-   *
-   * This is needed because of the way subforms are embedded.
-   *
-   * @param array $form
-   *   The form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @see PluginFormInterface::buildConfigurationForm()
-   *
-   * @return array
-   *   The form.
-   */
-  abstract public function processConfigurationForm(array &$form, FormStateInterface $form_state): array;
 
 }
