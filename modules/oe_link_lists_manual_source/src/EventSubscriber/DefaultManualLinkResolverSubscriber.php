@@ -6,17 +6,35 @@ namespace Drupal\oe_link_lists_manual_source\EventSubscriber;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
-use Drupal\oe_link_lists\DefaultEntityLink;
 use Drupal\oe_link_lists\DefaultLink;
+use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkInterface;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface;
 use Drupal\oe_link_lists_manual_source\Event\LinkResolverEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Default subscriber that resolves links from a link list.
  */
 class DefaultManualLinkResolverSubscriber implements EventSubscriberInterface {
+
+  /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
+   * DefaultManualLinkResolverSubscriber constructor.
+   *
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   *   The event dispatcher.
+   */
+  public function __construct(EventDispatcherInterface $eventDispatcher) {
+    $this->eventDispatcher = $eventDispatcher;
+  }
 
   /**
    * {@inheritdoc}
@@ -83,28 +101,19 @@ class DefaultManualLinkResolverSubscriber implements EventSubscriberInterface {
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface $referenced_entity */
     $referenced_entity = $link_entity->get('target')->entity;
-    $title = $referenced_entity->label();
-    $teaser = [
-      '#markup' => '',
-    ];
-    if ($referenced_entity->hasField('body')) {
-      $teaser = [
-        '#type' => 'processed_text',
-        '#text' => text_summary($referenced_entity->get('body')->value, $referenced_entity->get('body')->format),
-        '#format' => $referenced_entity->get('body')->format,
-      ];
-    }
+    $event = new EntityValueResolverEvent($referenced_entity);
+    $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
+
+    $link = $event->getLink();
 
     // Override the title and teaser.
     if (!$link_entity->get('title')->isEmpty()) {
-      $title = $link_entity->getTitle();
+      $link->setTitle($link_entity->getTitle());
     }
     if (!$link_entity->get('teaser')->isEmpty()) {
-      $teaser = ['#markup' => $link_entity->getTeaser()];
+      $link->setTeaser(['#markup' => $link_entity->getTeaser()]);
     }
 
-    $link = new DefaultEntityLink($url, $title, $teaser);
-    $link->setEntity($referenced_entity);
     return $link;
   }
 

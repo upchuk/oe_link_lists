@@ -61,7 +61,7 @@ class LinkListSourceFormBuilder {
     $existing_config = [];
     $input = $form_state->getUserInput();
     $input_plugin_id = NestedArray::getValue($input, array_merge($form['#parents'], ['link_source', 'plugin']));
-    if (in_array($input_plugin_id, ['rss', 'manual_links'])) {
+    if (in_array($input_plugin_id, array_keys($options))) {
       $plugin_id = $input_plugin_id;
     }
 
@@ -118,14 +118,6 @@ class LinkListSourceFormBuilder {
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
       $plugin = $this->linkSourcePluginManager->createInstance($plugin_id, $existing_config);
 
-      // When working with embedded forms, we need to create a subform state
-      // based on the form element that will be the parent to the form which
-      // will be embedded - in our case the plugin configuration form. And we
-      // pass to the plugin only that part of the form as well (not the entire
-      // thing). Moreover, we make sure we nest the individual plugin
-      // configuration form within their own "namespace" to avoid naming
-      // collisions if one provides form elements with the same name as the
-      // others.
       $form['link_source']['plugin_configuration_wrapper'][$plugin_id] = [
         '#process' => [[get_class($this), 'processPluginConfiguration']],
         '#plugin' => $plugin,
@@ -182,11 +174,6 @@ class LinkListSourceFormBuilder {
       return;
     }
 
-    // Similar to when we embedded the form, we need to use a subform state
-    // when handling the submission. The plugin's form submit handler should
-    // receive only the bit of the form that concerns it and it's responsibility
-    // is to process and save the data into its own configuration array. From
-    // there, we read it and store it wherever we want (the link list entity).
     /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
     $plugin = $this->linkSourcePluginManager->createInstance($plugin_id);
     $subform_state = SubformState::createForSubform($form['link_source']['plugin_configuration_wrapper'][$plugin_id], $form, $form_state);
@@ -211,7 +198,7 @@ class LinkListSourceFormBuilder {
   public function pluginConfigurationAjaxCallback(array &$form, FormStateInterface $form_state): array {
     $triggering_element = $form_state->getTriggeringElement();
     $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -2));
-    return $element['link_source']['plugin_configuration_wrapper'];;
+    return $element['link_source']['plugin_configuration_wrapper'];
   }
 
   /**

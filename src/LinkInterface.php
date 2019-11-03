@@ -30,11 +30,27 @@ interface LinkInterface {
   public function getTitle(): string;
 
   /**
+   * Sets the title of the link.
+   *
+   * @param string $title
+   *   The title.
+   */
+  public function setTitle(string $title): void;
+
+  /**
    * Returns the teaser of the link.
    *
    * @return array
    *   Renderable array.
    */
   public function getTeaser(): array;
+
+  /**
+   * Sets the teaser of the link.
+   *
+   * @param array $teaser
+   *   The teaser.
+   */
+  public function setTeaser(array $teaser): void;
 
 }

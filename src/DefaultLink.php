@@ -65,8 +65,22 @@ class DefaultLink implements LinkInterface {
   /**
    * {@inheritdoc}
    */
+  public function setTitle(string $title): void {
+    $this->title = $title;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getTeaser(): array {
     return $this->teaser;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTeaser(array $teaser): void {
+    $this->teaser = $teaser;
   }
 
 }
