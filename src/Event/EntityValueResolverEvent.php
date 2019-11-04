@@ -10,6 +10,8 @@ use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Event used to resolve the values used by the Link from an entity.
+ *
+ * This is meant to handle the basic data values: URL, title and teaser.
  */
 class EntityValueResolverEvent extends Event {
 

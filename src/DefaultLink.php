@@ -49,6 +49,19 @@ class DefaultLink implements LinkInterface {
   }
 
   /**
+   * Creates a new instance from the values of another link object.
+   *
+   * @param \Drupal\oe_link_lists\LinkInterface $link
+   *   The original link.
+   *
+   * @return \Drupal\oe_link_lists\LinkInterface
+   *   The new link.
+   */
+  public static function fromLink(LinkInterface $link): LinkInterface {
+    return new static($link->getUrl(), $link->getTitle(), $link->getTeaser());
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getUrl(): Url {

@@ -31,7 +31,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @param string $url
    *   The Link list link external url.
    *
-   * @return \Drupal\oe_link_lists\Entity\LinkListLinkInterface
+   * @return \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface
    *   The called Link list link entity.
    */
   public function setUrl(string $url): LinkListLinkInterface;
@@ -58,7 +58,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @param string|int $target_id
    *   The Link list link target id.
    *
-   * @return \Drupal\oe_link_lists\Entity\LinkListLinkInterface
+   * @return \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface
    *   The called Link list link entity.
    */
   public function setTargetId($target_id): LinkListLinkInterface;
@@ -77,7 +77,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @param string $teaser
    *   The Link list link teaser.
    *
-   * @return \Drupal\oe_link_lists\Entity\LinkListLinkInterface
+   * @return \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface
    *   The called Link list link entity.
    */
   public function setTeaser(string $teaser): LinkListLinkInterface;
@@ -96,7 +96,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @param string $title
    *   The Link list link title.
    *
-   * @return \Drupal\oe_link_lists\Entity\LinkListLinkInterface
+   * @return \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface
    *   The called Link list link entity.
    */
   public function setTitle(string $title): LinkListLinkInterface;
@@ -115,7 +115,7 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    * @param int $timestamp
    *   The Link list link creation timestamp.
    *
-   * @return \Drupal\oe_link_lists\Entity\LinkListLinkInterface
+   * @return \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface
    *   The called Link list link entity.
    */
   public function setCreatedTime(int $timestamp): LinkListLinkInterface;

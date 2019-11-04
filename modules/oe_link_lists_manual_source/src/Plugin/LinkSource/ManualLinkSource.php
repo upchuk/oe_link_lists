@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
-use Drupal\oe_link_lists_manual_source\Event\LinkResolverEvent;
+use Drupal\oe_link_lists_manual_source\Event\ManualLinksResolverEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -122,8 +122,8 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
     }
 
     $link_entities = $this->entityTypeManager->getStorage('link_list_link')->loadMultiple($ids);
-    $event = new LinkResolverEvent($link_entities);
-    $this->eventDispatcher->dispatch(LinkResolverEvent::NAME, $event);
+    $event = new ManualLinksResolverEvent($link_entities);
+    $this->eventDispatcher->dispatch(ManualLinksResolverEvent::NAME, $event);
     return $event->getLinks();
   }
 
