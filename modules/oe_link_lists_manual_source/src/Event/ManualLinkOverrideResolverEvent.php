@@ -15,7 +15,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class ManualLinkOverrideResolverEvent extends Event {
 
-  const NAME = 'oe_link_lists.event.manual_link_override_override_resolver';
+  const NAME = 'oe_link_lists.event.manual_link_override_resolver';
 
   /**
    * The link object.

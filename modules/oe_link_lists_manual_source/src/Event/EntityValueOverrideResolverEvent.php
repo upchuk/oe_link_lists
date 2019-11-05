@@ -27,7 +27,7 @@ class EntityValueOverrideResolverEvent extends EntityValueResolverEvent {
   protected $linkEntity;
 
   /**
-   * EntityValueResolverEvent constructor.
+   * EntityValueOverrideResolverEvent constructor.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The content entity.

@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\Tests\oe_link_lists_interal_source\FunctionalJavascript;
+namespace Drupal\Tests\oe_link_lists_internal_source\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\oe_link_lists\Entity\LinkListInterface;

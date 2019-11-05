@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\Tests\oe_link_lists_interal_source\Kernel;
+namespace Drupal\Tests\oe_link_lists_internal_source\Kernel;
 
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\entity_test\Entity\EntityTestNoBundle;

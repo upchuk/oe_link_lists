@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Link source plugin that handles external RSS sources.
+ * Link source plugin that allows to enter links manually.
  *
  * @LinkSource(
  *   id = "manual_links",
@@ -41,7 +41,7 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
   protected $entityTypeManager;
 
   /**
-   * Constructs a RssLinkSource object.
+   * Constructs a ManualLinkSource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

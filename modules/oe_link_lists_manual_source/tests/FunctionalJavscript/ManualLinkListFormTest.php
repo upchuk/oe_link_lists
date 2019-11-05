@@ -162,7 +162,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Create an internal link.
-    $this->createInlineInternalLink("1");
+    $this->createInlineInternalLink('1');
     $this->getSession()->getPage()->pressButton('Save');
 
     // Check the values are stored correctly.
@@ -211,7 +211,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Create an internal link with title and teaser override.
-    $this->createInlineInternalLink("2", 'Overridden title', 'Overridden teaser');
+    $this->createInlineInternalLink('2', 'Overridden title', 'Overridden teaser');
     $this->getSession()->getPage()->pressButton('Save');
 
     // Check the values are stored correctly.
