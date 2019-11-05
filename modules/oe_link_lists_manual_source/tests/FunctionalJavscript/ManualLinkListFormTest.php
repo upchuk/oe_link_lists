@@ -137,7 +137,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $configuration = $link_list->getConfiguration();
     $link_ids = array_column($link_list->get('links')->getValue(), 'target_id');
     $this->assertEquals('manual_links', $configuration['source']['plugin']);
-    $this->assertEquals($link_ids, $configuration['source']['plugin_configuration']['links']);
+    $this->assertEquals($link_ids, array_column($configuration['source']['plugin_configuration']['links'], 'entity_id'));
     // Build the links and ensure the data is correctly prepared.
     $links = $this->getLinksFromList($link_list);
     /** @var \Drupal\oe_link_lists\LinkInterface $link */
@@ -180,7 +180,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $configuration = $link_list->getConfiguration();
     $link_ids = array_column($link_list->get('links')->getValue(), 'target_id');
     $this->assertEquals('manual_links', $configuration['source']['plugin']);
-    $this->assertEquals($link_ids, $configuration['source']['plugin_configuration']['links']);
+    $this->assertEquals($link_ids, array_column($configuration['source']['plugin_configuration']['links'], 'entity_id'));
     // Build the links and ensure the data is correctly prepared.
     $links = $this->getLinksFromList($link_list);
     /** @var \Drupal\oe_link_lists\EntityAwareLinkInterface $link */

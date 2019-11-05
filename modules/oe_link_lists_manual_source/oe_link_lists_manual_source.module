@@ -36,7 +36,13 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
   // For link lists that use the manual plugin we need to copy the links from
   // the reference field into the plugin configuration. This needs to happen
   // at this stage to ensure new referenced links have been created.
-  $ids = array_column($entity->get('links')->getValue(), 'target_id');
+  $ids = [];
+  foreach ($entity->get('links')->getValue() as $value) {
+    $ids[$value['target_revision_id']] = [
+      'entity_id' => $value['target_id'],
+      'entity_revision_id' => $value['target_revision_id'],
+    ];
+  }
   $configuration = $entity->getConfiguration();
   $configuration['source']['plugin_configuration']['links'] = $ids;
   $entity->setConfiguration($configuration);
@@ -47,12 +53,12 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
  */
 function oe_link_lists_manual_source_entity_base_field_info(EntityTypeInterface $entity_type) {
   if ($entity_type->id() !== 'link_list') {
-    return;
+    return [];
   }
 
   $fields = [];
 
-  $fields['links'] = BaseFieldDefinition::create('entity_reference')
+  $fields['links'] = BaseFieldDefinition::create('entity_reference_revisions')
     ->setLabel(t('Links'))
     ->setCardinality(FieldStorageConfigInterface::CARDINALITY_UNLIMITED)
     ->setDescription(t('Manually defined links'))
@@ -66,6 +72,7 @@ function oe_link_lists_manual_source_entity_base_field_info(EntityTypeInterface 
         'override_labels' => TRUE,
         'label_singular' => t('Link'),
         'label_plural' => t('Links'),
+        'revision' => TRUE,
       ],
     ])
     ->setDefaultValue(0);
