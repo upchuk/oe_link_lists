@@ -98,9 +98,9 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['#tree'] = TRUE;
-    $form['links'] = $form_state->get('links_field');
-    $form['links']['#parents'] = [];
+    // We do nothing here because due to the complexity of the inline entity
+    // form embed we have to handle it in a form alter.
+    // @see oe_link_lists_manual_source_link_list_form_handle_alter()
     return $form;
   }
 
@@ -121,7 +121,7 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
       return [];
     }
 
-    $link_entities = $this->entityTypeManager->getStorage('link_list_link')->loadMultiple($ids);
+    $link_entities = $this->entityTypeManager->getStorage('link_list_link')->loadMultipleRevisions(array_column($ids, 'entity_revision_id'));
     $event = new ManualLinksResolverEvent($link_entities);
     $this->eventDispatcher->dispatch(ManualLinksResolverEvent::NAME, $event);
     return $event->getLinks();
