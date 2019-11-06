@@ -27,17 +27,37 @@ function oe_link_lists_manual_source_entity_type_build(array &$entity_types) {
 
 /**
  * Implements hook_ENTITY_TYPE_presave() for the link list entity type.
+ *
+ * For link lists that use the ManualLinkSource plugin we need to copy the links
+ * from the reference field into the plugin configuration. This needs to happen
+ * at this stage to ensure new referenced links have been created.
  */
 function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) {
+  /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $entity */
+  $configuration = $entity->getConfiguration();
+
+  // If we are not using the ManualLinksSource plugin, make sure to clear
+  // the plugin configuration for manual links.
+  if ($configuration['source']['plugin'] !== 'manual_links' && isset($configuration['source']['plugin_configuration']['links'])) {
+    unset($configuration['source']['plugin_configuration']['links']);
+    $entity->setConfiguration($configuration);
+  }
+
+  // If we are not using the ManualLinksSource plugin but we are still
+  // referencing LinkListLink entities, we need to also remove them and the
+  // references.
+  if ($configuration['source']['plugin'] !== 'manual_links' && !$entity->get('links')->isEmpty()) {
+    foreach ($entity->get('links')->referencedEntities() as $link) {
+      $link->delete();
+    }
+    $entity->set('links', NULL);
+  }
+
   if ($entity->get('links')->isEmpty()) {
+    // If there are no referenced links we don't have to do anything anymore.
     return;
   }
 
-  /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $entity */
-
-  // For link lists that use the manual plugin we need to copy the links from
-  // the reference field into the plugin configuration. This needs to happen
-  // at this stage to ensure new referenced links have been created.
   $ids = [];
   foreach ($entity->get('links')->getValue() as $value) {
     $ids[$value['target_revision_id']] = [
