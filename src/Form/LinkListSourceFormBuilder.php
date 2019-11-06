@@ -103,13 +103,6 @@ class LinkListSourceFormBuilder {
       '#tree' => TRUE,
     ];
 
-    // If we have a "links" field, we need to hide it and set it onto the form
-    // state. It might be placed somewhere else by another plugin.
-    if (isset($form['links'])) {
-      $form_state->set('links_field', $form['links']);
-      unset($form['links']);
-    }
-
     // If we have determined a plugin (either by way of default stored value or
     // user selection), create the form element for its configuration. For this
     // we pass potentially existing configuration to the plugin so that it can
