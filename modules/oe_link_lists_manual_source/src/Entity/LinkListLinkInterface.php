@@ -120,4 +120,16 @@ interface LinkListLinkInterface extends ContentEntityInterface, RevisionLogInter
    */
   public function setCreatedTime(int $timestamp): LinkListLinkInterface;
 
+  /**
+   * Set the parent entity of the link.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $parent
+   *   The parent entity.
+   * @param string $parent_field_name
+   *   The parent field name.
+   *
+   * @return $this
+   */
+  public function setParentEntity(ContentEntityInterface $parent, $parent_field_name);
+
 }

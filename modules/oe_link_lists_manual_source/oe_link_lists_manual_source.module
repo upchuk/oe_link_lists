@@ -13,6 +13,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\field\FieldStorageConfigInterface;
+use Drupal\oe_link_lists_manual_source\Entity\LinkListLink;
 use Drupal\oe_link_lists_manual_source\LinkListLinkInlineForm;
 
 /**
@@ -64,6 +65,11 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
       'entity_id' => $value['target_id'],
       'entity_revision_id' => $value['target_revision_id'],
     ];
+
+    // @todo move this to IEF directly where the entity is being built.
+    $link = LinkListLink::load($value['target_id']);
+    $link->setParentEntity($entity, 'links');
+    $link->save();
   }
   $configuration = $entity->getConfiguration();
   $configuration['source']['plugin_configuration']['links'] = $ids;

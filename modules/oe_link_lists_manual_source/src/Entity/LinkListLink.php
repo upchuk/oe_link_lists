@@ -4,12 +4,14 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_manual_source\Entity;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Defines the LinkListLink entity.
@@ -41,6 +43,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   revision_data_table = "link_list_link_field_revision",
  *   translatable = TRUE,
  *   admin_permission = "administer link list link entities",
+ *   entity_revision_parent_type_field = "parent_type",
+ *   entity_revision_parent_id_field = "parent_id",
+ *   entity_revision_parent_field_name_field = "parent_field_name",
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "vid",
@@ -58,6 +63,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *     "edit-form" = "/admin/content/link_list_link/{link_list_link}/edit",
  *     "delete-form" = "/admin/content/link_list_link/{link_list_link}/delete",
  *     "collection" = "/admin/content/link_list_link",
+ *     "drupal:content-translation-overview" = "/admin/content/link_list_link/translations"
  *   },
  *   constraints = {
  *     "LinkListLinkFieldsRequired" = {}
@@ -168,6 +174,16 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
+  public function setParentEntity(ContentEntityInterface $parent, $parent_field_name) {
+    $this->set('parent_type', $parent->getEntityTypeId());
+    $this->set('parent_id', $parent->id());
+    $this->set('parent_field_name', $parent_field_name);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
     $fields = parent::baseFieldDefinitions($entity_type);
 
@@ -253,6 +269,28 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
       ])
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(FALSE);
+
+    $fields['parent_id'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent ID'))
+      ->setDescription(t('The ID of the parent entity of which this entity is referenced.'))
+      ->setSetting('is_ascii', TRUE)
+      ->setRevisionable(TRUE);
+
+    $fields['parent_type'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent type'))
+      ->setDescription(t('The entity parent type to which this entity is referenced.'))
+      ->setSetting('is_ascii', TRUE)
+      ->setSetting('max_length', EntityTypeInterface::ID_MAX_LENGTH)
+      ->setDefaultValue('link_list')
+      ->setRevisionable(TRUE);
+
+    $fields['parent_field_name'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent field name'))
+      ->setDescription(t('The entity parent field name to which this entity is referenced.'))
+      ->setSetting('is_ascii', TRUE)
+      ->setSetting('max_length', FieldStorageConfig::NAME_MAX_LENGTH)
+      ->setDefaultValue('links')
+      ->setRevisionable(TRUE);
 
     $fields['status']->setDescription(t('A boolean indicating whether the Link list link is published.'))
       ->setDisplayOptions('form', [
