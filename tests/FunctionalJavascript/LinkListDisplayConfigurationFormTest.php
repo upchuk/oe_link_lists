@@ -114,11 +114,6 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $storage->load(1);
     $configuration = $link_list->getConfiguration();
-    $this->assertEquals('rss', $configuration['source']['plugin']);
-    $this->assertEquals([
-      'url' => 'http://www.example.com/atom.xml',
-    ], $configuration['source']['plugin_configuration']);
-
     $this->assertEquals('foo', $configuration['display']['plugin']);
     $this->assertEquals(['title' => NULL], $configuration['display']['plugin_configuration']);
 
