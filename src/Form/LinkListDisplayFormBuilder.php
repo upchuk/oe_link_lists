@@ -238,7 +238,6 @@ class LinkListDisplayFormBuilder {
       !in_array($element['#value'][0], ['/', '?', '#'], TRUE) &&
       substr($element['#value'], 0, 7) !== '<front>') {
       $form_state->setError($element, t('The specified target is invalid. Manually entered paths should start with one of the following characters: / ? #'));
-      return;
     }
   }
 
@@ -371,7 +370,7 @@ class LinkListDisplayFormBuilder {
     $form['link_display']['more']['more_title_override'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Override button label. Defaults to "See all" or the referenced entity label.'),
-      '#default_value' => !is_null($existing_configuration['more']['title_override']),
+      '#default_value' => isset($existing_configuration['more']['title_override']) && !is_null($existing_configuration['more']['title_override']),
       '#states' => [
         'visible' => [
           'input[name="link_display[more][button]"]' => ['value' => 'custom'],
@@ -381,7 +380,7 @@ class LinkListDisplayFormBuilder {
     $form['link_display']['more']['more_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Button label'),
-      '#default_value' => $existing_configuration['more']['title_override'],
+      '#default_value' => $existing_configuration['more']['title_override'] ?? '',
       '#element_validate' => [[get_class($this), 'validateMoreLinkOverride']],
       '#states' => [
         'visible' => [
