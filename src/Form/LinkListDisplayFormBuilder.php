@@ -369,7 +369,7 @@ class LinkListDisplayFormBuilder {
 
     $form['link_display']['more']['more_title_override'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Override button label. Defaults to "See all" or the referenced entity label.'),
+      '#title' => $this->t('Override the button label. Defaults to "See all" or the referenced entity label.'),
       '#default_value' => isset($existing_configuration['more']['title_override']) && !is_null($existing_configuration['more']['title_override']),
       '#states' => [
         'visible' => [
@@ -379,7 +379,7 @@ class LinkListDisplayFormBuilder {
     ];
     $form['link_display']['more']['more_title'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Button label'),
+      '#title' => $this->t('The new label'),
       '#default_value' => $existing_configuration['more']['title_override'] ?? '',
       '#element_validate' => [[get_class($this), 'validateMoreLinkOverride']],
       '#states' => [
