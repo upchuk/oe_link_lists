@@ -192,7 +192,8 @@ class LinkListViewBuilder extends EntityViewBuilder {
     // For lists that use source plugins.
     if ($source_plugin) {
       $plugin = $this->linkSourceManager->createInstance($source_plugin, $source_plugin_configuration);
-      return $plugin->getLinks();
+      $size = isset($configuration['size']) && $configuration['size'] > 0 ? $configuration['size'] : NULL;
+      return $plugin->getLinks($size);
     }
 
     return [];
