@@ -11,8 +11,10 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Theme\Registry;
+use Drupal\Core\Url;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -169,6 +171,9 @@ class LinkListViewBuilder extends EntityViewBuilder {
     if ($link_list->getTitle()) {
       $display_plugin_configuration['title'] = $link_list->getTitle();
     }
+    if (isset($configuration['more']) && isset($configuration['size']) && $configuration['size'] > 0) {
+      $display_plugin_configuration['more'] = $this->prepareMoreLink($configuration['more']);
+    }
 
     $plugin = $this->linkDisplayManager->createInstance($display_plugin, $display_plugin_configuration);
 
@@ -197,6 +202,51 @@ class LinkListViewBuilder extends EntityViewBuilder {
     }
 
     return [];
+  }
+
+  /**
+   * Prepares the "See all" link for the list.
+   *
+   * @param array $more
+   *   The link configuration.
+   *
+   * @return \Drupal\Core\Link|null
+   *   The Link object or NULL if one is not needed.
+   *
+   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+   */
+  protected function prepareMoreLink(array $more): ?Link {
+    if ($more['button'] === 'no') {
+      return NULL;
+    }
+
+    $title = $this->t('See all');
+    if (isset($more['title_override']) && $more['title_override']) {
+      $title = $more['title_override'];
+    }
+
+    if ($more['button'] === 'custom' && $more['target']['type'] === 'custom') {
+      $has_scheme = parse_url($more['target']['url'], PHP_URL_SCHEME) !== NULL;
+      try {
+        $url = $has_scheme ? Url::fromUri($more['target']['url']) : Url::fromUserInput($more['target']['url']);
+      }
+      catch (\InvalidArgumentException $exception) {
+        if ($more['target']['url'] !== '<front>') {
+          return NULL;
+        }
+
+        $url = Url::fromRoute('<front>');
+      }
+
+      return Link::fromTextAndUrl($title, $url);
+    }
+
+    if ($more['button'] === 'custom' && $more['target']['type'] === 'entity') {
+      $url = Url::fromUri("entity:{$more['target']['entity_type']}/{$more['target']['entity_id']}");
+      return Link::fromTextAndUrl($title, $url);
+    }
+
+    return NULL;
   }
 
 }
