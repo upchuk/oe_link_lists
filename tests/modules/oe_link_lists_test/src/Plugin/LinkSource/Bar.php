@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_test\Plugin\LinkSource;
 
+use Drupal\Core\Url;
+use Drupal\oe_link_lists\DefaultLink;
 use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
 
 /**
@@ -20,8 +22,11 @@ class Bar extends ExternalLinkSourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getReferencedEntities(int $limit = NULL): array {
-    return [];
+  public function getLinks(int $limit = NULL, int $offset = 0): array {
+    return [
+      new DefaultLink(Url::fromUri('http://example.com'), 'Example', ['#markup' => 'Example teaser']),
+      new DefaultLink(Url::fromUri('http://ec.europa.eu'), 'European Commission', ['#markup' => 'European teaser']),
+    ];
   }
 
 }

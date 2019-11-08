@@ -1,0 +1,6 @@
+services:
+  oe_link_lists.event_subscriber.default_manual_links_resolver:
+    class: Drupal\oe_link_lists_manual_source\EventSubscriber\DefaultManualLinksResolverSubscriber
+    arguments: ['@event_dispatcher']
+    tags:
+      - { name: event_subscriber }

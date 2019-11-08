@@ -5,9 +5,10 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * Tests the Link list link entity.
+ * Tests the Link list entity.
  */
 class LinkListTest extends KernelTestBase {
 
@@ -23,6 +24,7 @@ class LinkListTest extends KernelTestBase {
    */
   protected static $modules = [
     'oe_link_lists',
+    'oe_link_lists_test',
     'user',
     'system',
   ];
@@ -40,36 +42,25 @@ class LinkListTest extends KernelTestBase {
     ]);
 
     $this->entityTypeManager = $this->container->get('entity_type.manager');
-
-    // Create a link list type.
-    $link_list_type_storage = $this->entityTypeManager->getStorage('link_list_type');
-    $link_list_type = $link_list_type_storage->create(['label' => 'Test link list type', 'id' => 'test_link_list_type']);
-    $link_list_type->save();
   }
 
   /**
-   * Tests Link list link entities.
+   * Tests Link list entities.
    */
   public function testLinkList(): void {
-    $link_list_type = $this->entityTypeManager->getStorage('link_list_type')->load('test_link_list_type');
-    $this->assertEquals('Test link list type', $link_list_type->label());
-    $this->assertEquals('test_link_list_type', $link_list_type->id());
-
     // Create a link list.
     $link_list_storage = $this->entityTypeManager->getStorage('link_list');
     $values = [
-      'bundle' => $link_list_type->id(),
       'title' => 'My link list',
       'administrative_title' => 'Link list 1',
     ];
-    /** @var \Drupal\oe_link_lists\LinkListInterface $link_list */
+    /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $link_list_storage->create($values);
     $link_list->save();
 
     $link_list = $link_list_storage->load($link_list->id());
     $this->assertEquals('Link list 1', $link_list->getAdministrativeTitle());
     $this->assertEquals('My link list', $link_list->getTitle());
-    $this->assertEquals($link_list_type->id(), $link_list->bundle());
   }
 
   /**
@@ -79,12 +70,10 @@ class LinkListTest extends KernelTestBase {
     $link_list_storage = $this->entityTypeManager->getStorage('link_list');
     $values = [
       [
-        'bundle' => 'test_link_list_type',
         'title' => 'First list',
         'administrative_title' => 'Admin 1',
       ],
       [
-        'bundle' => 'test_link_list_type',
         'title' => 'Second list',
         'administrative_title' => 'Admin 2',
       ],
@@ -108,7 +97,40 @@ class LinkListTest extends KernelTestBase {
       $this->assertEqual('full', $build['#view_mode']);
       $this->assertTrue(isset($build['#link_list']));
     }
+  }
 
+  /**
+   * Tests that link lists are rendered by the selected display plugin.
+   */
+  public function testRendering(): void {
+    $storage = $this->container->get('entity_type.manager')->getStorage('link_list');
+    /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
+    $link_list = $storage->create([
+      'title' => 'Test',
+      'administrative_title' => 'Test',
+    ]);
+
+    $configuration = [
+      'source' => [
+        'plugin' => 'bar',
+      ],
+      'display' => [
+        'plugin' => 'bar',
+        'plugin_configuration' => ['link' => FALSE],
+      ],
+    ];
+
+    $link_list->setConfiguration($configuration);
+    $link_list->save();
+
+    $builder = $this->container->get('entity_type.manager')->getViewBuilder('link_list');
+    $build = $builder->view($link_list);
+    $html = (string) $this->container->get('renderer')->renderRoot($build);
+    $crawler = new Crawler($html);
+    $items = $crawler->filter('ul li');
+    $this->assertCount(2, $items);
+    $this->assertEquals('Example', $items->first()->text());
+    $this->assertEquals('European Commission', $items->eq(1)->text());
   }
 
 }

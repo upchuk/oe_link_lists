@@ -1,9 +1,0 @@
-name: OpenEuropa Manual Link Lists
-description: OpenEuropa Manual Link Lists provides all the necesary configuration to create manual link lists.
-package: OpenEuropa
-
-type: module
-core: 8.x
-dependencies:
-  - oe_link_lists
-  - inline_entity_form:inline_entity_form

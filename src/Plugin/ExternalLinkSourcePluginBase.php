@@ -25,7 +25,7 @@ abstract class ExternalLinkSourcePluginBase extends LinkSourcePluginBase impleme
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['url'] = [
       '#type' => 'url',
       '#title' => $this->t('The resource URL'),

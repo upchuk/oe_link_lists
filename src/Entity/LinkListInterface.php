@@ -14,20 +14,12 @@ use Drupal\Core\Entity\ContentEntityInterface;
 interface LinkListInterface extends ContentEntityInterface {
 
   /**
-   * Gets the link list type.
-   *
-   * @return string
-   *   The link list type.
-   */
-  public function getType(): string;
-
-  /**
    * Gets the link list title.
    *
    * @return string
    *   Title of the link list.
    */
-  public function getTitle(): string;
+  public function getTitle(): ?string;
 
   /**
    * Sets the link list title.
@@ -70,13 +62,13 @@ interface LinkListInterface extends ContentEntityInterface {
   /**
    * Sets the link list configuration.
    *
-   * @param array $settings
+   * @param array $configuration
    *   The link list configuration.
    *
    * @return \Drupal\oe_link_lists\Entity\LinkListInterface
    *   The called link list entity.
    */
-  public function setConfiguration(array $settings): LinkListInterface;
+  public function setConfiguration(array $configuration): LinkListInterface;
 
   /**
    * Gets the link list creation timestamp.

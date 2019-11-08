@@ -18,7 +18,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   label = @Translation("Link list"),
  *   bundle_label = @Translation("Link list type"),
  *   handlers = {
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "view_builder" = "Drupal\oe_link_lists\LinkListViewBuilder",
  *     "list_builder" = "Drupal\oe_link_lists\LinkListListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler",
@@ -41,7 +41,6 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "vid",
- *     "bundle" = "bundle",
  *     "uuid" = "uuid",
  *     "label" = "administrative_title",
  *     "langcode" = "langcode",
@@ -54,11 +53,8 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "revision_created" = "revision_timestamp",
  *     "revision_log_message" = "revision_log"
  *   },
- *   bundle_entity_type = "link_list_type",
- *   field_ui_base_route = "entity.link_list_type.edit_form",
  *   links = {
- *     "add-form" = "/link_list/add/{link_list_type}",
- *     "add-page" = "/link_list/add",
+ *     "add-form" = "/link_list/add",
  *     "canonical" = "/link_list/{link_list}",
  *     "collection" = "/admin/content/link_lists",
  *     "edit-form" = "/link_list/{link_list}/edit",
@@ -72,15 +68,8 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getType(): string {
-    return $this->bundle();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getAdministrativeTitle(): string {
-    return $this->get('administrative_title')->value;
+    return (string) $this->get('administrative_title')->value;
   }
 
   /**
@@ -109,7 +98,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTitle(): string {
+  public function getTitle(): ?string {
     return $this->get('title')->value;
   }
 
@@ -180,7 +169,6 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
-      ->setRequired(TRUE)
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 255)

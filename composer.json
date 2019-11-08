@@ -8,6 +8,7 @@
     "require": {
         "php": "^7.1",
         "drupal/core": "^8.7",
+        "drupal/entity_reference_revisions": "^1.7",
         "drupal/inline_entity_form": "^1.0@RC"
     },
     "require-dev": {
@@ -19,7 +20,8 @@
         "openeuropa/code-review": "~1.0.0-beta2",
         "openeuropa/drupal-core-require-dev": "^8.7",
         "openeuropa/task-runner": "~1.0.0-beta5",
-        "phpunit/phpunit": "~6.0"
+        "phpunit/phpunit": "~6.0",
+        "symfony/dom-crawler": "~3.4"
     },
     "scripts": {
         "drupal-scaffold": "DrupalComposer\\DrupalScaffold\\Plugin::scaffold",
@@ -45,6 +47,11 @@
     "extra": {
         "composer-exit-on-patch-failure": true,
         "enable-patching": true,
+        "patches": {
+            "drupal/inline_entity_form": {
+                "https://www.drupal.org/project/inline_entity_form/issues/2367235": "https://www.drupal.org/files/issues/2019-10-07/inline_entity_form-2367235-131.patch"
+            }
+        },
         "installer-paths": {
             "build/core": ["type:drupal-core"],
             "build/profiles/contrib/{$name}": ["type:drupal-profile"],

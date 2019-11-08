@@ -13,6 +13,8 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  */
 class LinkSourcePluginManager extends DefaultPluginManager implements LinkSourcePluginManagerInterface {
 
+  use LinkListPluginManagerTrait;
+
   /**
    * Constructs LinkSourcePluginManager object.
    *
@@ -34,19 +36,6 @@ class LinkSourcePluginManager extends DefaultPluginManager implements LinkSource
     );
     $this->alterInfo('link_source_info');
     $this->setCacheBackend($cache_backend, 'link_source_plugins');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPluginsAsOptions(): array {
-    $definitions = $this->getDefinitions();
-    $options = [];
-    foreach ($definitions as $name => $definition) {
-      $options[$name] = $definition['label'];
-    }
-
-    return $options;
   }
 
 }

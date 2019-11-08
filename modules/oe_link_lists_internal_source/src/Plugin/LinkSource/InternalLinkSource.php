@@ -13,8 +13,10 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Link source plugin that links to internal entities.
@@ -44,6 +46,13 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   protected $entityTypeManager;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * Constructs an InternalLinkSource object.
    *
    * @param array $configuration
@@ -56,12 +65,15 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity bundle info service.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EventDispatcherInterface $event_dispatcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -85,7 +97,8 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info')
+      $container->get('entity_type.bundle.info'),
+      $container->get('event_dispatcher')
     );
   }
 
@@ -103,8 +116,10 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    $entity_type = $form_state->getValue('entity_type') ?? $this->configuration['entity_type'];
+    $input = $form_state->getUserInput();
+    $entity_type = NestedArray::getValue($input, array_merge($form['#parents'], ['entity_type'])) ?? $this->configuration['entity_type'];
 
+    $form['#type'] = 'container';
     $form['#id'] = $form['#id'] ?? Html::getUniqueId('internal-link-source');
 
     $form['entity_type'] = [
@@ -125,7 +140,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     }
 
     $available_bundles = $this->getReferenceableEntityBundles($entity_type);
-    $bundle = $form_state->getValue('bundle') ?? $this->configuration['bundle'];
+    $bundle = NestedArray::getValue($input, array_merge($form['#parents'], ['bundle'])) ?? $this->configuration['bundle'] ?? $this->configuration['bundle'];
 
     // If only one bundle is present with the same name of the entity type,
     // hide the choice and force the value.
@@ -159,9 +174,29 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   }
 
   /**
+   * Ajax callback to update the bundle select form element.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The updated form element.
+   */
+  public function updateBundleSelect(array &$form, FormStateInterface $form_state): array {
+    $triggering_element = $form_state->getTriggeringElement();
+    $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -1));
+    // Reset the value for the bundle field.
+    $form_state->setValue(array_merge($element['#parents'], ['bundle']), NULL);
+
+    return $element;
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function getReferencedEntities(int $limit = NULL): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): array {
     $entity_type_id = $this->configuration['entity_type'];
     $bundle_id = $this->configuration['bundle'];
 
@@ -184,31 +219,23 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     if ($entity_type->hasKey('bundle')) {
       $query->condition($entity_type->getKey('bundle'), $bundle_id);
     }
+    if ($entity_type->hasKey('published')) {
+      $query->condition($entity_type->getKey('published'), TRUE);
+    }
     if ($limit !== NULL) {
-      $query->range(0, $limit);
+      $query->range($offset, $limit);
     }
 
-    return $storage->loadMultiple($query->execute());
-  }
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
+    $entities = $storage->loadMultiple($query->execute());
+    $links = [];
+    foreach ($entities as $entity) {
+      $event = new EntityValueResolverEvent($entity);
+      $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
+      $links[] = $event->getLink();
+    }
 
-  /**
-   * Ajax callback to update the bundle select form element.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return array
-   *   The updated form element.
-   */
-  public function updateBundleSelect(array &$form, FormStateInterface $form_state): array {
-    $triggering_element = $form_state->getTriggeringElement();
-    $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -1));
-    // Reset the value for the bundle field.
-    $form_state->setValue(array_merge($element['#parents'], ['bundle']), NULL);
-
-    return $element;
+    return $links;
   }
 
   /**

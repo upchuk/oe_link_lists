@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\Tests\oe_link_lists\FunctionalJavascript;
+namespace Drupal\Tests\oe_link_lists_internal_source\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
@@ -19,6 +19,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
    */
   protected static $modules = [
     'node',
+    'oe_link_lists_test',
     'oe_link_lists_internal_source',
   ];
 
@@ -29,13 +30,16 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $web_user = $this->drupalCreateUser(['administer link_lists']);
     $this->drupalLogin($web_user);
 
-    $this->drupalGet('link_list/add/dynamic_link_list');
+    $this->drupalGet('link_list/add');
     $this->getSession()->getPage()->fillField('Administrative title', 'Internal plugin test');
     $this->getSession()->getPage()->fillField('Title', 'Internal list');
 
-    $this->getSession()->getPage()->selectFieldOption('The link source', 'Internal');
+    // Select and configure the display plugin.
+    $this->getSession()->getPage()->selectFieldOption('Link display', 'Foo');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->pageTextContainsOnce('Internal configuration');
+
+    $this->getSession()->getPage()->selectFieldOption('Link source', 'Internal');
+    $this->assertSession()->assertWaitOnAjaxRequest();
     $select = $this->assertSession()->selectExists('Entity type');
     // No option is selected by default.
     $this->assertEquals('', $select->getValue());
@@ -70,7 +74,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $this->assertEquals([
       'entity_type' => 'user',
       'bundle' => 'user',
-    ], $link_list->getConfiguration()['plugin_configuration']);
+    ], $link_list->getConfiguration()['source']['plugin_configuration']);
 
     $this->drupalGet($link_list->toUrl('edit-form'));
     // The plugin form should reload the existing configuration.
@@ -136,7 +140,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $this->assertEquals([
       'entity_type' => 'node',
       'bundle' => 'news',
-    ], $link_list->getConfiguration()['plugin_configuration']);
+    ], $link_list->getConfiguration()['source']['plugin_configuration']);
 
     // Select again a non bundleable entity to test that the AJAX callback
     // remove the bundle select and the correct bundle value is persisted
@@ -150,7 +154,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $this->assertEquals([
       'entity_type' => 'user',
       'bundle' => 'user',
-    ], $link_list->getConfiguration()['plugin_configuration']);
+    ], $link_list->getConfiguration()['source']['plugin_configuration']);
   }
 
   /**

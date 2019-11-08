@@ -5,12 +5,13 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Interface for link_source plugins.
  */
-interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface {
+interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface, PluginInspectionInterface {
 
   /**
    * Returns the translated plugin label.
@@ -21,14 +22,16 @@ interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface
   public function label(): string;
 
   /**
-   * Returns a list of entities that the plugin references.
+   * Returns a list of links.
    *
    * @param int|null $limit
    *   The number of items to return.
+   * @param int $offset
+   *   An offset from the default result set.
    *
-   * @return \Drupal\Core\Entity\EntityInterface[]
-   *   A list of entities referenced by the plugin.
+   * @return \Drupal\oe_link_lists\LinkInterface[]
+   *   A list of links
    */
-  public function getReferencedEntities(int $limit = NULL): array;
+  public function getLinks(int $limit = NULL, int $offset = 0): array;
 
 }

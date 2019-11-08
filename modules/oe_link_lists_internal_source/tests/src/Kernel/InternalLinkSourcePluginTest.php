@@ -2,9 +2,10 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\Tests\oe_link_lists\Kernel;
+namespace Drupal\Tests\oe_link_lists_internal_source\Kernel;
 
 use Drupal\entity_test\Entity\EntityTest;
+use Drupal\entity_test\Entity\EntityTestMulRevPub;
 use Drupal\entity_test\Entity\EntityTestNoBundle;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -34,6 +35,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
 
     $this->installEntitySchema('entity_test');
     $this->installEntitySchema('entity_test_no_bundle');
+    $this->installEntitySchema('entity_test_mulrevpub');
     // Create two bundles for the entity_test entity type.
     entity_test_create_bundle('foo');
     entity_test_create_bundle('bar');
@@ -42,9 +44,9 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
   /**
    * Tests the referenced entities method.
    *
-   * @covers ::getReferencedEntities
+   * @covers ::getLinks
    */
-  public function testReferencedEntities(): void {
+  public function testGetLinks(): void {
     // Create some test entities.
     $test_entities_by_bundle = [];
     for ($i = 0; $i < 9; $i++) {
@@ -61,7 +63,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $plugin = $plugin_manager->createInstance('internal');
 
     // Test a plugin without configuration.
-    $this->assertEquals([], $plugin->getReferencedEntities());
+    $this->assertEquals([], $plugin->getLinks());
 
     // Test partial configuration.
     $partial_configurations = [
@@ -70,7 +72,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ];
     foreach ($partial_configurations as $case => $configuration) {
       $plugin->setConfiguration($configuration);
-      $this->assertEquals([], $plugin->getReferencedEntities(), "Invalid referenced entities for $case case.");
+      $this->assertEquals([], $plugin->getLinks(), "Invalid referenced entities for $case case.");
     }
 
     // If a non existing entity type is passed, the plugin should just return
@@ -79,26 +81,26 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'non_existing_type',
       'bundle' => 'page',
     ]);
-    $this->assertEquals([], $plugin->getReferencedEntities());
+    $this->assertEquals([], $plugin->getLinks());
 
     // An empty list is returned if the bundle doesn't exist.
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'entity_test',
     ]);
-    $this->assertEquals([], $this->extractEntityNames($plugin->getReferencedEntities()));
+    $this->assertEquals([], $this->extractEntityNames($plugin->getLinks()));
 
     // Test that only the entities of the specified bundle are returned.
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
     ]);
-    $this->assertEquals($test_entities_by_bundle['foo'], $this->extractEntityNames($plugin->getReferencedEntities()));
+    $this->assertEquals($test_entities_by_bundle['foo'], $this->extractEntityNames($plugin->getLinks()));
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
     ]);
-    $this->assertEquals($test_entities_by_bundle['bar'], $this->extractEntityNames($plugin->getReferencedEntities()));
+    $this->assertEquals($test_entities_by_bundle['bar'], $this->extractEntityNames($plugin->getLinks()));
 
     // Test that the limit is applied to the results.
     $plugin->setConfiguration([
@@ -107,7 +109,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ]);
     $this->assertEquals(
       array_slice($test_entities_by_bundle['foo'], 0, 2, TRUE),
-      $this->extractEntityNames($plugin->getReferencedEntities(2))
+      $this->extractEntityNames($plugin->getLinks(2))
     );
 
     // Test non bundleable entities.
@@ -118,25 +120,54 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'bundle' => 'entity_test_no_bundle',
     ]);
     $this->assertEquals([
-      $test_entity->id() => $test_entity->getName(),
-    ], $this->extractEntityNames($plugin->getReferencedEntities()));
+      $test_entity->id() => $test_entity->label(),
+    ], $this->extractEntityNames($plugin->getLinks()));
+
+    // Test that only published entities are returned, if the entity implements
+    // the published interface.
+    // First create a published entity.
+    $published_entity = EntityTestMulRevPub::create(['name' => $this->randomString()]);
+    $published_entity->setPublished()->save();
+    // An unpublished entity.
+    $unpublished_entity = EntityTestMulRevPub::create(['name' => $this->randomString()]);
+    $unpublished_entity->setUnpublished()->save();
+    // An entity with a published revision and a pending unpublished revision.
+    $published_revision_title = $this->randomString();
+    $pending_unpublished_entity = EntityTestMulRevPub::create(['name' => $published_revision_title]);
+    $pending_unpublished_entity->setPublished()->save();
+    // Create the pending revision.
+    $pending_unpublished_entity->setName($this->randomString());
+    $pending_unpublished_entity->setNewRevision();
+    $pending_unpublished_entity->isDefaultRevision(FALSE);
+    $pending_unpublished_entity->save();
+
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test_mulrevpub',
+      'bundle' => 'entity_test_mulrevpub',
+    ]);
+    // The unpublished entity should not be returned. The default published
+    // revision should be returned for the entity with a pending revision.
+    $this->assertEquals([
+      $published_entity->id() => $published_entity->label(),
+      $pending_unpublished_entity->id() => $published_revision_title,
+    ], $this->extractEntityNames($plugin->getLinks()));
   }
 
   /**
    * Helper method to extract entity ID and name from an array of test entities.
    *
-   * @param array $entities
-   *   A list of entities.
+   * @param \Drupal\oe_link_lists\EntityAwareLinkInterface[] $links
+   *   A list of link objects.
    *
    * @return array
    *   A list of entity labels, keyed by entity ID.
    */
-  protected function extractEntityNames(array $entities): array {
+  protected function extractEntityNames(array $links): array {
     $labels = [];
 
-    /** @var \Drupal\entity_test\Entity\EntityTest[] $entities */
-    foreach ($entities as $entity) {
-      $labels[$entity->id()] = $entity->getName();
+    foreach ($links as $link) {
+      $entity = $link->getEntity();
+      $labels[$entity->id()] = $entity->label();
     }
 
     return $labels;
