@@ -216,8 +216,6 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $element[$plugin_id] = $plugin->buildConfigurationForm($element[$plugin_id], $plugin_form_state);
     }
 
-    $element['#suffix'] = sprintf('Entity %s - bundle %s', $entity_type, $bundle);
-
     return $element;
   }
 
