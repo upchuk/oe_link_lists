@@ -12,9 +12,12 @@ use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Element;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
+use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -53,6 +56,13 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   protected $eventDispatcher;
 
   /**
+   * The internal link source filter plugin manager.
+   *
+   * @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface
+   */
+  protected $filterPluginManager;
+
+  /**
    * Constructs an InternalLinkSource object.
    *
    * @param array $configuration
@@ -67,13 +77,16 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
    *   The entity bundle info service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
+   * @param \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface $filter_plugin_manager
+   *   The internal link source filter plugin manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EventDispatcherInterface $event_dispatcher, InternalLinkSourceFilterPluginManagerInterface $filter_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->eventDispatcher = $event_dispatcher;
+    $this->filterPluginManager = $filter_plugin_manager;
   }
 
   /**
@@ -98,7 +111,8 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->get('plugin.manager.internal_source_filter')
     );
   }
 
@@ -109,6 +123,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     return [
       'entity_type' => '',
       'bundle' => '',
+      'filters' => [],
     ] + parent::defaultConfiguration();
   }
 
@@ -149,20 +164,61 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
         '#type' => 'value',
         '#value' => $entity_type,
       ];
-
-      return $form;
+    }
+    else {
+      $form['bundle'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Bundle'),
+        '#required' => TRUE,
+        '#options' => $available_bundles,
+        '#default_value' => $bundle,
+        '#empty_value' => '',
+        '#ajax' => [
+          'callback' => [$this, 'updateFilterPlugins'],
+          'wrapper' => $form['#id'],
+        ],
+      ];
     }
 
-    $form['bundle'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Bundle'),
-      '#required' => TRUE,
-      '#options' => $available_bundles,
-      '#default_value' => $bundle,
-      '#empty_value' => '',
+    $form['filters'] = [
+      '#process' => [[$this, 'expandFilterPlugins']],
     ];
 
     return $form;
+  }
+
+  /**
+   * Process callback to include the filter plugins in the form.
+   *
+   * @param array $element
+   *   The element form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   * @param array $complete_form
+   *   An associative array containing the structure of the form.
+   *
+   * @return array
+   *   The element form.
+   */
+  public function expandFilterPlugins(array &$element, FormStateInterface $form_state, array $complete_form): array {
+    $plugin_form = NestedArray::getValue($complete_form, array_slice($element['#array_parents'], 0, -1));
+    $subform_state = SubformState::createForSubform($plugin_form, $complete_form, $form_state);
+
+    $entity_type = $subform_state->getValue('entity_type') ?? $this->configuration['entity_type'];
+    $bundle = $subform_state->getValue('bundle') ?? $this->configuration['bundle'];
+
+    foreach ($this->filterPluginManager->getApplicablePlugins($entity_type, $bundle) as $plugin_id => $plugin) {
+      /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
+      $plugin->setConfiguration($this->configuration['filters'][$plugin_id] ?? []);
+
+      $element[$plugin_id] = [];
+      $plugin_form_state = SubformState::createForSubform($element[$plugin_id], $complete_form, $form_state);
+      $element[$plugin_id] = $plugin->buildConfigurationForm($element[$plugin_id], $plugin_form_state);
+    }
+
+    $element['#suffix'] = sprintf('Entity %s - bundle %s', $entity_type, $bundle);
+
+    return $element;
   }
 
   /**
@@ -171,6 +227,15 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['entity_type'] = $form_state->getValue('entity_type');
     $this->configuration['bundle'] = $form_state->getValue('bundle');
+
+    // Retrieve all the filter plugins and add their configuration.
+    foreach (Element::children($form['filters']) as $plugin_id) {
+      /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
+      $plugin = $this->filterPluginManager->createInstance($plugin_id);
+      $plugin_form_state = SubformState::createForSubform($form['filters'][$plugin_id], $form, $form_state);
+      $plugin->submitConfigurationForm($form['filters'][$plugin_id], $plugin_form_state);
+      $this->configuration['filters'][$plugin_id] = $plugin->getConfiguration();
+    }
   }
 
   /**
@@ -187,8 +252,29 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   public function updateBundleSelect(array &$form, FormStateInterface $form_state): array {
     $triggering_element = $form_state->getTriggeringElement();
     $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -1));
-    // Reset the value for the bundle field.
+    // Reset the value for the bundle field and filter plugins.
     $form_state->setValue(array_merge($element['#parents'], ['bundle']), NULL);
+    $form_state->setValue(array_merge($element['#parents'], ['filters']), NULL);
+
+    return $element;
+  }
+
+  /**
+   * Ajax callback to update the filter plugins form elements.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The updated form element.
+   */
+  public function updateFilterPlugins(array &$form, FormStateInterface $form_state): array {
+    $triggering_element = $form_state->getTriggeringElement();
+    $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -1));
+    // Reset the value for filter plugins.
+    $form_state->setValue(array_merge($element['#parents'], ['filters']), NULL);
 
     return $element;
   }

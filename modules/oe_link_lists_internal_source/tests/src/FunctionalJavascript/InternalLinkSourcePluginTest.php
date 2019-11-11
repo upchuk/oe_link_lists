@@ -133,6 +133,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
 
     // Select the news bundle and save.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'news');
+    $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->pressButton('Save');
 
     // Verify that the plugin configuration has been updated.
