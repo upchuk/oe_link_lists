@@ -315,6 +315,13 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $query->range($offset, $limit);
     }
 
+    // Run all the enabled filter plugins.
+    foreach ($this->configuration['filters'] as $plugin_id => $configuration) {
+      /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
+      $plugin = $this->filterPluginManager->createInstance($plugin_id, $configuration);
+      $plugin->apply($query);
+    }
+
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = $storage->loadMultiple($query->execute());
     $links = [];

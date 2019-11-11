@@ -2,6 +2,7 @@
 
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
 
@@ -49,6 +50,13 @@ class Bar extends InternalLinkSourceFilterPluginBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['include'] = $form_state->getValue('include');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function apply(QueryInterface $query): void {
+    $query->addTag('bar');
   }
 
 }

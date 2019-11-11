@@ -2,6 +2,7 @@
 
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
 
@@ -48,6 +49,13 @@ class Foo extends InternalLinkSourceFilterPluginBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['enabled'] = $form_state->getValue('enabled');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function apply(QueryInterface $query): void {
+    $query->addTag('foo');
   }
 
 }
