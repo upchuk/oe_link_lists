@@ -1,0 +1,4 @@
+services:
+  plugin.manager.internal_source_filter:
+    class: Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManager
+    parent: default_plugin_manager
