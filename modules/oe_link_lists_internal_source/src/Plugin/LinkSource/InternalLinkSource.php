@@ -204,8 +204,13 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     $plugin_form = NestedArray::getValue($complete_form, array_slice($element['#array_parents'], 0, -1));
     $subform_state = SubformState::createForSubform($plugin_form, $complete_form, $form_state);
 
-    $entity_type = $subform_state->getValue('entity_type') ?? $this->configuration['entity_type'];
-    $bundle = $subform_state->getValue('bundle') ?? $this->configuration['bundle'];
+    $entity_type = $subform_state->getValue('entity_type');
+    $bundle = $subform_state->getValue('bundle');
+
+    // Include the filter plugins only when both values have been specified.
+    if (empty($entity_type) || empty($bundle)) {
+      return $element;
+    }
 
     foreach ($this->filterPluginManager->getApplicablePlugins($entity_type, $bundle) as $plugin_id => $plugin) {
       /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
