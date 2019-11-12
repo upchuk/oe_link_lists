@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
 use Drupal\Core\Entity\Query\QueryInterface;

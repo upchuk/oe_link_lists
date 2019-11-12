@@ -25,15 +25,15 @@ interface InternalLinkSourceFilterInterface extends ConfigurableInterface, Plugi
   /**
    * Returns if the plugin can be used given a certain configuration.
    *
-   * @param string|null $entity_type
-   *   The entity type selected in the source plugin. Defaults to NULL.
-   * @param string|null $bundle
-   *   The entity type selected in the source plugin. Defaults to NULL.
+   * @param string $entity_type
+   *   The entity type selected in the source plugin.
+   * @param string $bundle
+   *   The bundle selected in the source plugin.
    *
    * @return bool
    *   True if the plugin is applicable, false otherwise.
    */
-  public function isApplicable(string $entity_type = NULL, string $bundle = NULL): bool;
+  public function isApplicable(string $entity_type, string $bundle): bool;
 
   /**
    * Applies the filter to the given query.

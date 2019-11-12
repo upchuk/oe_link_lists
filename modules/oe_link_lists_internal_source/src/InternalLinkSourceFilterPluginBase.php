@@ -71,7 +71,7 @@ abstract class InternalLinkSourceFilterPluginBase extends PluginBase implements 
   /**
    * {@inheritdoc}
    */
-  public function isApplicable(string $entity_type = NULL, string $bundle = NULL): bool {
+  public function isApplicable(string $entity_type, string $bundle): bool {
     return TRUE;
   }
 
