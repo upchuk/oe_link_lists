@@ -83,9 +83,9 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
    *   The link object.
    */
   protected function getLinkFromEntity(LinkListLinkInterface $link_entity): ?LinkInterface {
-    if (!$link_entity->get('url')->isEmpty()) {
+    if ($link_entity->bundle() === 'external') {
       try {
-        $url = Url::fromUri($link_entity->get('url')->value);
+        $url = Url::fromUri($link_entity->get('url')->uri);
       }
       catch (\InvalidArgumentException $exception) {
         // Normally this should not ever happen but just in case the data is

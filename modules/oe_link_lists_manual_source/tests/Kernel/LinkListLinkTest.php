@@ -17,10 +17,12 @@ class LinkListLinkTest extends EntityKernelTestBase {
   public static $modules = [
     'oe_link_lists',
     'oe_link_lists_manual_source',
+    'entity_reference_revisions',
     'node',
     'user',
     'field',
     'system',
+    'link',
   ];
 
   /**
@@ -36,6 +38,8 @@ class LinkListLinkTest extends EntityKernelTestBase {
       'field',
       'node',
       'system',
+      'oe_link_lists_manual_source',
+      'entity_reference_revisions',
     ]);
 
   }
@@ -64,34 +68,10 @@ class LinkListLinkTest extends EntityKernelTestBase {
 
     $link_storage = $entity_type_manager->getStorage('link_list_link');
 
-    // Create an empty link.
-    $link_entity = $link_storage->create([]);
-    $link_entity->save();
-
-    // Assert that a link needs either an external Url or an internal Target.
-    /** @var \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations */
-    $violations = $link_entity->validate();
-    $this->assertEquals(1, $violations->count());
-    $violation = $violations->get(0);
-    $this->assertEquals('A link needs to have a URL or a target.', $violation->getMessage());
-
-    // Create a link with both a url and a target.
-    $link_entity = $link_storage->create([
-      'url' => 'htttp://example.com',
-      'target' => $node->id(),
-    ]);
-    $link_entity->save();
-
-    // Assert that a link can't have both an external Url and a internal Target.
-    /** @var \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations */
-    $violations = $link_entity->validate();
-    $this->assertEquals(1, $violations->count());
-    $violation = $violations->get(0);
-    $this->assertEquals('A link can\'t have both a URL and a target.', $violation->getMessage());
-
     // Create an internal link.
-    /** @var \Drupal\oe_link_lists\Entity\LinkListLink $link_entity */
+    /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link_entity */
     $link_entity = $link_storage->create([
+      'bundle' => 'internal',
       'target' => $node->id(),
       'status' => 1,
     ]);
@@ -99,11 +79,12 @@ class LinkListLinkTest extends EntityKernelTestBase {
 
     $link_entity = $link_storage->load($link_entity->id());
     // Asserts that the internal link was correctly saved.
-    $this->assertEquals($node->id(), $link_entity->getTargetId());
+    $this->assertEquals($node->id(), $link_entity->get('target')->target_id);
 
     // Create a valid external link.
     /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link_entity */
     $link_entity = $link_storage->create([
+      'bundle' => 'external',
       'url' => 'http://example.com',
       'title' => 'Example title',
       'teaser' => 'Example teaser',
@@ -113,13 +94,14 @@ class LinkListLinkTest extends EntityKernelTestBase {
 
     $link_entity = $link_storage->load($link_entity->id());
     // Asserts that external link was correctly saved.
-    $this->assertEquals('http://example.com', $link_entity->getUrl());
+    $this->assertEquals('http://example.com', $link_entity->get('url')->uri);
     $this->assertEquals('Example title', $link_entity->getTitle());
     $this->assertEquals('Example teaser', $link_entity->getTeaser());
 
     // Create an invalid external link.
     /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link_entity */
     $link_entity = $link_storage->create([
+      'bundle' => 'external',
       'url' => 'http://example.com',
       'status' => 1,
     ]);

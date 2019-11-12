@@ -5,13 +5,13 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_manual_source\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\node\NodeInterface;
 
 /**
  * Defines the LinkListLink entity.
@@ -34,8 +34,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     },
- *     "form_builder" = "Drupal\oe_link_lists_manual_source\Form\LinkListLinkFormBuilder"
+ *     }
  *   },
  *   base_table = "link_list_link",
  *   data_table = "link_list_link_field_data",
@@ -49,22 +48,27 @@ use Drupal\field\Entity\FieldStorageConfig;
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "vid",
+ *     "bundle" = "bundle",
  *     "uuid" = "uuid",
  *     "langcode" = "langcode",
  *     "published" = "status",
  *   },
+ *   bundle_entity_type = "link_list_link_type",
  *   revision_metadata_keys = {
  *     "revision_user" = "revision_uid",
  *     "revision_created" = "revision_timestamp",
  *     "revision_log_message" = "revision_log"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/link_list_link/add",
+ *     "add-form" = "/admin/content/link_list_link/add/{link_list_link_type}",
+ *     "add-page" = "/admin/content/link_list_link/add",
  *     "edit-form" = "/admin/content/link_list_link/{link_list_link}/edit",
  *     "delete-form" = "/admin/content/link_list_link/{link_list_link}/delete",
  *     "collection" = "/admin/content/link_list_link",
  *     "drupal:content-translation-overview" = "/admin/content/link_list_link/translations"
  *   },
+ *   bundle_entity_type = "link_list_link_type",
+ *   field_ui_base_route = "entity.link_list_link_type.edit_form",
  *   constraints = {
  *     "LinkListLinkFieldsRequired" = {}
  *   }
@@ -78,12 +82,13 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
    * {@inheritdoc}
    */
   public function label(): TranslatableMarkup {
-    if ($this->getUrl()) {
-      return $this->t('External link to: @external_url', ['@external_url' => $this->getUrl()]);
+    if ($this->bundle() === 'external') {
+      return $this->t('External link to: @external_url', ['@external_url' => $this->get('url')->uri]);
     }
 
-    if ($this->getTargetEntity()) {
-      return $this->t('Internal link to: @internal_entity', ['@internal_entity' => $this->getTargetEntity()->label()]);
+    $target = $this->get('target')->entity;
+    if ($target instanceof NodeInterface) {
+      return $this->t('Internal link to: @internal_entity', ['@internal_entity' => $target->label()]);
     }
 
     return $this->t('Internal link');
@@ -101,28 +106,6 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
    */
   public function setCreatedTime(int $timestamp): LinkListLinkInterface {
     $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTargetEntity(): ?EntityInterface {
-    return $this->get('target')->entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTargetId() {
-    return $this->get('target')->target_id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setTargetId($target_id): LinkListLinkInterface {
-    $this->set('target', $target_id);
     return $this;
   }
 
@@ -159,21 +142,6 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
   /**
    * {@inheritdoc}
    */
-  public function getUrl(): ?string {
-    return $this->get('url')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setUrl(string $url): LinkListLinkInterface {
-    $this->set('url', $url);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function setParentEntity(ContentEntityInterface $parent, $parent_field_name) {
     $this->set('parent_type', $parent->getEntityTypeId());
     $this->set('parent_id', $parent->id());
@@ -186,47 +154,6 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
     $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields['url'] = BaseFieldDefinition::create('uri')
-      ->setLabel('URL')
-      ->setDescription(t('An external URL.'))
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE)
-      ->setDefaultValue('')
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'string',
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('view', TRUE)
-      ->setRequired(FALSE);
-
-    $fields['target'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Target'))
-      ->setDescription(t('The target node of the internal link.'))
-      ->setSetting('target_type', 'node')
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'entity_reference_label',
-        'settings' => [
-          'link' => TRUE,
-        ],
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 0,
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => 60,
-          'placeholder' => '',
-        ],
-      ])
-      ->setDisplayConfigurable('view', TRUE)
-      ->setRequired(FALSE)
-      ->setDefaultValue(0);
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
