@@ -1,0 +1,22 @@
+uuid: f587e343-4b6b-4768-8b3a-02c11ac3d4cf
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.link_list_link.internal.target
+    - oe_link_lists_manual_source.link_list_link_type.internal
+id: link_list_link.internal.default
+targetEntityType: link_list_link
+bundle: internal
+mode: default
+content:
+  target:
+    type: entity_reference_autocomplete
+    weight: 0
+    region: content
+    settings:
+      match_operator: CONTAINS
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden: {  }

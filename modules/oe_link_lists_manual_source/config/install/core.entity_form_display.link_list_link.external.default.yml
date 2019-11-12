@@ -1,0 +1,23 @@
+uuid: 5e7c9ec0-14c4-4c0b-8650-621b5f9b7be3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.link_list_link.external.url
+    - oe_link_lists_manual_source.link_list_link_type.external
+  module:
+    - link
+id: link_list_link.external.default
+targetEntityType: link_list_link
+bundle: external
+mode: default
+content:
+  url:
+    type: link_default
+    weight: 0
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+hidden: {  }

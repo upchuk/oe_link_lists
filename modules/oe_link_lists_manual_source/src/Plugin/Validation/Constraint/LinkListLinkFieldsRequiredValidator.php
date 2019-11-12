@@ -26,18 +26,8 @@ class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
     if (!isset($value) || !($value instanceof LinkListLinkInterface)) {
       return;
     }
-    if (!$value->getUrl() && !$value->getTargetId()) {
-      $this->context->buildViolation($this->t('A link needs to have a URL or a target.'))
-        ->addViolation();
-      return;
-    }
-    if ($value->getUrl() && $value->getTargetId()) {
-      $this->context->buildViolation($this->t("A link can't have both a URL and a target."))
-        ->addViolation();
-      return;
-    }
 
-    if (!$value->getTargetId()) {
+    if ($value->bundle() === 'external') {
       $this->validateExternalLink($constraint, $value);
     }
   }
@@ -45,8 +35,7 @@ class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
   /**
    * Helper function to validate the fields of external links.
    *
-   * External links (links that have a URL value but not a target value) need
-   * to have a title and a teaser.
+   * External links need to have a title and a teaser.
    *
    * @param \Symfony\Component\Validator\Constraint $constraint
    *   The constraint for the validation.
@@ -58,10 +47,10 @@ class LinkListLinkFieldsRequiredValidator extends ConstraintValidator {
       'title',
       'teaser',
     ];
-    foreach ($required_external_fields as $field_title) {
-      if ($link->get($field_title)->isEmpty()) {
-        $this->context->buildViolation($constraint->message, ['@name' => $link->getFieldDefinition($field_title)->getLabel()])
-          ->atPath($field_title)
+    foreach ($required_external_fields as $field_name) {
+      if ($link->get($field_name)->isEmpty()) {
+        $this->context->buildViolation($constraint->message, ['@name' => $link->getFieldDefinition($field_name)->getLabel()])
+          ->atPath($field_name)
           ->addViolation();
       }
     }

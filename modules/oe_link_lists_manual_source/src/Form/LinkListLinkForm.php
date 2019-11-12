@@ -83,10 +83,6 @@ class LinkListLinkForm extends ContentEntityForm {
     $form['revision_log']['#access'] = FALSE;
     $form['status']['#access'] = FALSE;
 
-    $form_state->set('link_form_display', $this->getFormDisplay($form_state));
-    $form_builder = $this->entityTypeManager->getHandler('link_list_link', 'form_builder');
-    $form_builder->buildForm($form, $form_state, $this->entity);
-
     if (!$this->entity->isNew()) {
       $form['new_revision'] = [
         '#type' => 'checkbox',
@@ -97,16 +93,6 @@ class LinkListLinkForm extends ContentEntityForm {
     }
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    $entity = parent::buildEntity($form, $form_state);
-    $form_builder = $this->entityTypeManager->getHandler('link_list_link', 'form_builder');
-    return $form_builder->buildEntity($entity, $form, $form_state);
   }
 
   /**
