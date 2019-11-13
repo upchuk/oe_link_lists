@@ -106,7 +106,7 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
   /**
    * {@inheritdoc}
    */
-  public function apply(QueryInterface $query): void {
+  public function apply(QueryInterface $query, array $context): void {
     $query->condition('id', NULL, $this->configuration['show'] === 'none' ? '<>' : '!=');
   }
 

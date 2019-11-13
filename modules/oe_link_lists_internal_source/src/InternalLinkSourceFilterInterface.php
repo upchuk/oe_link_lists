@@ -40,7 +40,9 @@ interface InternalLinkSourceFilterInterface extends ConfigurableInterface, Plugi
    *
    * @param \Drupal\Core\Entity\Query\QueryInterface $query
    *   The query of the internal link source plugin.
+   * @param array $context
+   *   An array containing information about the internal source plugin.
    */
-  public function apply(QueryInterface $query): void;
+  public function apply(QueryInterface $query, array $context): void;
 
 }

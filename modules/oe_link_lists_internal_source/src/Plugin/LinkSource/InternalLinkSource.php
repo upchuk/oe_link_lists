@@ -316,10 +316,14 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     }
 
     // Run all the enabled filter plugins.
+    $context = [
+      'entity_type' => $entity_type_id,
+      'bundle' => $bundle_id,
+    ];
     foreach ($this->configuration['filters'] as $plugin_id => $configuration) {
       /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
       $plugin = $this->filterPluginManager->createInstance($plugin_id, $configuration);
-      $plugin->apply($query);
+      $plugin->apply($query, $context);
     }
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */

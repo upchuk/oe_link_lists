@@ -59,7 +59,7 @@ class Quz extends InternalLinkSourceFilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function apply(QueryInterface $query): void {
+  public function apply(QueryInterface $query, array $context): void {
     $query->condition('name', $this->configuration['first_letter'], 'STARTS_WITH');
   }
 

@@ -57,7 +57,7 @@ class Foo extends InternalLinkSourceFilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function apply(QueryInterface $query): void {
+  public function apply(QueryInterface $query, array $context): void {
     $query->addTag('foo');
   }
 
