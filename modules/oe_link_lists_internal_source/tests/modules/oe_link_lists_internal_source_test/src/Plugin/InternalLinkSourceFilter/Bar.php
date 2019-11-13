@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -30,6 +31,13 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
   protected $state;
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Bar constructor.
    *
    * @param array $configuration
@@ -40,11 +48,14 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    *   The plugin implementation definition.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, StateInterface $state) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, StateInterface $state, TimeInterface $time) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->state = $state;
+    $this->time = $time;
   }
 
   /**
@@ -55,7 +66,8 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('state')
+      $container->get('state'),
+      $container->get('datetime.time')
     );
   }
 
@@ -107,7 +119,16 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function apply(QueryInterface $query, array $context): void {
-    $query->condition('id', NULL, $this->configuration['show'] === 'none' ? '<>' : '!=');
+    // Allow to verify the context passed in tests.
+    $this->state->set('internal_source_test_bar_context', $context);
+
+    // No extra filtering if all entities are to be shown.
+    if ($this->configuration['show'] === 'all') {
+      return;
+    }
+
+    // Show only content created one year ago.
+    $query->condition('created', $this->time->getRequestTime() - 1 * 12 * 365 * 24 * 60 * 60, '<');
   }
 
 }

@@ -24,6 +24,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     'entity_test',
     'oe_link_lists',
     'oe_link_lists_internal_source',
+    'oe_link_lists_internal_source_test',
     'user',
   ];
 
@@ -49,13 +50,14 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
   public function testGetLinks(): void {
     // Create some test entities.
     $test_entities_by_bundle = [];
-    for ($i = 0; $i < 9; $i++) {
-      $entity = EntityTest::create([
-        'name' => $this->randomString(),
-        'type' => $i % 2 ? 'foo' : 'bar',
-      ]);
+    $test_entities_by_bundle_and_first_letter = [];
+    foreach ($this->getTestEntities() as $entity_values) {
+      $entity = EntityTest::create($entity_values);
       $entity->save();
+
+      // Group the entities to allow easier testing.
       $test_entities_by_bundle[$entity->bundle()][$entity->id()] = $entity->label();
+      $test_entities_by_bundle_and_first_letter[$entity->bundle()][substr($entity->label(), 0, 1)][$entity->id()] = $entity->label();
     }
 
     $plugin_manager = $this->container->get('plugin.manager.link_source');
@@ -151,6 +153,126 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       $published_entity->id() => $published_entity->label(),
       $pending_unpublished_entity->id() => $published_revision_title,
     ], $this->extractEntityNames($plugin->getLinks()));
+
+    // Test that filters are applied correctly.
+    // Only 3 entity_test entities of bundle foo start with the letter A.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [
+        'quz' => [
+          'first_letter' => 'A',
+        ],
+      ],
+    ]);
+    $this->assertCount(3, $plugin->getLinks());
+    $this->assertEquals($test_entities_by_bundle_and_first_letter['foo']['A'], $this->extractEntityNames($plugin->getLinks()));
+
+    // Only 1 entity_test entity of bundle foo starts with the letter B.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [
+        'quz' => [
+          'first_letter' => 'B',
+        ],
+      ],
+    ]);
+    $this->assertCount(1, $plugin->getLinks());
+    $this->assertEquals($test_entities_by_bundle_and_first_letter['foo']['B'], $this->extractEntityNames($plugin->getLinks()));
+
+    // No entity_test entities of bundle bar start with the letter A.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'bar',
+      'filters' => [
+        'quz' => [
+          'first_letter' => 'A',
+        ],
+      ],
+    ]);
+    $this->assertCount(0, $plugin->getLinks());
+    $this->assertEquals([], $this->extractEntityNames($plugin->getLinks()));
+
+    // Only 2 entity_test entities of bundle bar start with the letter B.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'bar',
+      'filters' => [
+        'quz' => [
+          'first_letter' => 'B',
+        ],
+      ],
+    ]);
+    $this->assertCount(2, $plugin->getLinks());
+    $this->assertEquals($test_entities_by_bundle_and_first_letter['bar']['B'], $this->extractEntityNames($plugin->getLinks()));
+
+    // Test multiple filter plugins together.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [
+        'bar' => [
+          'show' => 'none',
+        ],
+        'quz' => [
+          'first_letter' => 'A',
+        ],
+      ],
+    ]);
+    $this->assertCount(1, $plugin->getLinks());
+    $this->assertEquals([
+      1 => $test_entities_by_bundle['foo'][1],
+    ], $this->extractEntityNames($plugin->getLinks()));
+
+    // Verify that the proper context has been passed down the plugin.
+    // @todo This should be in a unit test.
+    $state = $this->container->get('state');
+    $this->assertEquals([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+    ], $state->get('internal_source_test_bar_context'));
+
+    // There are no entities of bundle foo created more than two years ago and
+    // name starting with the letter B.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [
+        'bar' => [
+          'show' => 'none',
+        ],
+        'quz' => [
+          'first_letter' => 'B',
+        ],
+      ],
+    ]);
+    $this->assertEquals([], $plugin->getLinks());
+
+    // There are two entities of bundle bar created more than two years ago and
+    // name starting with letter B.
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'bar',
+      'filters' => [
+        'bar' => [
+          'show' => 'none',
+        ],
+        'quz' => [
+          'first_letter' => 'B',
+        ],
+      ],
+    ]);
+    $this->assertEquals([
+      8 => $test_entities_by_bundle['bar'][8],
+      9 => $test_entities_by_bundle['bar'][9],
+    ], $this->extractEntityNames($plugin->getLinks()));
+
+    // Verify again the context.
+    $this->assertEquals([
+      'entity_type' => 'entity_test',
+      'bundle' => 'bar',
+    ], $state->get('internal_source_test_bar_context'));
   }
 
   /**
@@ -171,6 +293,61 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     }
 
     return $labels;
+  }
+
+  /**
+   * Provides an array of entity data to be used in the test.
+   *
+   * @return array
+   *   An array of entity data.
+   */
+  protected function getTestEntities(): array {
+    $two_years_ago = \Drupal::time()->getRequestTime() - 2 * 12 * 365 * 24 * 60 * 60;
+    return [
+      [
+        'name' => 'A' . $this->randomString(),
+        'type' => 'foo',
+        'created' => $two_years_ago,
+      ],
+      [
+        'name' => 'A' . $this->randomString(),
+        'type' => 'foo',
+      ],
+      [
+        'name' => 'A' . $this->randomString(),
+        'type' => 'foo',
+      ],
+      [
+        'name' => 'B' . $this->randomString(),
+        'type' => 'foo',
+      ],
+      [
+        'name' => 'F' . $this->randomString(),
+        'type' => 'foo',
+      ],
+      [
+        'name' => $this->randomString(),
+        'type' => 'bar',
+      ],
+      [
+        'name' => $this->randomString(),
+        'type' => 'bar',
+      ],
+      [
+        'name' => 'B' . $this->randomString(),
+        'type' => 'bar',
+        'created' => $two_years_ago,
+      ],
+      [
+        'name' => 'B' . $this->randomString(),
+        'type' => 'bar',
+        'created' => $two_years_ago,
+      ],
+      [
+        'name' => 'M' . $this->randomString(),
+        'type' => 'bar',
+      ],
+    ];
   }
 
 }
