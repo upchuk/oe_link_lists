@@ -41,7 +41,8 @@ class InternalLinkSourceFilter extends Plugin {
   /**
    * An array of supported entity types as keys and bundles as values.
    *
-   * If no bundles are specified, the plugin is applicable to all bundles.
+   * If no bundles are specified, the plugin supports all the bundles.
+   * If no entity types are specified, the plugin supports all entity types.
    *
    * @var array
    */
