@@ -39,6 +39,18 @@ class InternalLinkSourceFilterPluginManager extends DefaultPluginManager impleme
   /**
    * {@inheritdoc}
    */
+  protected function findDefinitions() {
+    $definitions = parent::findDefinitions();
+
+    // Sort definitions alphabetically by plugin ID.
+    ksort($definitions);
+
+    return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getApplicablePlugins(string $entity_type, string $bundle): array {
     $plugins = [];
 
