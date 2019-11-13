@@ -79,6 +79,16 @@ class InternalLinkSourceFilterPluginManagerTest extends KernelTestBase {
       'quz' => Quz::class,
     ], $this->manager->getApplicablePlugins('entity_test', 'bar'));
 
+    // Make the Bar plugin isApplicable() plugin method return true for the
+    // bar entity_test bundle.
+    $this->state->set('internal_source_test_bar_applicable_entity_types', ['entity_test' => ['bar']]);
+    // All the plugins support the bar bundle now.
+    $this->assertPlugins([
+      'bar' => Bar::class,
+      'foo' => Foo::class,
+      'quz' => Quz::class,
+    ], $this->manager->getApplicablePlugins('entity_test', 'bar'));
+
     // Test the case of plugins that don't have an entity type specified.
     // No plugins are present for image media bundle.
     $this->assertEquals([], $this->manager->getApplicablePlugins('media', 'image'));
