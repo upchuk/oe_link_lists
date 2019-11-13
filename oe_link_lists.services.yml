@@ -5,12 +5,6 @@ services:
   plugin.manager.link_display:
     class: Drupal\oe_link_lists\LinkDisplayPluginManager
     parent: default_plugin_manager
-  oe_link_lists.link_list_display_form_builder:
-    class: Drupal\oe_link_lists\Form\LinkListDisplayFormBuilder
-    arguments: ['@plugin.manager.link_display']
-  oe_link_lists.link_list_source_form_builder:
-    class: Drupal\oe_link_lists\Form\LinkListSourceFormBuilder
-    arguments: ['@plugin.manager.link_source']
   oe_link_lists.event_subscriber.default_entity_value_link_resolver:
     class: Drupal\oe_link_lists\EventSubscriber\DefaultEntityValueResolverSubscriber
     tags:

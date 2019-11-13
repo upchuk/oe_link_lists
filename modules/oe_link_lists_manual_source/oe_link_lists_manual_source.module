@@ -7,12 +7,7 @@
 
 declare(strict_types = 1);
 
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\field\FieldStorageConfigInterface;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLink;
 use Drupal\oe_link_lists_manual_source\LinkListLinkInlineForm;
 
@@ -37,25 +32,18 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
   /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $entity */
   $configuration = $entity->getConfiguration();
 
-  // If we are not using the ManualLinksSource plugin, make sure to clear
-  // the plugin configuration for manual links.
-  if ($configuration['source']['plugin'] !== 'manual_links' && isset($configuration['source']['plugin_configuration']['links'])) {
-    unset($configuration['source']['plugin_configuration']['links']);
-    $entity->setConfiguration($configuration);
+  if ($entity->bundle() !== 'manual') {
+    return;
   }
 
-  // If we are not using the ManualLinksSource plugin but we are still
-  // referencing LinkListLink entities, we need to also remove them and the
-  // references.
-  if ($configuration['source']['plugin'] !== 'manual_links' && !$entity->get('links')->isEmpty()) {
-    foreach ($entity->get('links')->referencedEntities() as $link) {
-      $link->delete();
-    }
-    $entity->set('links', NULL);
-  }
+  $configuration['source'] = [
+    'plugin' => 'manual_links',
+    'plugin_configuration' => [],
+  ];
 
   if ($entity->get('links')->isEmpty()) {
-    // If there are no referenced links we don't have to do anything anymore.
+    // If there are no referenced links we don't have to do anything.
+    $entity->setConfiguration($configuration);
     return;
   }
 
@@ -71,102 +59,6 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
     $link->setParentEntity($entity, 'links');
     $link->save();
   }
-  $configuration = $entity->getConfiguration();
   $configuration['source']['plugin_configuration']['links'] = $ids;
   $entity->setConfiguration($configuration);
-}
-
-/**
- * Implements hook_base_field_info().
- */
-function oe_link_lists_manual_source_entity_base_field_info(EntityTypeInterface $entity_type) {
-  if ($entity_type->id() !== 'link_list') {
-    return [];
-  }
-
-  $fields = [];
-
-  $fields['links'] = BaseFieldDefinition::create('entity_reference_revisions')
-    ->setLabel(t('Links'))
-    ->setCardinality(FieldStorageConfigInterface::CARDINALITY_UNLIMITED)
-    ->setDescription(t('Manually defined links'))
-    ->setSetting('target_type', 'link_list_link')
-    ->setDisplayConfigurable('view', TRUE)
-    ->setRequired(FALSE)
-    ->setDisplayOptions('form', [
-      'type' => 'inline_entity_form_complex',
-      'weight' => -5,
-      'settings' => [
-        'override_labels' => TRUE,
-        'label_singular' => t('Link'),
-        'label_plural' => t('Links'),
-        'revision' => TRUE,
-      ],
-    ])
-    ->setDefaultValue(0);
-
-  return $fields;
-}
-
-/**
- * Implements hook_form_FORM_ID_alter() for the Link List edit form.
- */
-function oe_link_lists_manual_source_form_link_list_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  oe_link_lists_manual_source_link_list_form_handle_alter($form, $form_state);
-}
-
-/**
- * Implements hook_form_FORM_ID_alter() for the Link List add form.
- */
-function oe_link_lists_manual_source_form_link_list_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  oe_link_lists_manual_source_link_list_form_handle_alter($form, $form_state);
-}
-
-/**
- * Handles the form alterations for the Link List form.
- *
- * When using the ManualLinkSource plugin, we are trying to embed the inline
- * entity form into the plugin configuration form. But we cannot do that inside
- * a #process callback (which is where the plugin configuration forms run)
- * because it breaks the entity reference entity building through the IEF
- * widget. So we have to move the original IEF widget field in here under the
- * form element where the plugin configuration form normally goes but in
- * reality the handling is done as if it's still at the top level of the form
- * as a normal widget.
- *
- * @param array $form
- *   The form.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state.
- */
-function oe_link_lists_manual_source_link_list_form_handle_alter(array &$form, FormStateInterface $form_state): void {
-  if (!isset($form['links'])) {
-    return;
-  }
-
-  $links_element = $form['links'];
-  unset($form['links']);
-
-  $plugin_id = NULL;
-  $input = $form_state->getUserInput();
-  $input_plugin_id = NestedArray::getValue($input, array_merge($form['#parents'], ['link_source', 'plugin']));
-  if ($input_plugin_id === 'manual_links') {
-    $plugin_id = $input_plugin_id;
-  }
-
-  /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-  $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
-
-  if (!$plugin_id && !$form_state->isProcessingInput()) {
-    // If we are just loading the form without a user making a choice, try to
-    // get the plugin from the link list itself.
-    $configuration = $link_list->getConfiguration();
-    $plugin_id = $configuration['source']['plugin'] ?? NULL;
-  }
-
-  if (!$plugin_id || $plugin_id !== 'manual_links') {
-    return;
-  }
-
-  $form['link_source']['plugin_configuration_wrapper']['manual_links'] = $links_element;
 }

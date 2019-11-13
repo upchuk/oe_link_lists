@@ -30,7 +30,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $web_user = $this->drupalCreateUser(['administer link_lists']);
     $this->drupalLogin($web_user);
 
-    $this->drupalGet('link_list/add');
+    $this->drupalGet('link_list/add/dynamic');
     $this->getSession()->getPage()->fillField('Administrative title', 'Internal plugin test');
     $this->getSession()->getPage()->fillField('Title', 'Internal list');
 

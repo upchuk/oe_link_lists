@@ -43,6 +43,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "revision" = "vid",
  *     "uuid" = "uuid",
  *     "label" = "administrative_title",
+ *     "bundle" = "bundle",
  *     "langcode" = "langcode",
  *     "published" = "status",
  *     "created" = "created",
@@ -54,13 +55,16 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "revision_log_message" = "revision_log"
  *   },
  *   links = {
- *     "add-form" = "/link_list/add",
+ *     "add-form" = "/link_list/add/{link_list_type}",
+ *     "add-page" = "/link_list/add",
  *     "canonical" = "/link_list/{link_list}",
  *     "collection" = "/admin/content/link_lists",
  *     "edit-form" = "/link_list/{link_list}/edit",
  *     "delete-form" = "/link_list/{link_list}/delete",
  *     "delete-multiple-form" = "/admin/content/link_list/delete",
- *   }
+ *   },
+ *   bundle_entity_type = "link_list_type",
+ *   field_ui_base_route = "entity.link_list_type.edit_form"
  * )
  */
 class LinkList extends EditorialContentEntityBase implements LinkListInterface {
@@ -193,10 +197,15 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['configuration'] = BaseFieldDefinition::create('string_long')
+    $fields['configuration'] = BaseFieldDefinition::create('link_list_configuration')
       ->setLabel(t('Configuration'))
-      ->setDescription(t('The list settings.'))
+      ->setDescription(t('The list configuration.'))
       ->setRevisionable(TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'link_list_configuration',
+        'weight' => -5,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDefaultValue(serialize([]));
 
     $fields['created'] = BaseFieldDefinition::create('created')
