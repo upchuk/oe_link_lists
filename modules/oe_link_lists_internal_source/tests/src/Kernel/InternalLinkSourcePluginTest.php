@@ -213,7 +213,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'bundle' => 'foo',
       'filters' => [
         'bar' => [
-          'show' => 'none',
+          'creation' => 'old',
         ],
         'quz' => [
           'first_letter' => 'A',
@@ -240,7 +240,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'bundle' => 'foo',
       'filters' => [
         'bar' => [
-          'show' => 'none',
+          'creation' => 'old',
         ],
         'quz' => [
           'first_letter' => 'B',
@@ -256,7 +256,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'bundle' => 'bar',
       'filters' => [
         'bar' => [
-          'show' => 'none',
+          'creation' => 'old',
         ],
         'quz' => [
           'first_letter' => 'B',

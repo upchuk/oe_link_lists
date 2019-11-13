@@ -76,7 +76,7 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    */
   public function defaultConfiguration() {
     return [
-      'show' => 'all',
+      'creation' => 'all',
     ] + parent::defaultConfiguration();
   }
 
@@ -95,14 +95,14 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
 
-    $form['show'] = [
+    $form['creation'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Show entities'),
+      '#title' => $this->t('Entity creation time'),
       '#options' => [
         'all' => $this->t('All'),
-        'none' => $this->t('None'),
+        'old' => $this->t('Old'),
       ],
-      '#default_value' => $this->configuration['show'],
+      '#default_value' => $this->configuration['creation'],
     ];
 
     return $form;
@@ -112,7 +112,7 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['show'] = $form_state->getValue('show');
+    $this->configuration['creation'] = $form_state->getValue('creation');
   }
 
   /**
@@ -122,13 +122,10 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
     // Allow to verify the context passed in tests.
     $this->state->set('internal_source_test_bar_context', $context);
 
-    // No extra filtering if all entities are to be shown.
-    if ($this->configuration['show'] === 'all') {
-      return;
+    if ($this->configuration['creation'] === 'old') {
+      // Show only content created one year ago.
+      $query->condition('created', $this->time->getRequestTime() - 1 * 12 * 365 * 24 * 60 * 60, '<');
     }
-
-    // Show only content created one year ago.
-    $query->condition('created', $this->time->getRequestTime() - 1 * 12 * 365 * 24 * 60 * 60, '<');
   }
 
 }

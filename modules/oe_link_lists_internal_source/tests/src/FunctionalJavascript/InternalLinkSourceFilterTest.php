@@ -63,7 +63,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertSession()->fieldNotExists('Name starts with');
     $this->assertSession()->fieldNotExists('Enabled');
     $this->assertSession()->fieldNotExists('All');
-    $this->assertSession()->fieldNotExists('None');
+    $this->assertSession()->fieldNotExists('Old');
 
     // Select an entity that doesn't support bundles.
     $this->getSession()->getPage()->selectFieldOption('Entity type', 'user');
@@ -77,7 +77,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     // The other plugins should not be showing.
     $this->assertSession()->fieldNotExists('Enabled');
     $this->assertSession()->fieldNotExists('All');
-    $this->assertSession()->fieldNotExists('None');
+    $this->assertSession()->fieldNotExists('Old');
     // Select a value for the quz plugin.
     $select->selectOption('B');
     // Save the list.
@@ -103,7 +103,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertEquals('b', $this->assertSession()->selectExists('Name starts with')->getValue());
     $this->assertSession()->fieldNotExists('Enabled');
     $this->assertSession()->fieldNotExists('All');
-    $this->assertSession()->fieldNotExists('None');
+    $this->assertSession()->fieldNotExists('Old');
 
     // Enable the Bar plugin to work on user entities.
     \Drupal::service('state')->set('internal_source_test_bar_applicable_entity_types', ['user' => ['user']]);
@@ -114,7 +114,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertEquals('user', $this->assertSession()->selectExists('Entity type')->getValue());
     $this->assertEquals('b', $this->assertSession()->selectExists('Name starts with')->getValue());
     $this->assertTrue($this->assertSession()->fieldExists('All')->isChecked());
-    $this->assertFalse($this->assertSession()->fieldExists('None')->isChecked());
+    $this->assertFalse($this->assertSession()->fieldExists('Old')->isChecked());
     // The foo plugin is not applicable.
     $this->assertSession()->fieldNotExists('Enabled');
     // Save the list.
@@ -130,7 +130,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
           'first_letter' => 'b',
         ],
         'bar' => [
-          'show' => 'all',
+          'creation' => 'all',
         ],
       ],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
@@ -144,7 +144,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertSession()->fieldNotExists('Name starts with');
     $this->assertSession()->fieldNotExists('Enabled');
     $this->assertSession()->fieldNotExists('All');
-    $this->assertSession()->fieldNotExists('None');
+    $this->assertSession()->fieldNotExists('Old');
     // Select the page bundle.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'page');
     $this->assertSession()->assertWaitOnAjaxRequest();
@@ -153,7 +153,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     // The other plugins are not.
     $this->assertSession()->fieldNotExists('Name starts with');
     $this->assertSession()->fieldNotExists('All');
-    $this->assertSession()->fieldNotExists('None');
+    $this->assertSession()->fieldNotExists('Old');
 
     // Switch to the news bundle.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'news');
@@ -162,7 +162,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertSession()->fieldNotExists('Name starts with');
     $this->assertSession()->fieldNotExists('Enabled');
     $this->assertSession()->fieldNotExists('All');
-    $this->assertSession()->fieldNotExists('None');
+    $this->assertSession()->fieldNotExists('Old');
     // Save the list.
     $this->getSession()->getPage()->pressButton('Save');
 
@@ -183,17 +183,17 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertEquals('news', $this->assertSession()->selectExists('Bundle')->getValue());
     // The Bar plugin form is rendered.
     $this->assertTrue($this->assertSession()->fieldExists('All')->isChecked());
-    $this->assertFalse($this->assertSession()->fieldExists('None')->isChecked());
+    $this->assertFalse($this->assertSession()->fieldExists('Old')->isChecked());
     $this->assertSession()->fieldNotExists('Name starts with');
     $this->assertSession()->fieldNotExists('Enabled');
     // Select the "None" option.
-    $this->assertSession()->fieldExists('None')->click();
+    $this->assertSession()->fieldExists('Old')->click();
     // Change the bundle to page.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'page');
     $this->assertSession()->assertWaitOnAjaxRequest();
     // The Bar plugin form values have been kept.
     $this->assertFalse($this->assertSession()->fieldExists('All')->isChecked());
-    $this->assertTrue($this->assertSession()->fieldExists('None')->isChecked());
+    $this->assertTrue($this->assertSession()->fieldExists('Old')->isChecked());
     // Foo plugin form is also rendered.
     $this->assertSession()->checkboxNotChecked('Enabled');
     $this->assertSession()->fieldNotExists('Name starts with');
@@ -211,7 +211,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
           'enabled' => TRUE,
         ],
         'bar' => [
-          'show' => 'none',
+          'creation' => 'old',
         ],
       ],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
@@ -221,7 +221,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertEquals('node', $this->assertSession()->selectExists('Entity type')->getValue());
     $this->assertEquals('page', $this->assertSession()->selectExists('Bundle')->getValue());
     $this->assertFalse($this->assertSession()->fieldExists('All')->isChecked());
-    $this->assertTrue($this->assertSession()->fieldExists('None')->isChecked());
+    $this->assertTrue($this->assertSession()->fieldExists('Old')->isChecked());
     $this->assertSession()->checkboxChecked('Enabled');
     $this->assertSession()->fieldNotExists('Name starts with');
 
@@ -238,7 +238,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
       'bundle' => 'news',
       'filters' => [
         'bar' => [
-          'show' => 'none',
+          'creation' => 'old',
         ],
       ],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
