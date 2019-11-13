@@ -1,3 +1,7 @@
 administer link_lists:
   title: 'Administer Link Lists'
   restrict access: true
+administer link list types:
+  title: 'Administer link list types'
+  description: 'Maintain the types of link list entity.'
+  restrict access: true

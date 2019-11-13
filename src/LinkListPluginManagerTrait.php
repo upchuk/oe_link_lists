@@ -16,6 +16,10 @@ trait LinkListPluginManagerTrait {
     $definitions = $this->getDefinitions();
     $options = [];
     foreach ($definitions as $name => $definition) {
+      $internal = $definition['internal'] ?? FALSE;
+      if ($internal) {
+        continue;
+      }
       $options[$name] = $definition['label'];
     }
 

@@ -38,4 +38,14 @@ class LinkSource extends Plugin {
    */
   public $description;
 
+  /**
+   * Whether this plugin is meant for internal purposes.
+   *
+   * Internal plugins are not selectable by the user. By default, plugins are
+   * not internal.
+   *
+   * @var bool
+   */
+  public $internal = FALSE;
+
 }

@@ -72,16 +72,12 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->drupalLogin($web_user);
 
     // Go to a link list creation page and assert that we can choose the type.
-    $this->drupalGet('link_list/add');
+    $this->drupalGet('link_list/add/manual');
     $this->getSession()->getPage()->fillField('Title', 'Test list');
     $this->getSession()->getPage()->fillField('Administrative title', 'List 1');
 
     // Select and configure the display plugin.
     $this->getSession()->getPage()->selectFieldOption('Link display', 'Foo');
-    $this->assertSession()->assertWaitOnAjaxRequest();
-
-    // Select the manual links plugin.
-    $this->getSession()->getPage()->selectFieldOption('Link source', 'Manual links');
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Create an external link.

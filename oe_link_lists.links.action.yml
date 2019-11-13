@@ -1,5 +1,5 @@
-entity.link_list.add_form:
-  route_name: entity.link_list.add_form
+entity.link_list.add_page:
+  route_name: entity.link_list.add_page
   title: 'Add Link list'
   appears_on:
     - entity.link_list.collection

@@ -99,7 +99,7 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
   public function testLinkListDisplayConfiguration(): void {
     $storage = $this->container->get('entity_type.manager')->getStorage('link_list');
 
-    $this->drupalGet('link_list/add');
+    $this->drupalGet('link_list/add/dynamic');
     $this->getSession()->getPage()->fillField('Administrative title', 'The admin title');
     $this->getSession()->getPage()->fillField('Title', 'The title');
     $this->assertSession()->selectExists('Link source');
@@ -147,7 +147,7 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
    * Tests that a list can have a limit and a "See all" button.
    */
   public function testLinkListGeneralConfiguration(): void {
-    $this->drupalGet('link_list/add');
+    $this->drupalGet('link_list/add/dynamic');
     $this->getSession()->getPage()->fillField('Administrative title', 'The admin title');
     $this->getSession()->getPage()->fillField('Title', 'The title');
 
