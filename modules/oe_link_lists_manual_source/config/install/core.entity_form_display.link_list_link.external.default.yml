@@ -20,4 +20,5 @@ content:
       placeholder_url: ''
       placeholder_title: ''
     third_party_settings: {  }
-hidden: {  }
+hidden:
+  status: true

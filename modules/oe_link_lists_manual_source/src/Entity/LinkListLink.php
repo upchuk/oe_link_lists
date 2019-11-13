@@ -222,6 +222,10 @@ class LinkListLink extends EditorialContentEntityBase implements LinkListLinkInt
     $fields['status']->setDescription(t('A boolean indicating whether the Link list link is published.'))
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+        'weight' => 10,
       ]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
