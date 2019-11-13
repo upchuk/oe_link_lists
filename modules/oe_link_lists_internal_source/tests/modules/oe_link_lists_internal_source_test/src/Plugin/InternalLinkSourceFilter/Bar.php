@@ -64,8 +64,17 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    */
   public function defaultConfiguration() {
     return [
-      'include' => 'all',
+      'show' => 'all',
     ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isApplicable(string $entity_type, string $bundle): bool {
+    $allowed_entity_types = $this->state->get('internal_source_test_bar_applicable_entity_types', []);
+
+    return isset($allowed_entity_types[$entity_type]) && in_array($bundle, $allowed_entity_types[$entity_type]);
   }
 
   /**
@@ -74,14 +83,14 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
 
-    $form['include'] = [
+    $form['show'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Include example'),
+      '#title' => $this->t('Show entities'),
       '#options' => [
         'all' => $this->t('All'),
         'none' => $this->t('None'),
       ],
-      '#default_value' => $this->configuration['include'],
+      '#default_value' => $this->configuration['show'],
     ];
 
     return $form;
@@ -91,24 +100,14 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['include'] = $form_state->getValue('include');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isApplicable(string $entity_type, string $bundle): bool {
-    $allowed_entity_types = $this->state->get('internal_source_test_bar_entity_types', []);
-    $allowed_bundles = $this->state->get('internal_source_test_bar_bundles', []);
-
-    return in_array($entity_type, $allowed_entity_types) && in_array($bundle, $allowed_bundles);
+    $this->configuration['show'] = $form_state->getValue('show');
   }
 
   /**
    * {@inheritdoc}
    */
   public function apply(QueryInterface $query): void {
-    $query->addTag('bar');
+    $query->condition('id', NULL, $this->configuration['show'] === 'none' ? '<>' : '!=');
   }
 
 }

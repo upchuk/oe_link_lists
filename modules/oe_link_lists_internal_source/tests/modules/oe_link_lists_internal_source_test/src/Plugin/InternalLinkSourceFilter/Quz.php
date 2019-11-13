@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types = 1);
-
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
 use Drupal\Core\Entity\Query\QueryInterface;
@@ -12,23 +10,23 @@ use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
  * Test implementation of an internal link source filter.
  *
  * @InternalLinkSourceFilter(
- *   id = "foo",
- *   label = @Translation("Foo"),
- *   description = @Translation("Foo description."),
+ *   id = "quz",
+ *   label = @Translation("Quz"),
+ *   description = @Translation("Filters on the first letter of the name field."),
  *   entity_types = {
- *     "node" = { "page" },
- *     "entity_test" = { "foo", "bar" }
+ *     "user" = {},
+ *     "entity_test" = {}
  *   }
  * )
  */
-class Foo extends InternalLinkSourceFilterPluginBase {
+class Quz extends InternalLinkSourceFilterPluginBase {
 
   /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
     return [
-      'enabled' => FALSE,
+      'first_letter' => 'a',
     ] + parent::defaultConfiguration();
   }
 
@@ -38,10 +36,14 @@ class Foo extends InternalLinkSourceFilterPluginBase {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
 
-    $form['enabled'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Enabled'),
-      '#default_value' => $this->configuration['enabled'],
+    $form['first_letter'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Name starts with'),
+      '#options' => [
+        'a' => 'A',
+        'b' => 'B',
+      ],
+      '#default_value' => $this->configuration['first_letter'],
     ];
 
     return $form;
@@ -51,14 +53,14 @@ class Foo extends InternalLinkSourceFilterPluginBase {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['enabled'] = $form_state->getValue('enabled');
+    $this->configuration['first_letter'] = $form_state->getValue('first_letter');
   }
 
   /**
    * {@inheritdoc}
    */
   public function apply(QueryInterface $query): void {
-    $query->addTag('foo');
+    $query->condition('name', $this->configuration['first_letter'], 'STARTS_WITH');
   }
 
 }
