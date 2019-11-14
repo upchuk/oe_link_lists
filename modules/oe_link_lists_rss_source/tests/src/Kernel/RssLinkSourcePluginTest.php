@@ -12,7 +12,7 @@ use Drupal\Core\Form\SubformState;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\oe_link_lists\DefaultLink;
+use Drupal\oe_link_lists\DefaultEntityLink;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
@@ -310,19 +310,23 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
    *   List of LinkInterface objects.
    */
   protected function getExpectedLinks(string $feed_url): array {
-    $links = [
-      'http://www.example.com/atom.xml' => [
-        new DefaultLink(Url::fromUri('http://example.org/2003/12/14/atom03'), 'We tried to stop them, but we failed.', ['#markup' => 'Some other text.']),
-        new DefaultLink(Url::fromUri('http://example.org/2003/12/13/atom03'), 'Atom-Powered Robots Run Amok', ['#markup' => 'Some text.']),
-      ],
-    ];
+    $feeds = $this->container->get('entity_type.manager')->getStorage('aggregator_feed')->loadByProperties(['url' => 'http://www.example.com/atom.xml']);
+    $feed = reset($feeds);/** @var \Drupal\aggregator\ItemInterface $item */
+    foreach ($this->container->get('entity_type.manager')->getStorage('aggregator_item')->loadByFeed($feed->id()) as $item) {
+      $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
+      $link = new DefaultEntityLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+      $link->setEntity($item);
+      $links['http://www.example.com/atom.xml'][] = $link;
+    }
 
     $feeds = $this->container->get('entity_type.manager')->getStorage('aggregator_feed')->loadByProperties(['url' => 'http://www.example.com/rss.xml']);
     $feed = reset($feeds);
     /** @var \Drupal\aggregator\ItemInterface $item */
     foreach ($this->container->get('entity_type.manager')->getStorage('aggregator_item')->loadByFeed($feed->id()) as $item) {
       $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
-      $links['http://www.example.com/rss.xml'][] = new DefaultLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+      $link = new DefaultEntityLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+      $link->setEntity($item);
+      $links['http://www.example.com/rss.xml'][] = $link;
     }
 
     return $links[$feed_url];
