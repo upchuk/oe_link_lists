@@ -242,6 +242,14 @@ class LinkListDisplayFormBuilder {
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
     $string = trim($element['#value']);
+
+    $button = $form_state->getValue(['link_display', 'more', 'button']);
+    if ($button === 'custom' && $string === '') {
+      $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+      return;
+    }
+
+    // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::getUserEnteredStringAsUri()
     $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($string);
     if ($entity_id !== NULL) {
       /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
@@ -391,6 +399,9 @@ class LinkListDisplayFormBuilder {
       '#element_validate' => [[get_class($this), 'validateMoreTarget']],
       '#states' => [
         'visible' => [
+          'input[name="link_display[more][button]"]' => ['value' => 'custom'],
+        ],
+        'required' => [
           'input[name="link_display[more][button]"]' => ['value' => 'custom'],
         ],
       ],
