@@ -323,7 +323,7 @@ class LinkListDisplayFormBuilder {
    *   The link list.
    */
   protected function buildGeneralConfigurationForm(array &$form, FormStateInterface $form_state, LinkListInterface $link_list): void {
-    $existing_configuration = $link_list->getConfiguration();
+    $configuration = $link_list->getConfiguration();
 
     $options = [0 => $this->t('All')];
     $range = range(1, 20);
@@ -334,7 +334,7 @@ class LinkListDisplayFormBuilder {
       '#title' => $this->t('Number of items'),
       '#weight' => 10,
       '#options' => $options,
-      '#default_value' => $existing_configuration['size'] ?? 0,
+      '#default_value' => $configuration['size'] ?? 0,
     ];
 
     $form['link_display']['more'] = [
@@ -351,7 +351,7 @@ class LinkListDisplayFormBuilder {
     $form['link_display']['more']['button'] = [
       '#type' => 'radios',
       '#title' => '',
-      '#default_value' => $existing_configuration['more']['button'] ?? 'no',
+      '#default_value' => $configuration['more']['button'] ?? 'no',
       '#options' => [
         'no' => $this->t('No, do not display "See all" button'),
         'custom' => $this->t('Yes, display a custom button'),
@@ -359,12 +359,14 @@ class LinkListDisplayFormBuilder {
     ];
 
     $default_target = '';
-    if (isset($existing_configuration['more']['target']) && $existing_configuration['more']['target']['type'] == 'entity') {
-      $entity = \Drupal::entityTypeManager()->getStorage($existing_configuration['more']['target']['entity_type'])->load($existing_configuration['more']['target']['entity_id']);
-      $default_target = EntityAutocomplete::getEntityLabels([$entity]);
-    }
-    if (isset($existing_configuration['more']['target']) && $existing_configuration['more']['target']['type'] == 'custom') {
-      $default_target = $existing_configuration['more']['target']['url'];
+    if (isset($configuration['more']['target'])) {
+      if ($configuration['more']['target']['type'] === 'entity') {
+        $entity = $this->entityTypeManager->getStorage($configuration['more']['target']['entity_type'])->load($configuration['more']['target']['entity_id']);
+        $default_target = EntityAutocomplete::getEntityLabels([$entity]);
+      }
+      if ($configuration['more']['target']['type'] === 'custom') {
+        $default_target = $configuration['more']['target']['url'];
+      }
     }
 
     $form['link_display']['more']['more_target'] = [
@@ -386,7 +388,7 @@ class LinkListDisplayFormBuilder {
     $form['link_display']['more']['more_title_override'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Override the button label. Defaults to "See all" or the referenced entity label.'),
-      '#default_value' => isset($existing_configuration['more']['title_override']) && !is_null($existing_configuration['more']['title_override']),
+      '#default_value' => isset($configuration['more']['title_override']) && !is_null($configuration['more']['title_override']),
       '#states' => [
         'visible' => [
           'input[name="link_display[more][button]"]' => ['value' => 'custom'],
@@ -396,7 +398,7 @@ class LinkListDisplayFormBuilder {
     $form['link_display']['more']['more_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('The new label'),
-      '#default_value' => $existing_configuration['more']['title_override'] ?? '',
+      '#default_value' => $configuration['more']['title_override'] ?? '',
       '#element_validate' => [[get_class($this), 'validateMoreLinkOverride']],
       '#states' => [
         'visible' => [
