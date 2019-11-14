@@ -203,7 +203,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
       ->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'link_list_configuration',
-        'weight' => -5,
+        'weight' => 4,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDefaultValue(serialize([]));
