@@ -237,12 +237,23 @@ class LinkListDisplayFormBuilder {
    *   The element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   *
+   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
     $string = trim($element['#value']);
     $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($string);
     if ($entity_id !== NULL) {
-      // If we find an ID, we don't need to validate.
+      /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
+      $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance([
+        'target_type' => $element['#target_type'],
+        'handler' => $element['#selection_handler'],
+      ]);
+      if (!$handler->validateReferenceableEntities([$entity_id])) {
+        $form_state->setError($element, t('The referenced entity (%type: %id) does not exist.', ['%type' => $element['#target_type'], '%id' => $entity_id]));
+      }
+
+      // Either an error or a valid entity is present. Exit early.
       return;
     }
 
