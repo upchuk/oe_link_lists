@@ -273,9 +273,12 @@ class LinkListDisplayFormBuilder {
       $uri = 'internal:' . $string;
     }
 
-    if (parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
+    // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+    if (
+      parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
       !in_array($element['#value'][0], ['/', '?', '#'], TRUE) &&
-      substr($element['#value'], 0, 7) !== '<front>') {
+      substr($element['#value'], 0, 7) !== '<front>'
+    ) {
       $form_state->setError($element, t('The specified target is invalid. Manually entered paths should start with one of the following characters: / ? #'));
     }
   }
@@ -290,7 +293,7 @@ class LinkListDisplayFormBuilder {
    */
   public static function validateMoreLinkOverride(array $element, FormStateInterface $form_state): void {
     $title = trim($element['#value']);
-    if ($title !== "") {
+    if ($title !== '') {
       // If we have an override, nothing to validate.
       return;
     }
@@ -380,14 +383,17 @@ class LinkListDisplayFormBuilder {
     $default_target = '';
     if (isset($configuration['more']['target'])) {
       if ($configuration['more']['target']['type'] === 'entity') {
-        $entity = $this->entityTypeManager->getStorage($configuration['more']['target']['entity_type'])->load($configuration['more']['target']['entity_id']);
-        $default_target = EntityAutocomplete::getEntityLabels([$entity]);
+        if ($entity = $this->entityTypeManager->getStorage($configuration['more']['target']['entity_type'])->load($configuration['more']['target']['entity_id'])) {
+          $default_target = EntityAutocomplete::getEntityLabels([$entity]);
+        }
       }
       if ($configuration['more']['target']['type'] === 'custom') {
         $default_target = $configuration['more']['target']['url'];
       }
     }
 
+    // This element behaves like an entity autocomplete form element but has
+    // extra custom validation to allow any routes to be specified.
     $form['link_display']['more']['more_target'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Target'),
@@ -467,7 +473,7 @@ class LinkListDisplayFormBuilder {
       'button' => $more['button'],
     ];
 
-    $configuration['more']['title_override'] = (bool) $more['more_title_override'] === FALSE ? NULL : $more['more_title'];
+    $configuration['more']['title_override'] = (bool) $more['more_title_override'] ? $more['more_title'] : NULL;
 
     // Get the target for the More button.
     $target = $more['more_target'];
