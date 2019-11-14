@@ -4,13 +4,13 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Form;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
-use Drupal\Core\Site\Settings;
+use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
@@ -24,6 +24,20 @@ class LinkListDisplayFormBuilder {
   use DependencySerializationTrait;
 
   /**
+   * The element info manager.
+   *
+   * @var \Drupal\Core\Render\ElementInfoManagerInterface
+   */
+  protected $elementInfoManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * The link display plugin manager.
    *
    * @var \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface
@@ -35,9 +49,15 @@ class LinkListDisplayFormBuilder {
    *
    * @param \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface $linkDisplayPluginManager
    *   The link display plugin manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
+   * @param \Drupal\Core\Render\ElementInfoManagerInterface $elementInfoManager
+   *   The element info manager.
    */
-  public function __construct(LinkDisplayPluginManagerInterface $linkDisplayPluginManager) {
+  public function __construct(LinkDisplayPluginManagerInterface $linkDisplayPluginManager, EntityTypeManagerInterface $entityTypeManager, ElementInfoManagerInterface $elementInfoManager) {
     $this->linkDisplayPluginManager = $linkDisplayPluginManager;
+    $this->entityTypeManager = $entityTypeManager;
+    $this->elementInfoManager = $elementInfoManager;
   }
 
   /**
@@ -347,17 +367,13 @@ class LinkListDisplayFormBuilder {
       $default_target = $existing_configuration['more']['target']['url'];
     }
 
-    $data = serialize([]) . 'nodedefault';
-    $selection_settings_key = Crypt::hmacBase64($data, Settings::getHashSalt());
     $form['link_display']['more']['more_target'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Target'),
-      '#autocomplete_route_name' => 'system.entity_autocomplete',
-      '#autocomplete_route_parameters' => [
-        'target_type' => 'node',
-        'selection_handler' => 'default',
-        'selection_settings_key' => $selection_settings_key,
-      ],
+      '#target_type' => 'node',
+      '#selection_handler' => 'default',
+      '#autocreate' => FALSE,
+      '#process' => $this->elementInfoManager->getInfoProperty('entity_autocomplete', '#process'),
       '#default_value' => $default_target,
       '#element_validate' => [[get_class($this), 'validateMoreTarget']],
       '#states' => [
