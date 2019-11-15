@@ -425,7 +425,7 @@ class LinkListDisplayFormBuilder {
     ];
     $form['link_display']['more']['more_title'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('The new label'),
+      '#title' => $this->t('Button label'),
       '#default_value' => $configuration['more']['title_override'] ?? '',
       '#element_validate' => [[get_class($this), 'validateMoreLinkOverride']],
       '#states' => [
