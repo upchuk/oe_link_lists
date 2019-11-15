@@ -234,7 +234,7 @@ class LinkListViewBuilder extends EntityViewBuilder {
 
     $overridden_title = FALSE;
     $title = $this->t('See all');
-    if (isset($more['title_override']) && $more['title_override']) {
+    if (isset($more['title_override']) && mb_strlen($more['title_override']) > 0) {
       $overridden_title = TRUE;
       $title = $more['title_override'];
     }
