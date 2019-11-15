@@ -300,7 +300,7 @@ class LinkListDisplayFormBuilder {
 
     $more = $form_state->getValue(['link_display', 'more']);
     if ((bool) $more['more_title_override']) {
-      $form_state->setError($element, t('The button label is required if you want to override the "See all" link'));
+      $form_state->setError($element, t('The button label is required if you want to override the "See all" button title.'));
     }
   }
 
@@ -362,7 +362,7 @@ class LinkListDisplayFormBuilder {
     $form['link_display']['more'] = [
       '#type' => 'fieldset',
       '#weight' => 11,
-      '#title' => $this->t('Display link to see all'),
+      '#title' => $this->t('Display button to see all links'),
       '#states' => [
         'invisible' => [
           'select[name="link_display[size]"]' => ['value' => 0],
