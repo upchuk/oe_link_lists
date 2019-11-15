@@ -214,13 +214,25 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
 
     // Change the "See all" link to a local Node, with the custom label.
     $this->createContentType(['type' => 'page']);
-    $node = $this->createNode(['title' => 'My node']);
+    $node = $this->createNode(['title' => 'Page 1']);
+    $this->createNode(['title' => 'Page 2']);
+
     $this->drupalGet('link_list/1/edit');
-    $this->getSession()->getPage()->fillField('Target', "{$node->label()} ({$node->id()})");
+    $target_field = $this->assertSession()->waitForField('Target');
+    $target_field->setValue('Page');
+    // The autocomplete list is shown on key down event.
+    $this->getSession()->getDriver()->keyDown($target_field->getXpath(), ' ');
+    $this->assertSession()->waitOnAutocomplete();
+    // Pick the "Page 1" option from the list.
+    $this->getSession()->getPage()
+      ->find('css', '.ui-autocomplete')
+      ->find('xpath', '//a[.="Page 1"]')
+      ->click();
+    $this->assertSession()->fieldValueEquals('Target', "{$node->label()} ({$node->id()})");
     $this->getSession()->getPage()->pressButton('Save');
     $this->assertSession()->linkExists('Custom more button');
     $this->assertSession()->linkByHrefNotExists('http://example.com/more-link');
-    $this->assertSession()->linkByHrefExists("/node/{$node->id()}");
+    $this->assertSession()->linkByHrefExists($node->toUrl()->toString());
 
     // Remove the title override for the "See all" link.
     $this->drupalGet('link_list/1/edit');
@@ -228,7 +240,7 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     $this->getSession()->getPage()->pressButton('Save');
     $this->assertSession()->linkNotExists('Custom more button');
     $this->assertSession()->linkExists($node->label());
-    $this->assertSession()->linkByHrefExists("/node/{$node->id()}");
+    $this->assertSession()->linkByHrefExists($node->toUrl()->toString());
   }
 
 }
