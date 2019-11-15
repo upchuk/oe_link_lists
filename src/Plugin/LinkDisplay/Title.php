@@ -29,14 +29,16 @@ class Title extends LinkDisplayPluginBase {
 
     $build = [];
 
-    $build[] = [
+    $build['list'] = [
       '#theme' => 'item_list__title_link_display_plugin',
       '#items' => $items,
       '#title' => $this->configuration['title'],
     ];
 
-    if ($this->configuration['more'] instanceof Link) {
-      $build[] = $this->configuration['more']->toRenderable();
+    $more_link = $this->configuration['more'];
+    if ($more_link instanceof Link) {
+      $build['more'] = $more_link->toRenderable();
+      $build['more']['#access'] = $more_link->getUrl()->access();
     }
 
     return $build;
