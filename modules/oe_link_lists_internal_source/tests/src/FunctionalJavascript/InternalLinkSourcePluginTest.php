@@ -74,6 +74,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $this->assertEquals([
       'entity_type' => 'user',
       'bundle' => 'user',
+      'filters' => [],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
 
     $this->drupalGet($link_list->toUrl('edit-form'));
@@ -133,6 +134,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
 
     // Select the news bundle and save.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'news');
+    $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->pressButton('Save');
 
     // Verify that the plugin configuration has been updated.
@@ -140,6 +142,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $this->assertEquals([
       'entity_type' => 'node',
       'bundle' => 'news',
+      'filters' => [],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
 
     // Select again a non bundleable entity to test that the AJAX callback
@@ -154,6 +157,7 @@ class InternalLinkSourcePluginTest extends WebDriverTestBase {
     $this->assertEquals([
       'entity_type' => 'user',
       'bundle' => 'user',
+      'filters' => [],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
   }
 

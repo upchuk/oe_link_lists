@@ -1,0 +1,6 @@
+name: 'OpenEuropa Internal Link Lists Test module'
+description: 'Test module for the OpenEuropa Link Lists internal source.'
+package: Testing
+
+type: module
+core: 8.x

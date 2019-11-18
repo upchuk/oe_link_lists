@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Contains module hooks for oe_link_lists_internal_source_test module.
+ */
+
+declare(strict_types = 1);
+
+/**
+ * Implements hook_internal_link_source_filter_info_alter().
+ *
+ * Allows to alter the CreationTime plugin definition and set its supported
+ * entity types.
+ */
+function oe_link_lists_internal_source_test_internal_link_source_filter_info_alter(array &$info): void {
+  $entity_types = \Drupal::state()->get('internal_source_test_creation_time_definition', FALSE);
+
+  if ($entity_types) {
+    $info['creation_time']['entity_types'] = $entity_types;
+  }
+}
