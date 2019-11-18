@@ -16,12 +16,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Test implementation of an internal link source filter.
  *
  * @InternalLinkSourceFilter(
- *   id = "bar",
- *   label = @Translation("Bar"),
- *   description = @Translation("Bar description."),
+ *   id = "creation_time",
+ *   label = @Translation("Creation time"),
+ *   description = @Translation("Filter on creation time."),
  * )
  */
-class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactoryPluginInterface {
+class CreationTime extends InternalLinkSourceFilterPluginBase implements ContainerFactoryPluginInterface {
 
   /**
    * The state service.
@@ -38,7 +38,7 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
   protected $time;
 
   /**
-   * Bar constructor.
+   * CreationTime constructor.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -84,7 +84,7 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function isApplicable(string $entity_type, string $bundle): bool {
-    $allowed_entity_types = $this->state->get('internal_source_test_bar_applicable_entity_types', []);
+    $allowed_entity_types = $this->state->get('internal_source_test_creation_time_applicable_entity_types', []);
 
     return isset($allowed_entity_types[$entity_type]) && in_array($bundle, $allowed_entity_types[$entity_type]);
   }
@@ -120,7 +120,7 @@ class Bar extends InternalLinkSourceFilterPluginBase implements ContainerFactory
    */
   public function apply(QueryInterface $query, array $context): void {
     // Allow to verify the context passed in tests.
-    $this->state->set('internal_source_test_bar_context', $context);
+    $this->state->set('internal_source_test_creation_time_context', $context);
 
     if ($this->configuration['creation'] === 'old') {
       // Show only content created one year ago.

@@ -5,9 +5,9 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists_internal_source\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter\Foo;
-use Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter\Bar;
-use Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter\Quz;
+use Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter\CreationTime;
+use Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter\Enabled;
+use Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter\FirstLetter;
 
 /**
  * Tests the internal link source filter plugin manager.
@@ -56,59 +56,60 @@ class InternalLinkSourceFilterPluginManagerTest extends KernelTestBase {
   public function testGetApplicablePlugins(): void {
     // Test the case of plugins that support only one specific bundle of a
     // certain entity type.
-    // The Foo plugin specifies support for the page node bundle.
+    // The Enabled plugin specifies support for the page node bundle.
     $this->assertPlugins([
-      'foo' => Foo::class,
+      'enabled' => Enabled::class,
     ], $this->manager->getApplicablePlugins('node', 'page'));
     // No plugins support the news node bundle.
     $this->assertEquals([], $this->manager->getApplicablePlugins('node', 'news'));
 
     // Test the case of plugins that support all the bundles of an entity type.
-    // The Quz plugin supports all the entity_test bundles.
+    // The First letter plugin supports all the entity_test bundles.
     $this->assertPlugins([
-      'quz' => Quz::class,
+      'first_letter' => FirstLetter::class,
     ], $this->manager->getApplicablePlugins('entity_test', 'baz'));
 
-    // The Foo plugin supports two different bundles of entity_test.
+    // The Enabled plugin supports two different bundles of entity_test.
     $this->assertPlugins([
-      'foo' => Foo::class,
-      'quz' => Quz::class,
+      'enabled' => Enabled::class,
+      'first_letter' => FirstLetter::class,
     ], $this->manager->getApplicablePlugins('entity_test', 'foo'));
     $this->assertPlugins([
-      'foo' => Foo::class,
-      'quz' => Quz::class,
+      'enabled' => Enabled::class,
+      'first_letter' => FirstLetter::class,
     ], $this->manager->getApplicablePlugins('entity_test', 'bar'));
 
-    // Make the Bar plugin isApplicable() plugin method return true for the
-    // bar entity_test bundle.
-    $this->state->set('internal_source_test_bar_applicable_entity_types', ['entity_test' => ['bar']]);
+    // Make the CreationTime plugin isApplicable() plugin method return true for
+    // the bar entity_test bundle.
+    $this->state->set('internal_source_test_creation_time_applicable_entity_types', ['entity_test' => ['bar']]);
     // All the plugins support the bar bundle now.
     $this->assertPlugins([
-      'bar' => Bar::class,
-      'foo' => Foo::class,
-      'quz' => Quz::class,
+      'creation_time' => CreationTime::class,
+      'enabled' => Enabled::class,
+      'first_letter' => FirstLetter::class,
     ], $this->manager->getApplicablePlugins('entity_test', 'bar'));
 
     // Test the case of plugins that don't have an entity type specified.
     // No plugins are present for image media bundle.
     $this->assertEquals([], $this->manager->getApplicablePlugins('media', 'image'));
-    // Make the Bar plugin isApplicable() plugin method return true for the
-    // image media bundle.
-    $this->state->set('internal_source_test_bar_applicable_entity_types', ['media' => ['image']]);
+    // Make the CreationTime plugin isApplicable() plugin method return true for
+    // the image media bundle.
+    $this->state->set('internal_source_test_creation_time_applicable_entity_types', ['media' => ['image']]);
     // Verify that the Bar plugin is returned correctly.
     $this->assertPlugins([
-      'bar' => Bar::class,
+      'creation_time' => CreationTime::class,
     ], $this->manager->getApplicablePlugins('media', 'image'));
     // Verify that the isApplicable() plugin method is invoked with the correct
     // entity type and bundle parameters.
-    // The Bar plugin is not applicable to the video media bundle.
+    // The CreationTime plugin is not applicable to the video media bundle.
     $this->assertEquals([], $this->manager->getApplicablePlugins('media', 'video'));
 
     // Verify that the isApplicable() plugin method is always invoked to
     // determine the applicability of a plugin, given any combination of
     // supported entity types in the plugin annotation.
-    // Make the Bar plugin support the comment entity type, any bundles of it.
-    $this->state->set('internal_source_test_bar_definition', [
+    // Make the CreationTime plugin support the comment entity type, any
+    // bundles of it.
+    $this->state->set('internal_source_test_creation_time_definition', [
       'comment' => [],
     ]);
     // Flush the definitions so the info alter hook gets run.
@@ -117,13 +118,13 @@ class InternalLinkSourceFilterPluginManagerTest extends KernelTestBase {
     // medias, so the plugin won't be applicable to comment bundles.
     $this->assertEquals([], $this->manager->getApplicablePlugins('comment', 'foo'));
     // Make the Bar plugin apply to the foo comment bundle.
-    $this->state->set('internal_source_test_bar_applicable_entity_types', ['comment' => ['foo']]);
+    $this->state->set('internal_source_test_creation_time_applicable_entity_types', ['comment' => ['foo']]);
     $this->assertPlugins([
-      'bar' => Bar::class,
+      'creation_time' => CreationTime::class,
     ], $this->manager->getApplicablePlugins('comment', 'foo'));
 
-    // Make the Bar plugin support only baz comment bundles.
-    $this->state->set('internal_source_test_bar_definition', [
+    // Make the CreationTime plugin support only baz comment bundles.
+    $this->state->set('internal_source_test_creation_time_definition', [
       'comment' => ['baz'],
     ]);
     $this->manager->clearCachedDefinitions();
@@ -131,9 +132,9 @@ class InternalLinkSourceFilterPluginManagerTest extends KernelTestBase {
     // invoked and has a negative result.
     $this->assertEquals([], $this->manager->getApplicablePlugins('comment', 'baz'));
     // Make the Bar plugin apply to the baz comment bundle.
-    $this->state->set('internal_source_test_bar_applicable_entity_types', ['comment' => ['baz']]);
+    $this->state->set('internal_source_test_creation_time_applicable_entity_types', ['comment' => ['baz']]);
     $this->assertPlugins([
-      'bar' => Bar::class,
+      'creation_time' => CreationTime::class,
     ], $this->manager->getApplicablePlugins('comment', 'baz'));
   }
 

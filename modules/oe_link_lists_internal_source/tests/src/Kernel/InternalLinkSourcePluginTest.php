@@ -160,7 +160,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
       'filters' => [
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'A',
         ],
       ],
@@ -173,7 +173,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
       'filters' => [
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'B',
         ],
       ],
@@ -186,7 +186,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
       'filters' => [
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'A',
         ],
       ],
@@ -199,7 +199,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
       'filters' => [
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'B',
         ],
       ],
@@ -212,10 +212,10 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
       'filters' => [
-        'bar' => [
+        'creation_time' => [
           'creation' => 'old',
         ],
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'A',
         ],
       ],
@@ -231,7 +231,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $this->assertEquals([
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
-    ], $state->get('internal_source_test_bar_context'));
+    ], $state->get('internal_source_test_creation_time_context'));
 
     // There are no entities of bundle foo created more than two years ago and
     // name starting with the letter B.
@@ -239,10 +239,10 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
       'filters' => [
-        'bar' => [
+        'creation_time' => [
           'creation' => 'old',
         ],
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'B',
         ],
       ],
@@ -255,10 +255,10 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
       'filters' => [
-        'bar' => [
+        'creation_time' => [
           'creation' => 'old',
         ],
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'B',
         ],
       ],
@@ -272,7 +272,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $this->assertEquals([
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
-    ], $state->get('internal_source_test_bar_context'));
+    ], $state->get('internal_source_test_creation_time_context'));
   }
 
   /**

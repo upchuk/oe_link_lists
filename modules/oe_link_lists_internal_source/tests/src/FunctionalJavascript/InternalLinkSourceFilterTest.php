@@ -71,14 +71,14 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     // The bundle selection is implicit in this case. The bundle select doesn't
     // appear, but the plugins are rendered.
     $this->assertSession()->fieldNotExists('Bundle');
-    // The Quz plugin form should appear.
+    // The FirstLetter plugin form should appear.
     $select = $this->assertSession()->selectExists('Name starts with');
     $this->assertEquals('a', $select->getValue());
     // The other plugins should not be showing.
     $this->assertSession()->fieldNotExists('Enabled');
     $this->assertSession()->fieldNotExists('All');
     $this->assertSession()->fieldNotExists('Old');
-    // Select a value for the quz plugin.
+    // Select a value for the FirstLetter plugin.
     $select->selectOption('B');
     // Save the list.
     $this->getSession()->getPage()->pressButton('Save');
@@ -89,7 +89,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
       'entity_type' => 'user',
       'bundle' => 'user',
       'filters' => [
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'b',
         ],
       ],
@@ -105,17 +105,17 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertSession()->fieldNotExists('All');
     $this->assertSession()->fieldNotExists('Old');
 
-    // Enable the Bar plugin to work on user entities.
-    \Drupal::service('state')->set('internal_source_test_bar_applicable_entity_types', ['user' => ['user']]);
+    // Enable the FirstLetter plugin to work on user entities.
+    \Drupal::service('state')->set('internal_source_test_creation_time_applicable_entity_types', ['user' => ['user']]);
 
     // Refresh the page.
     $this->drupalGet($link_list->toUrl('edit-form'));
-    // The Bar plugin is also available now.
+    // The FirstLetter plugin is also available now.
     $this->assertEquals('user', $this->assertSession()->selectExists('Entity type')->getValue());
     $this->assertEquals('b', $this->assertSession()->selectExists('Name starts with')->getValue());
     $this->assertTrue($this->assertSession()->fieldExists('All')->isChecked());
     $this->assertFalse($this->assertSession()->fieldExists('Old')->isChecked());
-    // The foo plugin is not applicable.
+    // The enabled plugin is not applicable.
     $this->assertSession()->fieldNotExists('Enabled');
     // Save the list.
     $this->getSession()->getPage()->pressButton('Save');
@@ -126,10 +126,10 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
       'entity_type' => 'user',
       'bundle' => 'user',
       'filters' => [
-        'quz' => [
+        'first_letter' => [
           'first_letter' => 'b',
         ],
-        'bar' => [
+        'creation_time' => [
           'creation' => 'all',
         ],
       ],
@@ -148,7 +148,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     // Select the page bundle.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'page');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    // The Foo filter plugin form is rendered.
+    // The Enabled filter plugin form is rendered.
     $this->assertSession()->checkboxNotChecked('Enabled');
     // The other plugins are not.
     $this->assertSession()->fieldNotExists('Name starts with');
@@ -174,14 +174,14 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
       'filters' => [],
     ], $link_list->getConfiguration()['source']['plugin_configuration']);
 
-    // Enable the Bar plugin to work on nodes.
-    \Drupal::service('state')->set('internal_source_test_bar_applicable_entity_types', ['node' => ['page', 'news']]);
+    // Enable the CreationTime plugin to work on nodes.
+    \Drupal::service('state')->set('internal_source_test_creation_time_applicable_entity_types', ['node' => ['page', 'news']]);
 
     // Edit the list.
     $this->drupalGet($link_list->toUrl('edit-form'));
     $this->assertEquals('node', $this->assertSession()->selectExists('Entity type')->getValue());
     $this->assertEquals('news', $this->assertSession()->selectExists('Bundle')->getValue());
-    // The Bar plugin form is rendered.
+    // The CreationTime plugin form is rendered.
     $this->assertTrue($this->assertSession()->fieldExists('All')->isChecked());
     $this->assertFalse($this->assertSession()->fieldExists('Old')->isChecked());
     $this->assertSession()->fieldNotExists('Name starts with');
@@ -191,10 +191,10 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     // Change the bundle to page.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'page');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    // The Bar plugin form values have been kept.
+    // The CreationTime plugin form values have been kept.
     $this->assertFalse($this->assertSession()->fieldExists('All')->isChecked());
     $this->assertTrue($this->assertSession()->fieldExists('Old')->isChecked());
-    // Foo plugin form is also rendered.
+    // Enabled plugin form is also rendered.
     $this->assertSession()->checkboxNotChecked('Enabled');
     $this->assertSession()->fieldNotExists('Name starts with');
 
@@ -207,10 +207,10 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
       'entity_type' => 'node',
       'bundle' => 'page',
       'filters' => [
-        'foo' => [
+        'enabled' => [
           'enabled' => TRUE,
         ],
-        'bar' => [
+        'creation_time' => [
           'creation' => 'old',
         ],
       ],
@@ -230,14 +230,14 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->pressButton('Save');
 
-    // Verify that the Foo plugin configuration has been correctly not submitted
-    // and removed from the list configuration.
+    // Verify that the Enabled plugin configuration has been correctly not
+    // submitted and removed from the list configuration.
     $link_list = $this->getLinkListByTitle('Internal list', TRUE);
     $this->assertEquals([
       'entity_type' => 'node',
       'bundle' => 'news',
       'filters' => [
-        'bar' => [
+        'creation_time' => [
           'creation' => 'old',
         ],
       ],

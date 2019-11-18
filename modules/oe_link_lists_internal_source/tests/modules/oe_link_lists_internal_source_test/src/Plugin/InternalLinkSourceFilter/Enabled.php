@@ -12,16 +12,16 @@ use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
  * Test implementation of an internal link source filter.
  *
  * @InternalLinkSourceFilter(
- *   id = "foo",
- *   label = @Translation("Foo"),
- *   description = @Translation("Foo description."),
+ *   id = "enabled",
+ *   label = @Translation("Enabled"),
+ *   description = @Translation("Enabled checkbox."),
  *   entity_types = {
  *     "node" = { "page" },
  *     "entity_test" = { "foo", "bar" }
  *   }
  * )
  */
-class Foo extends InternalLinkSourceFilterPluginBase {
+class Enabled extends InternalLinkSourceFilterPluginBase {
 
   /**
    * {@inheritdoc}
@@ -58,7 +58,7 @@ class Foo extends InternalLinkSourceFilterPluginBase {
    * {@inheritdoc}
    */
   public function apply(QueryInterface $query, array $context): void {
-    $query->addTag('foo');
+    $query->addTag('enabled');
   }
 
 }

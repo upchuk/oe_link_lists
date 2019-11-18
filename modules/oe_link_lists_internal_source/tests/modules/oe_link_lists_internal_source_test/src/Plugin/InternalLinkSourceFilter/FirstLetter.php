@@ -10,8 +10,8 @@ use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
  * Test implementation of an internal link source filter.
  *
  * @InternalLinkSourceFilter(
- *   id = "quz",
- *   label = @Translation("Quz"),
+ *   id = "first_letter",
+ *   label = @Translation("First letter"),
  *   description = @Translation("Filters on the first letter of the name field."),
  *   entity_types = {
  *     "user" = {},
@@ -19,7 +19,7 @@ use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
  *   }
  * )
  */
-class Quz extends InternalLinkSourceFilterPluginBase {
+class FirstLetter extends InternalLinkSourceFilterPluginBase {
 
   /**
    * {@inheritdoc}
