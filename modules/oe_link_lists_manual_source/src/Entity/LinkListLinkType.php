@@ -38,7 +38,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *   config_export = {
  *     "id",
  *     "label",
- *     "uuid",
  *   }
  * )
  */
