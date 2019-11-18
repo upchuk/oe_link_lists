@@ -255,7 +255,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $links_wrapper->fillField('Teaser', $teaser);
     $this->getSession()->getPage()->pressButton('Create Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->pageTextContains('External link to: http://example/com');
+    $this->assertSession()->pageTextContains('External link to: ' . $url);
   }
 
   /**
