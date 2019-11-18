@@ -40,6 +40,7 @@ abstract class LinkDisplayPluginBase extends PluginBase implements LinkDisplayIn
   public function defaultConfiguration() {
     return [
       'title' => NULL,
+      'more' => [],
     ];
   }
 

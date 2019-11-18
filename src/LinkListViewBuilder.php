@@ -8,11 +8,14 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Theme\Registry;
+use Drupal\Core\Url;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -44,6 +47,13 @@ class LinkListViewBuilder extends EntityViewBuilder {
   protected $eventDispatcher;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new LinkListViewBuilder.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -62,12 +72,15 @@ class LinkListViewBuilder extends EntityViewBuilder {
    *   The link display plugin manager.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, Registry $theme_registry = NULL, EntityDisplayRepositoryInterface $entity_display_repository = NULL, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(EntityTypeInterface $entity_type, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, Registry $theme_registry = NULL, EntityDisplayRepositoryInterface $entity_display_repository = NULL, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_type, $entity_repository, $language_manager, $theme_registry, $entity_display_repository);
     $this->linkSourceManager = $link_source_plugin_manager;
     $this->linkDisplayManager = $link_display_plugin_manager;
     $this->eventDispatcher = $event_dispatcher;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -82,7 +95,8 @@ class LinkListViewBuilder extends EntityViewBuilder {
       $container->get('entity_display.repository'),
       $container->get('plugin.manager.link_source'),
       $container->get('plugin.manager.link_display'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -169,6 +183,9 @@ class LinkListViewBuilder extends EntityViewBuilder {
     if ($link_list->getTitle()) {
       $display_plugin_configuration['title'] = $link_list->getTitle();
     }
+    if (isset($configuration['more']) && isset($configuration['size']) && $configuration['size'] > 0) {
+      $display_plugin_configuration['more'] = $this->prepareMoreLink($configuration['more']);
+    }
 
     $plugin = $this->linkDisplayManager->createInstance($display_plugin, $display_plugin_configuration);
 
@@ -192,10 +209,62 @@ class LinkListViewBuilder extends EntityViewBuilder {
     // For lists that use source plugins.
     if ($source_plugin) {
       $plugin = $this->linkSourceManager->createInstance($source_plugin, $source_plugin_configuration);
-      return $plugin->getLinks();
+      $size = isset($configuration['size']) && $configuration['size'] > 0 ? $configuration['size'] : NULL;
+      return $plugin->getLinks($size);
     }
 
     return [];
+  }
+
+  /**
+   * Prepares the "See all" link for the list.
+   *
+   * @param array $more
+   *   The link configuration.
+   *
+   * @return \Drupal\Core\Link|null
+   *   The Link object or NULL if one is not needed.
+   *
+   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+   */
+  protected function prepareMoreLink(array $more): ?Link {
+    if ($more['button'] === 'no') {
+      return NULL;
+    }
+
+    $overridden_title = FALSE;
+    $title = $this->t('See all');
+    if (isset($more['title_override']) && mb_strlen($more['title_override']) > 0) {
+      $overridden_title = TRUE;
+      $title = $more['title_override'];
+    }
+
+    if ($more['button'] === 'custom' && $more['target']['type'] === 'custom') {
+      $has_scheme = parse_url($more['target']['url'], PHP_URL_SCHEME) !== NULL;
+      try {
+        $url = $has_scheme ? Url::fromUri($more['target']['url']) : Url::fromUserInput($more['target']['url']);
+      }
+      catch (\InvalidArgumentException $exception) {
+        if ($more['target']['url'] !== '<front>') {
+          return NULL;
+        }
+
+        $url = Url::fromRoute('<front>');
+      }
+
+      return Link::fromTextAndUrl($title, $url);
+    }
+
+    if ($more['button'] === 'custom' && $more['target']['type'] === 'entity') {
+      $url = Url::fromUri("entity:{$more['target']['entity_type']}/{$more['target']['entity_id']}");
+      if (!$overridden_title) {
+        $entity = $this->entityTypeManager->getStorage($more['target']['entity_type'])->load($more['target']['entity_id']);
+        $title = $entity->label();
+      }
+      return Link::fromTextAndUrl($title, $url);
+    }
+
+    return NULL;
   }
 
 }

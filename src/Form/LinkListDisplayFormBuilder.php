@@ -6,8 +6,11 @@ namespace Drupal\oe_link_lists\Form;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Entity\Element\EntityAutocomplete;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
+use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
@@ -21,6 +24,20 @@ class LinkListDisplayFormBuilder {
   use DependencySerializationTrait;
 
   /**
+   * The element info manager.
+   *
+   * @var \Drupal\Core\Render\ElementInfoManagerInterface
+   */
+  protected $elementInfoManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * The link display plugin manager.
    *
    * @var \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface
@@ -32,9 +49,15 @@ class LinkListDisplayFormBuilder {
    *
    * @param \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface $linkDisplayPluginManager
    *   The link display plugin manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
+   * @param \Drupal\Core\Render\ElementInfoManagerInterface $elementInfoManager
+   *   The element info manager.
    */
-  public function __construct(LinkDisplayPluginManagerInterface $linkDisplayPluginManager) {
+  public function __construct(LinkDisplayPluginManagerInterface $linkDisplayPluginManager, EntityTypeManagerInterface $entityTypeManager, ElementInfoManagerInterface $elementInfoManager) {
     $this->linkDisplayPluginManager = $linkDisplayPluginManager;
+    $this->entityTypeManager = $entityTypeManager;
+    $this->elementInfoManager = $elementInfoManager;
   }
 
   /**
@@ -118,6 +141,8 @@ class LinkListDisplayFormBuilder {
         '#plugin' => $plugin,
       ];
     }
+
+    $this->buildGeneralConfigurationForm($form, $form_state, $link_list);
   }
 
   /**
@@ -179,9 +204,12 @@ class LinkListDisplayFormBuilder {
       $plugin->submitConfigurationForm($form['link_display']['plugin_configuration_wrapper'][$plugin_id], $subform_state);
     }
 
+    // Add the link display plugin configuration.
     $configuration = $link_list->getConfiguration();
     $configuration['display']['plugin'] = $plugin_id;
     $configuration['display']['plugin_configuration'] = $plugin->getConfiguration();
+
+    $this->applyGeneralListConfiguration($configuration, $form_state);
     $link_list->setConfiguration($configuration);
   }
 
@@ -200,6 +228,80 @@ class LinkListDisplayFormBuilder {
     $triggering_element = $form_state->getTriggeringElement();
     $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -2));
     return $element['link_display']['plugin_configuration_wrapper'];
+  }
+
+  /**
+   * Validates the target element.
+   *
+   * @param array $element
+   *   The element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+   */
+  public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
+    $string = trim($element['#value']);
+
+    $button = $form_state->getValue(['link_display', 'more', 'button']);
+    if ($button === 'custom' && $string === '') {
+      $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+      return;
+    }
+
+    // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::getUserEnteredStringAsUri()
+    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($string);
+    if ($entity_id !== NULL) {
+      /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
+      $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance([
+        'target_type' => $element['#target_type'],
+        'handler' => $element['#selection_handler'],
+      ]);
+      if (!$handler->validateReferenceableEntities([$entity_id])) {
+        $form_state->setError($element, t('The referenced entity (%type: %id) does not exist.', ['%type' => $element['#target_type'], '%id' => $entity_id]));
+      }
+
+      // Either an error or a valid entity is present. Exit early.
+      return;
+    }
+
+    $uri = '';
+    if (!empty($string) && parse_url($string, PHP_URL_SCHEME) === NULL) {
+      if (strpos($string, '<front>') === 0) {
+        $string = '/' . substr($string, strlen('<front>'));
+      }
+      $uri = 'internal:' . $string;
+    }
+
+    // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+    if (
+      parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
+      !in_array($element['#value'][0], ['/', '?', '#'], TRUE) &&
+      substr($element['#value'], 0, 7) !== '<front>'
+    ) {
+      $form_state->setError($element, t('The specified target is invalid. Manually entered paths should start with one of the following characters: / ? #'));
+    }
+  }
+
+  /**
+   * Validates the more link override is there if the checkbox is checked.
+   *
+   * @param array $element
+   *   The element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public static function validateMoreLinkOverride(array $element, FormStateInterface $form_state): void {
+    $title = trim($element['#value']);
+    if ($title !== '') {
+      // If we have an override, nothing to validate.
+      return;
+    }
+
+    $more = $form_state->getValue(['link_display', 'more']);
+    if ((bool) $more['more_title_override']) {
+      $form_state->setError($element, t('The button label is required if you want to override the "See all" button title.'));
+    }
   }
 
   /**
@@ -228,6 +330,170 @@ class LinkListDisplayFormBuilder {
   protected function getConfigurationPluginConfiguration(LinkListInterface $link_list): array {
     $configuration = $link_list->getConfiguration();
     return $configuration['display']['plugin_configuration'] ?? [];
+  }
+
+  /**
+   * Builds the general configuration form for the list.
+   *
+   * Includes options such as the size and "See all" button.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param \Drupal\oe_link_lists\Entity\LinkListInterface $link_list
+   *   The link list.
+   */
+  protected function buildGeneralConfigurationForm(array &$form, FormStateInterface $form_state, LinkListInterface $link_list): void {
+    $configuration = $link_list->getConfiguration();
+
+    $options = [0 => $this->t('All')];
+    $range = range(1, 20);
+    $options += array_combine($range, $range);
+
+    $form['link_display']['size'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Number of items'),
+      '#weight' => 10,
+      '#options' => $options,
+      '#default_value' => $configuration['size'] ?? 0,
+    ];
+
+    $form['link_display']['more'] = [
+      '#type' => 'fieldset',
+      '#weight' => 11,
+      '#title' => $this->t('Display button to see all links'),
+      '#states' => [
+        'invisible' => [
+          'select[name="link_display[size]"]' => ['value' => 0],
+        ],
+      ],
+    ];
+
+    $form['link_display']['more']['button'] = [
+      '#type' => 'radios',
+      '#title' => '',
+      '#default_value' => $configuration['more']['button'] ?? 'no',
+      '#options' => [
+        'no' => $this->t('No, do not display "See all" button'),
+        'custom' => $this->t('Yes, display a custom button'),
+      ],
+    ];
+
+    $default_target = '';
+    if (isset($configuration['more']['target'])) {
+      if ($configuration['more']['target']['type'] === 'entity') {
+        if ($entity = $this->entityTypeManager->getStorage($configuration['more']['target']['entity_type'])->load($configuration['more']['target']['entity_id'])) {
+          $default_target = EntityAutocomplete::getEntityLabels([$entity]);
+        }
+      }
+      if ($configuration['more']['target']['type'] === 'custom') {
+        $default_target = $configuration['more']['target']['url'];
+      }
+    }
+
+    // This element behaves like an entity autocomplete form element but has
+    // extra custom validation to allow any routes to be specified.
+    $form['link_display']['more']['more_target'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Target'),
+      '#target_type' => 'node',
+      '#selection_handler' => 'default',
+      '#autocreate' => FALSE,
+      '#process' => $this->elementInfoManager->getInfoProperty('entity_autocomplete', '#process'),
+      '#default_value' => $default_target,
+      '#element_validate' => [[get_class($this), 'validateMoreTarget']],
+      '#states' => [
+        'visible' => [
+          'input[name="link_display[more][button]"]' => ['value' => 'custom'],
+        ],
+        'required' => [
+          'input[name="link_display[more][button]"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+
+    $form['link_display']['more']['more_title_override'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Override the button label. Defaults to "See all" or the referenced entity label.'),
+      '#default_value' => isset($configuration['more']['title_override']) && !is_null($configuration['more']['title_override']),
+      '#states' => [
+        'visible' => [
+          'input[name="link_display[more][button]"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+    $form['link_display']['more']['more_title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Button label'),
+      '#default_value' => $configuration['more']['title_override'] ?? '',
+      '#element_validate' => [[get_class($this), 'validateMoreLinkOverride']],
+      '#states' => [
+        'visible' => [
+          'input[name="link_display[more][button]"]' => ['value' => 'custom'],
+          'input[name="link_display[more][more_title_override]"]' => ['checked' => TRUE],
+        ],
+        'required' => [
+          'input[name="link_display[more][more_title_override]"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Applies the general list configuration to the overall config values.
+   *
+   * @param array $configuration
+   *   The list configuration.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  protected function applyGeneralListConfiguration(array &$configuration, FormStateInterface $form_state): void {
+    // Add the rest of the list configuration.
+    $configuration['size'] = (int) $form_state->getValue(['link_display', 'size']);
+    if ($configuration['size'] === 0) {
+      // If we show all items, we clear any other configuration.
+      $configuration['more'] = [
+        'button' => 'no',
+      ];
+      return;
+    }
+
+    $more = $form_state->getValue(['link_display', 'more']);
+    if ($more['button'] === 'no') {
+      // If we don't show all items but we don't want a More button, we clear
+      // any other configuration.
+      $configuration['more'] = [
+        'button' => 'no',
+      ];
+      return;
+    }
+
+    $configuration['more'] = [
+      'button' => $more['button'],
+    ];
+
+    $configuration['more']['title_override'] = (bool) $more['more_title_override'] ? $more['more_title'] : NULL;
+
+    // Get the target for the More button.
+    $target = $more['more_target'];
+    $id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($target);
+    if (is_numeric($id)) {
+      // If we  get an ID, it means we are dealing with a URL.
+      $configuration['more']['target'] = [
+        'type' => 'entity',
+        'entity_type' => 'node',
+        'entity_id' => $id,
+      ];
+
+      return;
+    }
+
+    // Otherwise it's a custom URL.
+    $configuration['more']['target'] = [
+      'type' => 'custom',
+      'url' => $target,
+    ];
   }
 
 }
