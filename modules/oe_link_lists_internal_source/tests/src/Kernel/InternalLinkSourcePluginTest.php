@@ -302,7 +302,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
    *   An array of entity data.
    */
   protected function getTestEntities(): array {
-    $two_years_ago = \Drupal::time()->getRequestTime() - 2 * 12 * 365 * 24 * 60 * 60;
+    $two_years_ago = $this->container->get('datetime.time')->getRequestTime() - 2 * 12 * 365 * 24 * 60 * 60;
     return [
       [
         'name' => 'A' . $this->randomString(),

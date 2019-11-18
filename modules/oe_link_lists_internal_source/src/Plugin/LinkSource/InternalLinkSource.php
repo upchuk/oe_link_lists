@@ -14,7 +14,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Render\Element;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
@@ -232,7 +231,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     $this->configuration['bundle'] = $form_state->getValue('bundle');
 
     // Retrieve all the filter plugins and add their configuration.
-    foreach (Element::children($form['filters']) as $plugin_id) {
+    foreach (array_keys($form_state->getValue('filters', [])) as $plugin_id) {
       /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
       $plugin = $this->filterPluginManager->createInstance($plugin_id);
       $plugin_form_state = SubformState::createForSubform($form['filters'][$plugin_id], $form, $form_state);
