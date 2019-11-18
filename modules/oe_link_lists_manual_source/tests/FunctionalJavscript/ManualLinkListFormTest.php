@@ -85,7 +85,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Create an external link.
-    $this->createInlineExternalLink('http://example/com', 'Test title', 'Test teaser');
+    $this->createInlineExternalLink('http://example.com', 'Test title', 'Test teaser');
 
     // Save the list and make sure the values are saved correctly.
     $this->getSession()->getPage()->pressButton('Save');
@@ -97,7 +97,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertCount(1, $links);
     /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link */
     $link = reset($links);
-    $this->assertEquals('http://example/com', $link->get('url')->uri);
+    $this->assertEquals('http://example.com', $link->get('url')->uri);
     $this->assertEquals('Test title', $link->get('title')->value);
     $this->assertEquals('Test teaser', $link->get('teaser')->value);
     // Check also the plugin configuration values.
@@ -110,19 +110,19 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     /** @var \Drupal\oe_link_lists\LinkInterface $link */
     $link = reset($links);
     $this->assertInstanceOf(DefaultLink::class, $link);
-    $this->assertEquals('http://example/com', $link->getUrl()->toString());
+    $this->assertEquals('http://example.com', $link->getUrl()->toString());
     $this->assertEquals('Test title', $link->getTitle());
     $this->assertEquals('Test teaser', $link->getTeaser()['#markup']);
     $this->assertCount(1, $link_list_storage->loadMultiple());
 
     // Edit the link list and check the values are shown correctly in the form.
     $this->drupalGet($link_list->toUrl('edit-form'));
-    $this->assertSession()->pageTextContains('External link to: http://example/com');
+    $this->assertSession()->pageTextContains('External link to: http://example.com');
     $edit = $this->getSession()->getPage()->find('xpath', '(//input[@type="submit" and @value="Edit"])[1]');
     $edit->press();
     $this->assertSession()->assertWaitOnAjaxRequest();
     $links_wrapper = $this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex');
-    $this->assertSession()->fieldValueEquals('URL', 'http://example/com', $links_wrapper);
+    $this->assertSession()->fieldValueEquals('URL', 'http://example.com', $links_wrapper);
     $this->assertSession()->fieldValueEquals('Title', 'Test title', $links_wrapper);
     $this->assertSession()->fieldValueEquals('Teaser', 'Test teaser', $links_wrapper);
     $this->getSession()->getPage()->pressButton('Cancel');
@@ -161,7 +161,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
 
     // Edit the link list and check the values are shown correctly in the form.
     $this->drupalGet($link_list->toUrl('edit-form'));
-    $this->assertSession()->pageTextContains('External link to: http://example/com');
+    $this->assertSession()->pageTextContains('External link to: http://example.com');
     $this->assertSession()->pageTextContains('Internal link to: Page 1');
     $edit = $this->getSession()->getPage()->find('xpath', '(//input[@type="submit" and @value="Edit"])[2]');
     $edit->press();
