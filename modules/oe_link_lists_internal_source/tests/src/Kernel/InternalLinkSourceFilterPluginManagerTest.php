@@ -46,7 +46,7 @@ class InternalLinkSourceFilterPluginManagerTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->manager = $this->container->get('plugin.manager.internal_source_filter');
+    $this->manager = $this->container->get('plugin.manager.oe_link_lists.internal_source_filter');
     $this->state = $this->container->get('state');
   }
 

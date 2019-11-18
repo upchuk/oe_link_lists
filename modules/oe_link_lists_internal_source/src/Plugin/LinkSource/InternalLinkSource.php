@@ -112,7 +112,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
       $container->get('event_dispatcher'),
-      $container->get('plugin.manager.internal_source_filter')
+      $container->get('plugin.manager.oe_link_lists.internal_source_filter')
     );
   }
 
