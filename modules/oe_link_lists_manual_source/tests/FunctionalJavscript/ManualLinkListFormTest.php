@@ -18,27 +18,6 @@ use Drupal\oe_link_lists\Entity\LinkListInterface;
 class ManualLinkListFormTest extends WebDriverTestBase {
 
   /**
-   * The link storage.
-   *
-   * @var \Drupal\Core\Entity\ContentEntityStorageInterface
-   */
-  protected $linkStorage;
-
-  /**
-   * The link list storage.
-   *
-   * @var \Drupal\Core\Entity\ContentEntityStorageInterface
-   */
-  protected $linkListStorage;
-
-  /**
-   * The link source plugin manager.
-   *
-   * @var \Drupal\oe_link_lists\LinkSourcePluginManagerInterface
-   */
-  protected $linkSourcePluginManager;
-
-  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -72,10 +51,6 @@ class ManualLinkListFormTest extends WebDriverTestBase {
       'title' => 'Page 2',
       'body' => 'Page 2 body',
     ]);
-
-    $this->linkStorage = $this->container->get('entity_type.manager')->getStorage('link_list_link');
-    $this->linkListStorage = $this->container->get('entity_type.manager')->getStorage('link_list');
-    $this->linkSourcePluginManager = $this->container->get('plugin.manager.link_source');
   }
 
   /**
@@ -84,6 +59,11 @@ class ManualLinkListFormTest extends WebDriverTestBase {
    * Tests a number of combinations of external and internal links.
    */
   public function testManualLinkList(): void {
+    /** @var \Drupal\Core\Entity\EntityStorageInterface $link_storage */
+    $link_storage = \Drupal::service('entity_type.manager')->getStorage('link_list_link');
+    /** @var \Drupal\Core\Entity\EntityStorageInterface $link_list_storage */
+    $link_list_storage = \Drupal::service('entity_type.manager')->getStorage('link_list');
+
     $web_user = $this->drupalCreateUser([
       'bypass node access',
       'administer link list link entities',
@@ -110,7 +90,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     // Save the list and make sure the values are saved correctly.
     $this->getSession()->getPage()->pressButton('Save');
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-    $link_list = $this->linkListStorage->load(1);
+    $link_list = $link_list_storage->load(1);
     $this->assertEquals('Test list', $link_list->getTitle());
     $this->assertEquals('List 1', $link_list->getAdministrativeTitle());
     $links = $link_list->get('links')->referencedEntities();
@@ -133,7 +113,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertEquals('http://example/com', $link->getUrl()->toString());
     $this->assertEquals('Test title', $link->getTitle());
     $this->assertEquals('Test teaser', $link->getTeaser()['#markup']);
-    $this->assertCount(1, $this->linkStorage->loadMultiple());
+    $this->assertCount(1, $link_list_storage->loadMultiple());
 
     // Edit the link list and check the values are shown correctly in the form.
     $this->drupalGet($link_list->toUrl('edit-form'));
@@ -153,9 +133,9 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->getSession()->getPage()->pressButton('Save');
 
     // Check the values are stored correctly.
-    $this->linkListStorage->resetCache();
+    $link_list_storage->resetCache();
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-    $link_list = $this->linkListStorage->load(1);
+    $link_list = $link_list_storage->load(1);
     $this->assertCount(2, $link_list->get('links')->getValue());
     /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link */
     $link = $link_list->get('links')->offsetGet(1)->entity;
@@ -176,8 +156,8 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertEquals($link->getEntity()->toUrl(), $link->getUrl());
     $this->assertEquals('Page 1', $link->getTitle());
     $this->assertEquals('Page 1 body', $link->getTeaser()['#text']);
-    $this->linkStorage->resetCache();
-    $this->assertCount(2, $this->linkStorage->loadMultiple());
+    $link_storage->resetCache();
+    $this->assertCount(2, $link_storage->loadMultiple());
 
     // Edit the link list and check the values are shown correctly in the form.
     $this->drupalGet($link_list->toUrl('edit-form'));
@@ -200,9 +180,9 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->getSession()->getPage()->pressButton('Save');
 
     // Check the values are stored correctly.
-    $this->linkListStorage->resetCache();
+    $link_list_storage->resetCache();
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-    $link_list = $this->linkListStorage->load(1);
+    $link_list = $link_list_storage->load(1);
     $this->assertCount(3, $link_list->get('links')->getValue());
     /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link */
     $link = $link_list->get('links')->offsetGet(2)->entity;
@@ -218,8 +198,8 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertEquals($link->getEntity()->toUrl(), $link->getUrl());
     $this->assertEquals('Overridden title', $link->getTitle());
     $this->assertEquals('Overridden teaser', $link->getTeaser()['#markup']);
-    $this->linkStorage->resetCache();
-    $this->assertCount(3, $this->linkStorage->loadMultiple());
+    $link_storage->resetCache();
+    $this->assertCount(3, $link_storage->loadMultiple());
   }
 
   /**
@@ -290,7 +270,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
   protected function getLinksFromList(LinkListInterface $link_list): array {
     $configuration = $link_list->getConfiguration();
     /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
-    $plugin = $this->linkSourcePluginManager->createInstance($configuration['source']['plugin'], $configuration['source']['plugin_configuration']);
+    $plugin = \Drupal::service('plugin.manager.link_source')->createInstance($configuration['source']['plugin'], $configuration['source']['plugin_configuration']);
     return $plugin->getLinks();
   }
 
