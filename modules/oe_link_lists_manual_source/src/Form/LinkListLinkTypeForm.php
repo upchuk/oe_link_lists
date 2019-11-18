@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Form handler for linklistlink type forms.
+ * Form handler for link list link type forms.
  */
 class LinkListLinkTypeForm extends BundleEntityFormBase {
 
@@ -19,11 +19,11 @@ class LinkListLinkTypeForm extends BundleEntityFormBase {
 
     $entity_type = $this->entity;
     if ($this->operation == 'add') {
-      $form['#title'] = $this->t('Add linklistlink type');
+      $form['#title'] = $this->t('Add link list link type');
     }
     else {
       $form['#title'] = $this->t(
-        'Edit %label linklistlink type',
+        'Edit %label link list link type',
         ['%label' => $entity_type->label()]
       );
     }
@@ -32,7 +32,7 @@ class LinkListLinkTypeForm extends BundleEntityFormBase {
       '#title' => $this->t('Label'),
       '#type' => 'textfield',
       '#default_value' => $entity_type->label(),
-      '#description' => $this->t('The human-readable name of this linklistlink type.'),
+      '#description' => $this->t('The human-readable name of this link list link type.'),
       '#required' => TRUE,
       '#size' => 30,
     ];
@@ -45,7 +45,7 @@ class LinkListLinkTypeForm extends BundleEntityFormBase {
         'exists' => ['Drupal\oe_link_lists_manual_source\Entity\LinkListLinkType', 'load'],
         'source' => ['label'],
       ],
-      '#description' => $this->t('A unique machine-readable name for this linklistlink type. It must only contain lowercase letters, numbers, and underscores.'),
+      '#description' => $this->t('A unique machine-readable name for this link list link type. It must only contain lowercase letters, numbers, and underscores.'),
     ];
 
     return $this->protectBundleIdElement($form);
@@ -56,8 +56,8 @@ class LinkListLinkTypeForm extends BundleEntityFormBase {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = $this->t('Save linklistlink type');
-    $actions['delete']['#value'] = $this->t('Delete linklistlink type');
+    $actions['submit']['#value'] = $this->t('Save link list link type');
+    $actions['delete']['#value'] = $this->t('Delete link list link type');
     return $actions;
   }
 
@@ -74,10 +74,10 @@ class LinkListLinkTypeForm extends BundleEntityFormBase {
 
     $t_args = ['%name' => $entity_type->label()];
     if ($status == SAVED_UPDATED) {
-      $message = $this->t('The linklistlink type %name has been updated.', $t_args);
+      $message = $this->t('The link list link type %name has been updated.', $t_args);
     }
     elseif ($status == SAVED_NEW) {
-      $message = $this->t('The linklistlink type %name has been added.', $t_args);
+      $message = $this->t('The link list link type %name has been added.', $t_args);
     }
     $this->messenger()->addStatus($message);
 
