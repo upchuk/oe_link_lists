@@ -43,6 +43,9 @@ class InternalLinkSourceFilter extends Plugin {
    *
    * If no bundles are specified, the plugin supports all the bundles.
    * If no entity types are specified, the plugin supports all entity types.
+   * In this case, the InternalLinkSourceFilterInterface::isApplicable() method
+   * is used to determine if the plugin should apply in the context of the
+   * selected entity type and bundle.
    *
    * @var array
    */

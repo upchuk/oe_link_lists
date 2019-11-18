@@ -186,7 +186,7 @@ class InternalLinkSourceFilterTest extends WebDriverTestBase {
     $this->assertFalse($this->assertSession()->fieldExists('Old')->isChecked());
     $this->assertSession()->fieldNotExists('Name starts with');
     $this->assertSession()->fieldNotExists('Enabled');
-    // Select the "None" option.
+    // Select the "Old" option.
     $this->assertSession()->fieldExists('Old')->click();
     // Change the bundle to page.
     $this->getSession()->getPage()->selectFieldOption('Bundle', 'page');
