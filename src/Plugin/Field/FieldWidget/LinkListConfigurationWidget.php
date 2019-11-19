@@ -416,18 +416,12 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $field_name = $items->getName();
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
-    $form_parents = $form_state->get([
-      'field_storage',
-      '#parents',
-      '#fields',
-      $field_name,
-      'array_parents',
-    ]);
+    $widget_state = self::getWidgetState($form['#parents'], $field_name, $form_state);
 
     $configuration = $link_list->getConfiguration();
-    $configuration['display'] = $this->extractPluginConfiguration('link_display', $field_name, $form_parents, $form, $form_state);
+    $configuration['display'] = $this->extractPluginConfiguration('link_display', $field_name, $widget_state['array_parents'], $form, $form_state);
     if ($link_list->bundle() === 'dynamic') {
-      $configuration['source'] = $this->extractPluginConfiguration('link_source', $field_name, $form_parents, $form, $form_state);
+      $configuration['source'] = $this->extractPluginConfiguration('link_source', $field_name, $widget_state['array_parents'], $form, $form_state);
     }
     $this->applyGeneralListConfiguration($configuration, $field_name, $form, $form_state);
 
