@@ -411,6 +411,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+    parent::extractFormValues($items, $form, $form_state);
+
     $field_name = $items->getName();
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
@@ -423,8 +425,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     }
     $this->applyGeneralListConfiguration($configuration, $field_name, $form, $form_state);
 
-    $form_state->set('link_list_configuration', $configuration);
-    return parent::extractFormValues($items, $form, $form_state);
+    $items->get(0)->setValue(serialize($configuration));
   }
 
   /**
@@ -558,14 +559,11 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    // Instead of taking the values from the default extraction of the parent
-    // class, we take them from the form state storage where we had set them
-    // in self::extractFormValues().
-    if ($form_state->get('link_list_configuration')) {
-      return serialize($form_state->get('link_list_configuration'));
+    foreach ($values as $delta => $value) {
+      $values[$delta] = serialize($value);
     }
 
-    return serialize([]);
+    return $values;
   }
 
   /**
