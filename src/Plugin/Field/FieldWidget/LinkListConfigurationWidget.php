@@ -638,7 +638,10 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
     $string = trim($element['#value']);
 
-    $button_parents = array_merge(array_slice($element['#parents'], 0, -1), ['button']);
+    $button_parents = array_merge(
+      array_slice($element['#parents'], 0, -1),
+      ['button']
+    );
     $button = $form_state->getValue($button_parents);
     if ($button === 'custom' && $string === '') {
       $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
@@ -694,8 +697,12 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       return;
     }
 
-    $more = $form_state->getValue(['link_display', 'more']);
-    if ((bool) $more['more_title_override']) {
+    $override_parents = array_merge(
+      array_slice($element['#parents'], 0, -1),
+      ['more_title_override']
+    );
+    $more_title_override = $form_state->getValue($override_parents);
+    if ((bool) $more_title_override) {
       $form_state->setError($element, t('The button label is required if you want to override the "See all" button title.'));
     }
   }
