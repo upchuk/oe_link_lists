@@ -165,7 +165,6 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#empty_value' => '_none',
       '#options' => $this->linkSourcePluginManager->getPluginsAsOptions(),
       '#required' => TRUE,
-      '#ajax_element' => 'link_source',
       '#ajax' => [
         'callback' => [$this, 'pluginConfigurationAjaxCallback'],
         'wrapper' => 'link-source-plugin-configuration' . $wrapper_suffix,
@@ -253,7 +252,6 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#empty_value' => '_none',
       '#required' => TRUE,
       '#options' => $options,
-      '#ajax_element' => 'link_display',
       '#ajax' => [
         'callback' => [$this, 'pluginConfigurationAjaxCallback'],
         'wrapper' => 'link-display-plugin-configuration' . $wrapper_suffix,
@@ -601,8 +599,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    */
   public function pluginConfigurationAjaxCallback(array &$form, FormStateInterface $form_state): array {
     $triggering_element = $form_state->getTriggeringElement();
-    $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -2));
-    return $element[$triggering_element['#ajax_element']]['plugin_configuration_wrapper'];
+    $element = NestedArray::getValue($form, array_slice($triggering_element['#array_parents'], 0, -1));
+    return $element['plugin_configuration_wrapper'];
   }
 
   /**
