@@ -418,7 +418,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
     $widget_state = self::getWidgetState($form['#parents'], $field_name, $form_state);
 
-    $configuration = $link_list->getConfiguration();
+    $configuration = [];
     $configuration['display'] = $this->extractPluginConfiguration('link_display', $field_name, $widget_state['array_parents'], $form, $form_state);
     if ($link_list->bundle() === 'dynamic') {
       $configuration['source'] = $this->extractPluginConfiguration('link_source', $field_name, $widget_state['array_parents'], $form, $form_state);
