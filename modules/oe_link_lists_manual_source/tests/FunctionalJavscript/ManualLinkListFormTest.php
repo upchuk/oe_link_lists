@@ -168,8 +168,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $links_wrapper = $this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex');
     $this->assertSession()->fieldValueEquals('Target', 'Page 1 (1)', $links_wrapper);
-    $this->assertSession()->fieldExists('Override', $links_wrapper);
-    $this->assertSession()->checkboxNotChecked('Override');
+    $this->assertSession()->checkboxNotChecked('Override target values');
     $this->assertFalse($this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex .field--name-title')->isVisible());
     $this->assertFalse($this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex .field--name-teaser')->isVisible());
     $this->getSession()->getPage()->pressButton('Cancel');
@@ -200,6 +199,25 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertEquals('Overridden teaser', $link->getTeaser()['#markup']);
     $link_storage->resetCache();
     $this->assertCount(3, $link_storage->loadMultiple());
+
+    // Uncheck the override and make sure there are no more override values.
+    $this->drupalGet($link_list->toUrl('edit-form'));
+    $edit = $this->getSession()->getPage()->find('xpath', '(//input[@type="submit" and @value="Edit"])[3]');
+    $edit->press();
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $links_wrapper = $this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex');
+    $this->assertSession()->fieldValueEquals('Target', 'Page 2 (2)', $links_wrapper);
+    $this->assertSession()->checkboxChecked('Override target values', $links_wrapper);
+    $links_wrapper->uncheckField('Override target values');
+    $this->getSession()->getPage()->pressButton('Update Link');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->getSession()->getPage()->pressButton('Save');
+    $link_list_storage->resetCache();
+    $link_list = $link_list_storage->load(1);
+    /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link */
+    $link = $link_list->get('links')->offsetGet(2)->entity;
+    $this->assertTrue($link->get('title')->isEmpty());
+    $this->assertTrue($link->get('teaser')->isEmpty());
   }
 
   /**
@@ -221,7 +239,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $this->assertFalse($this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex .field--name-teaser')->isVisible());
     $links_wrapper->fillField('Target', "Page $page ($page)");
     if ($title || $teaser) {
-      $links_wrapper->checkField('Override');
+      $links_wrapper->checkField('Override target values');
       if ($title) {
         $links_wrapper->fillField('Title', $title);
       }

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_manual_source;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\inline_entity_form\Form\EntityInlineForm;
@@ -88,6 +89,25 @@ class LinkListLinkInlineForm extends EntityInlineForm {
           'input[name="' . $name . '"]' => ['checked' => TRUE],
         ],
       ];
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function buildEntity(array $entity_form, ContentEntityInterface $entity, FormStateInterface $form_state) {
+    parent::buildEntity($entity_form, $entity, $form_state);
+
+    if (!isset($entity_form['override'])) {
+      return;
+    }
+
+    // @todo use the form state to get the checked override value when the
+    // manual links are no longer mangled in the plugin form.
+    $override = (bool) $entity_form['override']['#value'];
+    if (!$override) {
+      $entity->set('title', NULL);
+      $entity->set('teaser', NULL);
     }
   }
 
