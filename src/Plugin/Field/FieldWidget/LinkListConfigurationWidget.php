@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -14,7 +13,7 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Site\Settings;
+use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
 use Drupal\oe_link_lists\LinkSourcePluginManagerInterface;
@@ -36,11 +35,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class LinkListConfigurationWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The link source plugin manager.
+   * The element info manager.
    *
-   * @var \Drupal\oe_link_lists\LinkSourcePluginManagerInterface
+   * @var \Drupal\Core\Render\ElementInfoManagerInterface
    */
-  protected $linkSourcePluginManager;
+  protected $elementInfoManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * The link display plugin manager.
@@ -50,11 +56,11 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
   protected $linkDisplayPluginManager;
 
   /**
-   * The entity type manager.
+   * The link source plugin manager.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\oe_link_lists\LinkSourcePluginManagerInterface
    */
-  protected $entityTypeManager;
+  protected $linkSourcePluginManager;
 
   /**
    * Constructs a LinkListConfigurationWidget object.
@@ -75,12 +81,16 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The link display plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info_manager
+   *   The element info manager.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EntityTypeManagerInterface $entity_type_manager, ElementInfoManagerInterface $element_info_manager) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
+
     $this->linkSourcePluginManager = $link_source_plugin_manager;
     $this->linkDisplayPluginManager = $link_display_plugin_manager;
     $this->entityTypeManager = $entity_type_manager;
+    $this->elementInfoManager = $element_info_manager;
   }
 
   /**
@@ -95,7 +105,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       $configuration['third_party_settings'],
       $container->get('plugin.manager.link_source'),
       $container->get('plugin.manager.link_display'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('plugin.manager.element_info')
     );
   }
 
@@ -306,7 +317,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
   protected function buildGeneralConfigurationForm(FieldItemListInterface $items, int $delta, array &$element, array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
-    $existing_configuration = $link_list->getConfiguration();
+    $configuration = $link_list->getConfiguration();
 
     $parents = array_merge($element['#field_parents'], [
       $items->getName(),
@@ -324,14 +335,14 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#title' => $this->t('Number of items'),
       '#weight' => 10,
       '#options' => $options,
-      '#default_value' => $existing_configuration['size'] ?? 0,
+      '#default_value' => $configuration['size'] ?? 0,
     ];
 
     $name = $first_parent . '[' . implode('][', array_merge($parents, ['size'])) . ']';
     $element['link_display']['more'] = [
       '#type' => 'fieldset',
       '#weight' => 11,
-      '#title' => $this->t('Display link to see all'),
+      '#title' => $this->t('Display button to see all links'),
       '#states' => [
         'invisible' => [
           'select[name="' . $name . '"]' => ['value' => 0],
@@ -342,7 +353,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $element['link_display']['more']['button'] = [
       '#type' => 'radios',
       '#title' => '',
-      '#default_value' => $existing_configuration['more']['button'] ?? 'no',
+      '#default_value' => $configuration['more']['button'] ?? 'no',
       '#options' => [
         'no' => $this->t('No, do not display "See all" button'),
         'custom' => $this->t('Yes, display a custom button'),
@@ -350,32 +361,35 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     ];
 
     $default_target = '';
-    if (isset($existing_configuration['more']['target']) && $existing_configuration['more']['target']['type'] == 'entity') {
-      $entity = $this->entityTypeManager->getStorage($existing_configuration['more']['target']['entity_type'])->load($existing_configuration['more']['target']['entity_id']);
-      $default_target = EntityAutocomplete::getEntityLabels([$entity]);
-    }
-    if (isset($existing_configuration['more']['target']) && $existing_configuration['more']['target']['type'] == 'custom') {
-      $default_target = $existing_configuration['more']['target']['url'];
+    if (isset($configuration['more']['target'])) {
+      if ($configuration['more']['target']['type'] === 'entity') {
+        if ($entity = $this->entityTypeManager->getStorage($configuration['more']['target']['entity_type'])->load($configuration['more']['target']['entity_id'])) {
+          $default_target = EntityAutocomplete::getEntityLabels([$entity]);
+        }
+      }
+      if ($configuration['more']['target']['type'] === 'custom') {
+        $default_target = $configuration['more']['target']['url'];
+      }
     }
 
-    $data = serialize([]) . 'nodedefault';
-    $selection_settings_key = Crypt::hmacBase64($data, Settings::getHashSalt());
-
+    // This element behaves like an entity autocomplete form element but has
+    // extra custom validation to allow any routes to be specified.
     $name = $first_parent . '[' . implode('][', array_merge($parents, ['more', 'button'])) . ']';
     $element['link_display']['more']['more_target'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Target'),
       '#description' => $this->t('This can be an external link or you can autocomplete to find internal content.'),
-      '#autocomplete_route_name' => 'system.entity_autocomplete',
-      '#autocomplete_route_parameters' => [
-        'target_type' => 'node',
-        'selection_handler' => 'default',
-        'selection_settings_key' => $selection_settings_key,
-      ],
+      '#target_type' => 'node',
+      '#selection_handler' => 'default',
+      '#autocreate' => FALSE,
+      '#process' => $this->elementInfoManager->getInfoProperty('entity_autocomplete', '#process'),
       '#default_value' => $default_target,
       '#element_validate' => [[get_class($this), 'validateMoreTarget']],
       '#states' => [
         'visible' => [
+          'input[name="' . $name . '"]' => ['value' => 'custom'],
+        ],
+        'required' => [
           'input[name="' . $name . '"]' => ['value' => 'custom'],
         ],
       ],
@@ -384,7 +398,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $element['link_display']['more']['more_title_override'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Override the button label. Defaults to "See all" or the referenced entity label.'),
-      '#default_value' => isset($existing_configuration['more']['title_override']) && !is_null($existing_configuration['more']['title_override']),
+      '#default_value' => isset($configuration['more']['title_override']) && !is_null($configuration['more']['title_override']),
       '#states' => [
         'visible' => [
           'input[name="' . $name . '"]' => ['value' => 'custom'],
@@ -394,8 +408,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $title_override_name = $first_parent . '[' . implode('][', array_merge($parents, ['more', 'more_title_override'])) . ']';
     $element['link_display']['more']['more_title'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('The new label'),
-      '#default_value' => $existing_configuration['more']['title_override'] ?? '',
+      '#title' => $this->t('Button label'),
+      '#default_value' => $configuration['more']['title_override'] ?? '',
       '#element_validate' => [[get_class($this), 'validateMoreLinkOverride']],
       '#states' => [
         'visible' => [
@@ -539,7 +553,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       'button' => $more['button'],
     ];
 
-    $configuration['more']['title_override'] = (bool) $more['more_title_override'] === FALSE ? NULL : $more['more_title'];
+    $configuration['more']['title_override'] = (bool) $more['more_title_override'] ? $more['more_title'] : NULL;
 
     // Get the target for the More button.
     $target = $more['more_target'];
@@ -618,12 +632,31 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   *
+   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
     $string = trim($element['#value']);
+
+    $button = $form_state->getValue(['link_display', 'more', 'button']);
+    if ($button === 'custom' && $string === '') {
+      $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+      return;
+    }
+
+    // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::getUserEnteredStringAsUri()
     $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($string);
     if ($entity_id !== NULL) {
-      // If we find an ID, we don't need to validate.
+      /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
+      $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance([
+        'target_type' => $element['#target_type'],
+        'handler' => $element['#selection_handler'],
+      ]);
+      if (!$handler->validateReferenceableEntities([$entity_id])) {
+        $form_state->setError($element, t('The referenced entity (%type: %id) does not exist.', ['%type' => $element['#target_type'], '%id' => $entity_id]));
+      }
+
+      // Either an error or a valid entity is present. Exit early.
       return;
     }
 
@@ -635,9 +668,12 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       $uri = 'internal:' . $string;
     }
 
-    if (parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
+    // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+    if (
+      parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
       !in_array($element['#value'][0], ['/', '?', '#'], TRUE) &&
-      substr($element['#value'], 0, 7) !== '<front>') {
+      substr($element['#value'], 0, 7) !== '<front>'
+    ) {
       $form_state->setError($element, t('The specified target is invalid. Manually entered paths should start with one of the following characters: / ? #'));
     }
   }
@@ -652,14 +688,14 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    */
   public static function validateMoreLinkOverride(array $element, FormStateInterface $form_state): void {
     $title = trim($element['#value']);
-    if ($title !== "") {
+    if ($title !== '') {
       // If we have an override, nothing to validate.
       return;
     }
 
     $more = $form_state->getValue(['link_display', 'more']);
     if ((bool) $more['more_title_override']) {
-      $form_state->setError($element, t('The button label is required if you want to override the "See all" link'));
+      $form_state->setError($element, t('The button label is required if you want to override the "See all" button title.'));
     }
   }
 
