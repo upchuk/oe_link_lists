@@ -138,7 +138,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
 
-    if ($link_list->bundle() === 'manual') {
+    // Only the dynamic bundle exposes the choice of the link source plugin.
+    if ($link_list->bundle() !== 'dynamic') {
       return;
     }
 
