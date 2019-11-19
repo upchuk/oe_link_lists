@@ -19,11 +19,11 @@ class LinkListTypeForm extends BundleEntityFormBase {
 
     $entity_type = $this->entity;
     if ($this->operation == 'add') {
-      $form['#title'] = $this->t('Add linklist type');
+      $form['#title'] = $this->t('Add link list type');
     }
     else {
       $form['#title'] = $this->t(
-        'Edit %label linklist type',
+        'Edit %label link list type',
         ['%label' => $entity_type->label()]
       );
     }
@@ -32,7 +32,7 @@ class LinkListTypeForm extends BundleEntityFormBase {
       '#title' => $this->t('Label'),
       '#type' => 'textfield',
       '#default_value' => $entity_type->label(),
-      '#description' => $this->t('The human-readable name of this linklist type.'),
+      '#description' => $this->t('The human-readable name of this link list type.'),
       '#required' => TRUE,
       '#size' => 30,
     ];
@@ -45,7 +45,7 @@ class LinkListTypeForm extends BundleEntityFormBase {
         'exists' => ['Drupal\oe_link_lists\Entity\LinkListType', 'load'],
         'source' => ['label'],
       ],
-      '#description' => $this->t('A unique machine-readable name for this linklist type. It must only contain lowercase letters, numbers, and underscores.'),
+      '#description' => $this->t('A unique machine-readable name for this link list type. It must only contain lowercase letters, numbers, and underscores.'),
     ];
 
     return $this->protectBundleIdElement($form);

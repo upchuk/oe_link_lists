@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 
 /**
- * Defines a class to build a listing of linklist type entities.
+ * Defines a class to build a listing of link list type entities.
  *
  * @see \Drupal\oe_link_lists\Entity\LinkListType
  */
@@ -41,7 +41,7 @@ class LinkListTypeListBuilder extends ConfigEntityListBuilder {
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t(
-      'No linklist types available. <a href=":link">Add linklist type</a>.',
+      'No link list types available. <a href=":link">Add link list type</a>.',
       [':link' => Url::fromRoute('entity.link_list_type.add_form')->toString()]
     );
 
