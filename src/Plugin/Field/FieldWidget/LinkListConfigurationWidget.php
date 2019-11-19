@@ -418,64 +418,54 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
     $widget_state = self::getWidgetState($form['#parents'], $field_name, $form_state);
 
-    $configuration = [];
-    $configuration['display'] = $this->extractPluginConfiguration('link_display', $field_name, $widget_state['array_parents'], $form, $form_state);
-    if ($link_list->bundle() === 'dynamic') {
-      $configuration['source'] = $this->extractPluginConfiguration('link_source', $field_name, $widget_state['array_parents'], $form, $form_state);
-    }
-    $this->applyGeneralListConfiguration($configuration, $field_name, $form, $form_state);
+    foreach ($items as $delta => $value) {
+      $configuration = [];
 
-    $items->get(0)->setValue(serialize($configuration));
+      $element = NestedArray::getValue($form, array_merge($widget_state['array_parents'], [$delta]));
+
+      $configuration['display'] = $this->extractPluginConfiguration('link_display', $element, $form_state);
+
+      if ($link_list->bundle() === 'dynamic') {
+        $configuration['source'] = $this->extractPluginConfiguration('link_source', $element, $form_state);
+      }
+
+      $this->applyGeneralListConfiguration($configuration, $element, $form_state);
+
+      $items->get($delta)->setValue(serialize($configuration));
+    }
   }
 
   /**
    * Extracts plugin configuration values.
    *
-   * It instantiates the selected plugin, calls it's submit method and returns
+   * It instantiates the selected plugin, calls its submit method and returns
    * the configuration values for this plugin type.
    *
    * @param string $plugin_type
    *   The plugin type: link_source or link_display.
-   * @param string $field_name
-   *   The configured field name.
-   * @param array $form_parents
-   *   The parents of the form element where our field is, in the form itself.
-   * @param array $form
-   *   The complete form.
+   * @param array $element
+   *   The single widget form element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    *
    * @return array
    *   The configuration for the plugin type.
    */
-  protected function extractPluginConfiguration(string $plugin_type, string $field_name, array $form_parents, array $form, FormStateInterface $form_state): array {
-    /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-    $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
+  protected function extractPluginConfiguration(string $plugin_type, array $element, FormStateInterface $form_state): array {
     $plugin_managers = [
       'link_source' => $this->linkSourcePluginManager,
       'link_display' => $this->linkDisplayPluginManager,
     ];
-    $configuration_keys = [
-      'link_source' => 'source',
-      'link_display' => 'display',
-    ];
 
-    $configuration = $link_list->getConfiguration();
-    $configuration = $configuration[$configuration_keys[$plugin_type]] ?? [];
+    $configuration = [];
 
-    $parents = array_merge($form['#parents'], [
-      $field_name,
-      0,
-      $plugin_type,
-    ]);
-
-    $plugin_id = $form_state->getValue(array_merge($parents, ['plugin']));
+    $plugin_id = $form_state->getValue(array_merge($element['#parents'], [$plugin_type, 'plugin']));
     if ($plugin_id) {
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
       $plugin = $plugin_managers[$plugin_type]->createInstance($plugin_id);
-      $element = NestedArray::getValue($form, array_merge($form_parents, [0]));
+
       if (isset($element[$plugin_type]['plugin_configuration_wrapper'][$plugin_id])) {
-        $subform_state = SubformState::createForSubform($element[$plugin_type]['plugin_configuration_wrapper'][$plugin_id], $form, $form_state);
+        $subform_state = SubformState::createForSubform($element[$plugin_type]['plugin_configuration_wrapper'][$plugin_id], $form_state->getCompleteForm(), $form_state);
         $plugin->submitConfigurationForm($element[$plugin_type]['plugin_configuration_wrapper'][$plugin_id], $subform_state);
       }
 
@@ -492,19 +482,13 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *
    * @param array $configuration
    *   The list configuration.
-   * @param string $field_name
-   *   The field name.
-   * @param array $form
-   *   The form.
+   * @param array $element
+   *   The single widget form element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  protected function applyGeneralListConfiguration(array &$configuration, string $field_name, array $form, FormStateInterface $form_state): void {
-    $parents = array_merge($form['#parents'], [
-      $field_name,
-      0,
-      'link_display',
-    ]);
+  protected function applyGeneralListConfiguration(array &$configuration, array $element, FormStateInterface $form_state): void {
+    $parents = array_merge($element['#parents'], ['link_display']);
 
     // Add the rest of the list configuration.
     $configuration['size'] = (int) $form_state->getValue(array_merge($parents, ['size']));
