@@ -154,23 +154,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#open' => TRUE,
     ];
 
-    $options = $this->linkSourcePluginManager->getPluginsAsOptions();
-
-    $plugin_id = $form_state->getValue(array_merge($parents, ['plugin']));
-    $existing_config = [];
-
-    if ($plugin_id && !$link_list->isNew()) {
-      $existing_config = $this->getConfigurationPluginConfiguration($link_list, 'source');
-    }
-
-    if (!$plugin_id && !$form_state->isProcessingInput()) {
-      // If we are just loading the form without a user making a choice, try to
-      // get the plugin from the link list itself.
-      $plugin_id = $this->getConfigurationPluginId($link_list, 'source');
-      // If the plugin is the same as the one in storage, prepare the stored
-      // plugin configuration to pass to the plugin form a bit later.
-      $existing_config = $this->getConfigurationPluginConfiguration($link_list, 'source');
-    }
+    $plugin_id = $form_state->getValue(array_merge($parents, ['plugin']), $this->getConfigurationPluginId($link_list, 'source'));
 
     $wrapper_suffix = $element['#field_parents'] ? '-' . implode('-', $element['#field_parents']) : '';
     $element['link_source']['plugin'] = [
@@ -178,7 +162,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#title' => t('Link source'),
       '#empty_option' => t('None'),
       '#empty_value' => '_none',
-      '#options' => $options,
+      '#options' => $this->linkSourcePluginManager->getPluginsAsOptions(),
       '#required' => TRUE,
       '#ajax_element' => 'link_source',
       '#ajax' => [
@@ -203,6 +187,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     // we pass potentially existing configuration to the plugin so that it can
     // use it in its form elements' default values.
     if ($plugin_id) {
+      $existing_config = $this->getConfigurationPluginConfiguration($link_list, 'source');
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
       $plugin = $this->linkSourcePluginManager->createInstance($plugin_id, $existing_config);
 
