@@ -638,7 +638,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
     $string = trim($element['#value']);
 
-    $button = $form_state->getValue(['link_display', 'more', 'button']);
+    $button_parents = array_merge(array_slice($element['#parents'], 0, -1), ['button']);
+    $button = $form_state->getValue($button_parents);
     if ($button === 'custom' && $string === '') {
       $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
       return;
