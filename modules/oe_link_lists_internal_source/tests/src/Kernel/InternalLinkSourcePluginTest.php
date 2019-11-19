@@ -191,7 +191,6 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(0, $plugin->getLinks());
     $this->assertEquals([], $this->extractEntityNames($plugin->getLinks()));
 
     // Only 2 entity_test entities of bundle bar start with the letter B.
