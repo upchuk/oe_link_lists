@@ -15,6 +15,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
+use Drupal\oe_link_lists\LinkCollection;
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -284,13 +286,14 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function getLinks(int $limit = NULL, int $offset = 0): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface {
     $entity_type_id = $this->configuration['entity_type'];
     $bundle_id = $this->configuration['bundle'];
+    $links = new LinkCollection();
 
     // Bail out if the configuration is not provided.
     if (empty($entity_type_id) || empty($bundle_id)) {
-      return [];
+      return $links;
     }
 
     try {
@@ -298,7 +301,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     }
     catch (PluginNotFoundException $exception) {
       // The entity is not available anymore in the system.
-      return [];
+      return $links;
     }
 
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
@@ -327,7 +330,6 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = $storage->loadMultiple($query->execute());
-    $links = [];
     foreach ($entities as $entity) {
       $event = new EntityValueResolverEvent($entity);
       $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);

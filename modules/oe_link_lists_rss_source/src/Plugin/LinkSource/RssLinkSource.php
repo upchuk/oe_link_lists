@@ -11,6 +11,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultEntityLink;
+use Drupal\oe_link_lists\LinkCollection;
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -106,11 +108,11 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getLinks(int $limit = NULL, int $offset = 0): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface {
     $feed = $this->getFeed();
 
     if (empty($feed)) {
-      return [];
+      return new LinkCollection();
     }
 
     /** @var \Drupal\aggregator\ItemStorageInterface $storage */
@@ -125,7 +127,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
 
     $ids = $query->execute();
     if (!$ids) {
-      return [];
+      return new LinkCollection();
     }
 
     return $this->prepareLinks($storage->loadMultiple($ids));
@@ -158,11 +160,11 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
    * @param \Drupal\aggregator\ItemInterface[] $entities
    *   Aggregator items.
    *
-   * @return \Drupal\oe_link_lists\LinkInterface[]
+   * @return \Drupal\oe_link_lists\LinkCollectionInterface
    *   The link objects.
    */
-  protected function prepareLinks(array $entities): array {
-    $links = [];
+  protected function prepareLinks(array $entities): LinkCollectionInterface {
+    $links = new LinkCollection();
     foreach ($entities as $entity) {
       $teaser = [
         '#markup' => $entity->getDescription(),

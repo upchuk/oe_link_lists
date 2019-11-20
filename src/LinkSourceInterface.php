@@ -29,9 +29,9 @@ interface LinkSourceInterface extends PluginFormInterface, ConfigurableInterface
    * @param int $offset
    *   An offset from the default result set.
    *
-   * @return \Drupal\oe_link_lists\LinkInterface[]
-   *   A list of links
+   * @return \Drupal\oe_link_lists\LinkCollectionInterface
+   *   A list of links.
    */
-  public function getLinks(int $limit = NULL, int $offset = 0): array;
+  public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface;
 
 }

@@ -4,6 +4,7 @@ namespace Drupal\oe_link_lists_test\Plugin\LinkDisplay;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginBase;
 
 /**
@@ -49,7 +50,7 @@ class Bar extends LinkDisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function build(array $links): array {
+  public function build(LinkCollectionInterface $links): array {
     $items = [];
     foreach ($links as $link) {
       if ($this->configuration['link']) {

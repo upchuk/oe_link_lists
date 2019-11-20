@@ -198,10 +198,10 @@ class LinkListViewBuilder extends EntityViewBuilder {
    * @param \Drupal\oe_link_lists\Entity\LinkListInterface $link_list
    *   The link list.
    *
-   * @return \Drupal\oe_link_lists\LinkInterface[]
+   * @return \Drupal\oe_link_lists\LinkCollectionInterface
    *   The link objects.
    */
-  protected function getLinksFromList(LinkListInterface $link_list): array {
+  protected function getLinksFromList(LinkListInterface $link_list): LinkCollectionInterface {
     $configuration = $link_list->getConfiguration();
     $source_plugin = $configuration['source']['plugin'] ?? NULL;
     $source_plugin_configuration = $configuration['source']['plugin_configuration'] ?? [];
@@ -213,7 +213,7 @@ class LinkListViewBuilder extends EntityViewBuilder {
       return $plugin->getLinks($size);
     }
 
-    return [];
+    return new LinkCollection();
   }
 
   /**
