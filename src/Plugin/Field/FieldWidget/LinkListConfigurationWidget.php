@@ -227,22 +227,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
 
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
-
-    $plugin_id = $form_state->getValue(array_merge($parents, ['plugin']));
-    $existing_config = [];
-    if ($plugin_id && !$link_list->isNew()) {
-      $existing_config = $this->getConfigurationPluginConfiguration($link_list, 'display');
-    }
-    if (!$plugin_id && !$form_state->isProcessingInput()) {
-      // If we are just loading the form without a user making a choice, try to
-      // get the plugin from the link list itself.
-      $plugin_id = $this->getConfigurationPluginId($link_list, 'display');
-      // If the plugin is the same as the one in storage, prepare the stored
-      // plugin configuration to pass to the plugin form a bit later.
-      $existing_config = $this->getConfigurationPluginConfiguration($link_list, 'display');
-    }
-
-    $options = $this->linkDisplayPluginManager->getPluginsAsOptions();
+    $plugin_id = $form_state->getValue(array_merge($parents, ['plugin']), $this->getConfigurationPluginId($link_list, 'display'));
 
     $wrapper_suffix = $element['#field_parents'] ? '-' . implode('-', $element['#field_parents']) : '';
     $element['link_display']['plugin'] = [
@@ -251,7 +236,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#empty_option' => $this->t('None'),
       '#empty_value' => '_none',
       '#required' => TRUE,
-      '#options' => $options,
+      '#options' => $this->linkDisplayPluginManager->getPluginsAsOptions(),
       '#ajax' => [
         'callback' => [$this, 'pluginConfigurationAjaxCallback'],
         'wrapper' => 'link-display-plugin-configuration' . $wrapper_suffix,
@@ -270,6 +255,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     ];
 
     if ($plugin_id) {
+      $existing_config = $this->getConfigurationPluginConfiguration($link_list, 'display');
       /** @var \Drupal\Core\Plugin\PluginFormInterface $plugin */
       $plugin = $this->linkDisplayPluginManager->createInstance($plugin_id, $existing_config);
 
@@ -420,9 +406,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
 
     foreach ($items as $delta => $value) {
       $configuration = [];
-
       $element = NestedArray::getValue($form, array_merge($widget_state['array_parents'], [$delta]));
-
       $configuration['display'] = $this->extractPluginConfiguration('link_display', $element, $form_state);
 
       if ($link_list->bundle() === 'dynamic') {
@@ -430,7 +414,6 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       }
 
       $this->applyGeneralListConfiguration($configuration, $element, $form_state);
-
       $items->get($delta)->setValue(serialize($configuration));
     }
   }
