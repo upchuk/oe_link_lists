@@ -19,7 +19,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @LinkSource(
  *   id = "manual_links",
  *   label = @Translation("Manual links"),
- *   description = @Translation("Source plugin that handles manual links.")
+ *   description = @Translation("Source plugin that handles manual links."),
+ *   internal = TRUE
  * )
  */
 class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryPluginInterface {

@@ -51,6 +51,7 @@ class LinkListTest extends KernelTestBase {
     // Create a link list.
     $link_list_storage = $this->entityTypeManager->getStorage('link_list');
     $values = [
+      'bundle' => 'dynamic',
       'title' => 'My link list',
       'administrative_title' => 'Link list 1',
     ];
@@ -70,10 +71,12 @@ class LinkListTest extends KernelTestBase {
     $link_list_storage = $this->entityTypeManager->getStorage('link_list');
     $values = [
       [
+        'bundle' => 'dynamic',
         'title' => 'First list',
         'administrative_title' => 'Admin 1',
       ],
       [
+        'bundle' => 'dynamic',
         'title' => 'Second list',
         'administrative_title' => 'Admin 2',
       ],
@@ -106,6 +109,7 @@ class LinkListTest extends KernelTestBase {
     $storage = $this->container->get('entity_type.manager')->getStorage('link_list');
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $storage->create([
+      'bundle' => 'dynamic',
       'title' => 'Test',
       'administrative_title' => 'Test',
     ]);
