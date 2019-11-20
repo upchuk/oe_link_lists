@@ -12,7 +12,7 @@ use Drupal\Core\Form\SubformState;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\oe_link_lists\DefaultLink;
+use Drupal\oe_link_lists\DefaultEntityLink;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
@@ -285,47 +285,48 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertEquals([], $plugin->getLinks());
 
     // Check that the correct links are retrieved.
+    $expected = $this->getExpectedLinks();
     $plugin->setConfiguration(['url' => $feeds['atom']]);
-    $expected = $this->getExpectedLinks($feeds['atom']);
-    $this->assertEquals($expected, $plugin->getLinks());
+    $this->assertEquals($expected['atom'], $plugin->getLinks());
     $plugin->setConfiguration(['url' => $feeds['rss']]);
-    $expected = $this->getExpectedLinks($feeds['rss']);
-    $this->assertEquals($expected, $plugin->getLinks());
+    $this->assertEquals($expected['rss'], $plugin->getLinks());
 
     // Check the limit and offset parameters.
     $links = $plugin->getLinks(5);
-    $this->assertEquals(array_slice($expected, 0, 5), $links);
+    $this->assertEquals(array_slice($expected['rss'], 0, 5), $links);
 
     $links = $plugin->getLinks(5, 2);
-    $this->assertEquals(array_slice($expected, 2, 5), $links);
+    $this->assertEquals(array_slice($expected['rss'], 2, 5), $links);
   }
 
   /**
    * Returns expected feed data.
    *
-   * @param string $feed_url
-   *   The feed URL the data is expected from.
-   *
    * @return array
    *   List of LinkInterface objects.
    */
-  protected function getExpectedLinks(string $feed_url): array {
-    $links = [
-      'http://www.example.com/atom.xml' => [
-        new DefaultLink(Url::fromUri('http://example.org/2003/12/14/atom03'), 'We tried to stop them, but we failed.', ['#markup' => 'Some other text.']),
-        new DefaultLink(Url::fromUri('http://example.org/2003/12/13/atom03'), 'Atom-Powered Robots Run Amok', ['#markup' => 'Some text.']),
-      ],
-    ];
+  protected function getExpectedLinks(): array {
+    $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
+    $item_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_item');
 
-    $feeds = $this->container->get('entity_type.manager')->getStorage('aggregator_feed')->loadByProperties(['url' => 'http://www.example.com/rss.xml']);
-    $feed = reset($feeds);
-    /** @var \Drupal\aggregator\ItemInterface $item */
-    foreach ($this->container->get('entity_type.manager')->getStorage('aggregator_item')->loadByFeed($feed->id()) as $item) {
-      $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
-      $links['http://www.example.com/rss.xml'][] = new DefaultLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+    $links = [];
+    $rss_urls = [
+      'atom' => 'http://www.example.com/atom.xml',
+      'rss' => 'http://www.example.com/rss.xml',
+    ];
+    foreach ($rss_urls as $name => $rss_url) {
+      $feeds = $feed_storage->loadByProperties(['url' => $rss_url]);
+      $feed = reset($feeds);
+      foreach ($item_storage->loadByFeed($feed->id()) as $item) {
+        /** @var \Drupal\aggregator\ItemInterface $item */
+        $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
+        $link = new DefaultEntityLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+        $link->setEntity($item);
+        $links[$name][] = $link;
+      }
     }
 
-    return $links[$feed_url];
+    return $links;
   }
 
 }

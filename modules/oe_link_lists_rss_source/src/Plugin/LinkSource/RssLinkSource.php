@@ -10,7 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
-use Drupal\oe_link_lists\DefaultLink;
+use Drupal\oe_link_lists\DefaultEntityLink;
 use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -173,7 +173,9 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
       catch (\InvalidArgumentException $exception) {
         $url = Url::fromRoute('<front>');
       }
-      $links[] = new DefaultLink($url, $entity->getTitle(), $teaser);
+      $link = new DefaultEntityLink($url, $entity->getTitle(), $teaser);
+      $link->setEntity($entity);
+      $links[] = $link;
     }
 
     return $links;
