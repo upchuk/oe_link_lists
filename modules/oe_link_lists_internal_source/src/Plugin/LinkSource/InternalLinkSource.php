@@ -16,6 +16,7 @@ use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
+use Drupal\oe_link_lists_internal_source\Event\InternalSourceQueryEvent;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -324,6 +325,11 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $plugin = $this->filterPluginManager->createInstance($plugin_id, $configuration);
       $plugin->apply($query, $context);
     }
+
+    // Allow others to alter the query to apply things like sorting, etc.
+    $query->addMetaData('oe_link_lists_internal_source', $this->configuration);
+    $event = new InternalSourceQueryEvent($query);
+    $this->eventDispatcher->dispatch(InternalSourceQueryEvent::NAME, $event);
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = $storage->loadMultiple($query->execute());

@@ -275,6 +275,46 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
   }
 
   /**
+   * Tests that the query alter using the event subscriber works.
+   */
+  public function testInternalSourceQueryAlter(): void {
+    $test_entities = [];
+    $test_entities_values = [
+      [
+        'name' => 'Entity one',
+        'type' => 'foo',
+      ],
+      [
+        'name' => 'Entity two',
+        'type' => 'foo',
+      ],
+    ];
+
+    foreach ($test_entities_values as $entity_values) {
+      $entity = EntityTest::create($entity_values);
+      $entity->save();
+      $test_entities[$entity->id()] = $entity->label();
+    }
+
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('internal');
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+    ]);
+
+    // The query has not yet been altered.
+    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()));
+
+    // Trigger the event subscriber to alter the query.
+    \Drupal::state()->set('internal_source_query_test_enable', TRUE);
+    // The test query alter should filter out the first entity.
+    unset($test_entities[1]);
+    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()));
+  }
+
+  /**
    * Helper method to extract entity ID and name from an array of test entities.
    *
    * @param \Drupal\oe_link_lists\EntityAwareLinkInterface[] $links
