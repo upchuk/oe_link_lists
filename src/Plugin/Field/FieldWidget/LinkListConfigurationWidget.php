@@ -162,7 +162,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#type' => 'select',
       '#title' => t('Link source'),
       '#empty_option' => t('None'),
-      '#empty_value' => '_none',
+      '#empty_value' => '',
       '#options' => $this->linkSourcePluginManager->getPluginsAsOptions(),
       '#required' => TRUE,
       '#ajax' => [
@@ -234,7 +234,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       '#type' => 'select',
       '#title' => $this->t('Link display'),
       '#empty_option' => $this->t('None'),
-      '#empty_value' => '_none',
+      '#empty_value' => '',
       '#required' => TRUE,
       '#options' => $this->linkDisplayPluginManager->getPluginsAsOptions(),
       '#ajax' => [
