@@ -125,6 +125,22 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     $this->assertEquals('foo', $configuration['display']['plugin']);
     $this->assertEquals(['title' => NULL, 'more' => []], $configuration['display']['plugin_configuration']);
 
+    // Change the Source plugin to none.
+    $this->drupalGet('link_list/1/edit');
+    $this->getSession()->getPage()->selectFieldOption('Link source', 'None');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->disableNativeBrowserRequiredFieldValidation();
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->assertSession()->elementTextContains('css', '.messages--error', 'Link source field is required.');
+
+    // Change the display plugin to none.
+    $this->drupalGet('link_list/1/edit');
+    $this->getSession()->getPage()->selectFieldOption('Link display', 'None');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->disableNativeBrowserRequiredFieldValidation();
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->assertSession()->elementTextContains('css', '.messages--error', 'Link display field is required.');
+
     // Change the display plugin to make it configurable.
     $this->drupalGet('link_list/1/edit');
     $this->getSession()->getPage()->selectFieldOption('Link display', 'Bar');

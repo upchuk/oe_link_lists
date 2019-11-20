@@ -161,7 +161,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     $element['link_source']['plugin'] = [
       '#type' => 'select',
       '#title' => t('Link source'),
-      '#empty_option' => t('None'),
+      '#empty_option' => $this->t('None'),
       '#empty_value' => '',
       '#options' => $this->linkSourcePluginManager->getPluginsAsOptions(),
       '#required' => TRUE,
