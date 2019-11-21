@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultLink;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
+use Drupal\oe_link_lists\LinkCollection;
 use Drupal\oe_link_lists\LinkInterface;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface;
 use Drupal\oe_link_lists_manual_source\Event\EntityValueOverrideResolverEvent;
@@ -57,7 +58,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $links = [];
+    $links = new LinkCollection();
     foreach ($link_entities as $link_entity) {
       $link = $this->getLinkFromEntity($link_entity);
       if ($link) {

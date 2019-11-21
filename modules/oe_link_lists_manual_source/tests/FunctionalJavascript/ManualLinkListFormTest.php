@@ -285,7 +285,7 @@ class ManualLinkListFormTest extends WebDriverTestBase {
     $configuration = $link_list->getConfiguration();
     /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
     $plugin = \Drupal::service('plugin.manager.link_source')->createInstance($configuration['source']['plugin'], $configuration['source']['plugin_configuration']);
-    return $plugin->getLinks();
+    return $plugin->getLinks()->toArray();
   }
 
 }
