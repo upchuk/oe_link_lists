@@ -2,6 +2,7 @@
 
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
@@ -59,7 +60,7 @@ class FirstLetter extends InternalLinkSourceFilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function apply(QueryInterface $query, array $context): void {
+  public function apply(QueryInterface $query, array $context, RefinableCacheableDependencyInterface $cacheability): void {
     $query->condition('name', $this->configuration['first_letter'], 'STARTS_WITH');
   }
 

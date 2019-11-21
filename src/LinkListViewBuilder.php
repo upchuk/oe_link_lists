@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -188,8 +189,13 @@ class LinkListViewBuilder extends EntityViewBuilder {
     }
 
     $plugin = $this->linkDisplayManager->createInstance($display_plugin, $display_plugin_configuration);
+    $build = $plugin->build($links);
 
-    return $plugin->build($links);
+    // Apply the cacheability information of the link collection to the render
+    // array.
+    CacheableMetadata::createFromObject($links)->applyTo($build);
+
+    return $build;
   }
 
   /**

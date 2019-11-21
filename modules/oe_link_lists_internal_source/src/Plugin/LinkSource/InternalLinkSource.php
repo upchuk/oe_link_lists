@@ -7,6 +7,7 @@ namespace Drupal\oe_link_lists_internal_source\Plugin\LinkSource;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
@@ -325,7 +326,12 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     foreach ($this->configuration['filters'] as $plugin_id => $configuration) {
       /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
       $plugin = $this->filterPluginManager->createInstance($plugin_id, $configuration);
-      $plugin->apply($query, $context);
+      $cacheability = new CacheableMetadata();
+      $plugin->apply($query, $context, $cacheability);
+
+      // Apply the cacheability information provided by the plugin to the link
+      // collection.
+      $links->addCacheableDependency($cacheability);
     }
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
@@ -335,6 +341,9 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
       $links[] = $event->getLink();
     }
+
+    $links->addCacheContexts($entity_type->getListCacheContexts());
+    $links->addCacheTags($entity_type->getListCacheTags());
 
     return $links;
   }
