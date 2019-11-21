@@ -45,6 +45,27 @@ class LinkCollection implements LinkCollectionInterface {
   /**
    * {@inheritdoc}
    */
+  public function clear(): void {
+    $this->links = [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEmpty(): bool {
+    return empty($this->links);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function toArray(): array {
+    return $this->links;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function offsetExists($offset) {
     return isset($this->links[$offset]) || array_key_exists($offset, $this->links);
   }

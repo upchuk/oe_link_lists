@@ -22,4 +22,25 @@ interface LinkCollectionInterface extends \ArrayAccess, \IteratorAggregate, Refi
    */
   public function add(LinkInterface $link): LinkCollectionInterface;
 
+  /**
+   * Removes all the links from the collection.
+   */
+  public function clear(): void;
+
+  /**
+   * Returns if the collection is empty.
+   *
+   * @return bool
+   *   TRUE if the collection is empty, FALSE otherwise.
+   */
+  public function isEmpty(): bool;
+
+  /**
+   * Returns a native PHP array representation of the collection.
+   *
+   * @return \Drupal\oe_link_lists\LinkInterface[]
+   *   An array of link objects.
+   */
+  public function toArray(): array;
+
 }
