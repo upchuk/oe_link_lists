@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_rss_source\Plugin\LinkSource;
 
 use Drupal\aggregator\FeedInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -35,6 +36,13 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
   protected $entityTypeManager;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Constructs a RssLinkSource object.
    *
    * @param array $configuration
@@ -45,11 +53,14 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -72,7 +83,8 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('config.factory')
     );
   }
 
@@ -166,6 +178,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
     foreach ($entities as $entity) {
       $teaser = [
         '#markup' => $entity->getDescription(),
+        '#allowed_tags' => $this->getAllowedTeaserTags(),
       ];
       try {
         $url = Url::fromUri($entity->getLink());
@@ -179,6 +192,21 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
     }
 
     return $links;
+  }
+
+  /**
+   * Prepares the allowed tags when stripping the teaser.
+   *
+   * These tags are configured as part of the Aggregator module and the method
+   * is heavily inspired from there.
+   *
+   * @see _aggregator_allowed_tags()
+   *
+   * @return array
+   *   The list of allowed tags.
+   */
+  protected function getAllowedTeaserTags(): array {
+    return preg_split('/\s+|<|>/', $this->configFactory->get('aggregator.settings')->get('items.allowed_html'), -1, PREG_SPLIT_NO_EMPTY);
   }
 
 }

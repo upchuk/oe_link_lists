@@ -106,18 +106,21 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       ->willReturnCallback(function (RequestInterface $request, array $options = []) use ($test_module_path) {
         switch ($request->getUri()) {
           case 'http://www.example.com/atom.xml':
-            $filename = 'aggregator_test_atom.xml';
+            $filename = $test_module_path . DIRECTORY_SEPARATOR . 'aggregator_test_atom.xml';
             break;
 
           case 'http://www.example.com/rss.xml':
-            $filename = 'aggregator_test_rss091.xml';
+            $filename = $test_module_path . DIRECTORY_SEPARATOR . 'aggregator_test_rss091.xml';
+            break;
+
+          case 'http://ec.europa.eu/rss.xml':
+            $filename = drupal_get_path('module', 'oe_link_lists_rss_source') . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'rss_links_source_test_rss.xml';
             break;
 
           default:
             return new Response(404);
         }
 
-        $filename = $test_module_path . DIRECTORY_SEPARATOR . $filename;
         return new Response(200, [], file_get_contents($filename));
       });
 
@@ -297,6 +300,74 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
 
     $links = $plugin->getLinks(5, 2);
     $this->assertEquals(array_slice($expected['rss'], 2, 5), $links);
+  }
+
+  /**
+   * Tests that the RSS teaser is stripped according to the aggregator config.
+   */
+  public function testLinkTeaserTags(): void {
+    $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
+    $url = 'http://ec.europa.eu/rss.xml';
+
+    /** @var \Drupal\aggregator\FeedInterface $feed */
+    $feed = $feed_storage->create([
+      'title' => $this->randomString(),
+      'url' => $url,
+    ]);
+    $feed->save();
+    $feed->refreshItems();
+
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('rss');
+    $plugin->setConfiguration(['url' => $url]);
+    $links = $plugin->getLinks();
+    /** @var \Drupal\Core\Render\Renderer $renderer */
+    $renderer = $this->container->get('renderer');
+
+    $teasers = [];
+    foreach ($links as $link) {
+      $teaser = $link->getTeaser();
+      $teasers[] = (string) $renderer->renderRoot($teaser);
+    }
+
+    // By default, multiple tags are allowed, including paragraphs and links.
+    foreach ($teasers as $key => $teaser) {
+      $this->assertTrue(strpos($teaser, '</p>') !== FALSE);
+      if ($key === 0) {
+        // The first teaser also has a link tag.
+        $this->assertTrue(strpos($teaser, '</a>') !== FALSE);
+      }
+    }
+
+    // Configure the aggregator to strip link tags but still allow paragraphs.
+    $this->container->get('config.factory')
+      ->getEditable('aggregator.settings')
+      ->set('items.allowed_html', '<p>')
+      ->save();
+
+    $links = $plugin->getLinks();
+    foreach ($links as $link) {
+      $teaser = $link->getTeaser();
+      $rendered = (string) $renderer->renderRoot($teaser);
+      $this->assertTrue(strpos($rendered, '</p>') !== FALSE);
+      $this->assertFalse(strpos($rendered, '</a>'));
+    }
+
+    // Strip all tags now.
+    $this->container->get('config.factory')
+      ->getEditable('aggregator.settings')
+      ->set('items.allowed_html', '')
+      ->save();
+
+    $links = $plugin->getLinks();
+    foreach ($links as $link) {
+      $teaser = $link->getTeaser();
+      $rendered = (string) $renderer->renderRoot($teaser);
+      $this->assertFalse(strpos($rendered, '</p>'));
+      $this->assertFalse(strpos($rendered, '</a>'));
+    }
   }
 
   /**
