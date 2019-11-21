@@ -6,7 +6,6 @@ namespace Drupal\oe_link_lists_internal_source_test\EventSubscriber;
 
 use Drupal\Core\State\StateInterface;
 use Drupal\oe_link_lists_internal_source\Event\InternalSourceQueryEvent;
-use PHPUnit\Framework\Assert;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -54,10 +53,9 @@ class InternalSourceQuerySubscriberTest implements EventSubscriberInterface {
     }
 
     $query = $event->getQuery();
-    // Assert that we have query metadata.
     $configuration = $query->getMetaData('oe_link_lists_internal_source');
-    Assert::assertTrue(array_key_exists('entity_type', $configuration));
-    Assert::assertTrue(array_key_exists('bundle', $configuration));
+    // Set the query metadata onto the state so we can assert it in the test.
+    $this->state->set('internal_source_query_test_metadata', $configuration);
     $query->condition('name', 'Entity one', '!=');
   }
 

@@ -308,10 +308,16 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()));
 
     // Trigger the event subscriber to alter the query.
-    \Drupal::state()->set('internal_source_query_test_enable', TRUE);
+    $this->container->get('state')->set('internal_source_query_test_enable', TRUE);
     // The test query alter should filter out the first entity.
     unset($test_entities[1]);
     $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()));
+    $metadata = $this->container->get('state')->get('internal_source_query_test_metadata');
+    $this->assertEquals([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [],
+    ], $metadata);
   }
 
   /**
