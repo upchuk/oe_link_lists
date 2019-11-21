@@ -110,10 +110,13 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
    */
   public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface {
     $feed = $this->getFeed();
+    $link_collection = new LinkCollection();
 
     if (empty($feed)) {
-      return new LinkCollection();
+      return $link_collection;
     }
+
+    $link_collection->addCacheableDependency($feed);
 
     /** @var \Drupal\aggregator\ItemStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('aggregator_item');
@@ -127,7 +130,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
 
     $ids = $query->execute();
     if (!$ids) {
-      return new LinkCollection();
+      return $link_collection;
     }
 
     return $this->prepareLinks($storage->loadMultiple($ids));

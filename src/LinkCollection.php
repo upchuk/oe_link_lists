@@ -146,7 +146,7 @@ class LinkCollection implements LinkCollectionInterface {
     $max_age = $this->cacheMaxAge;
 
     foreach ($this->links as $link) {
-      $max_age = Cache::mergeMaxAges($max_age, $link->getCacheTags());
+      $max_age = Cache::mergeMaxAges($max_age, $link->getCacheMaxAge());
     }
 
     return $max_age;
