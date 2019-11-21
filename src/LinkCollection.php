@@ -93,10 +93,10 @@ class LinkCollection implements LinkCollectionInterface {
     // If the offset is not set, the [] operator has been used.
     if ($offset === NULL) {
       $this->add($value);
+      return;
     }
-    else {
-      $this->links[$offset] = $value;
-    }
+
+    $this->links[$offset] = $value;
   }
 
   /**
