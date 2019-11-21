@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
 
 /**
@@ -110,6 +111,45 @@ class LinkCollection implements LinkCollectionInterface {
    */
   public function getIterator() {
     return new \ArrayIterator($this->links);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    $tags = $this->cacheTags;
+
+    foreach ($this->links as $link) {
+      $tags = Cache::mergeTags($tags, $link->getCacheTags());
+    }
+
+    return $tags;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    $contexts = $this->cacheContexts;
+
+    foreach ($this->links as $link) {
+      $contexts = Cache::mergeContexts($contexts, $link->getCacheContexts());
+    }
+
+    return $contexts;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge() {
+    $max_age = $this->cacheMaxAge;
+
+    foreach ($this->links as $link) {
+      $max_age = Cache::mergeMaxAges($max_age, $link->getCacheTags());
+    }
+
+    return $max_age;
   }
 
 }

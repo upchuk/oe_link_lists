@@ -4,12 +4,15 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
 use Drupal\Core\Url;
 
 /**
  * Default link implementation for LinkSource links.
  */
 class DefaultLink implements LinkInterface {
+
+  use RefinableCacheableDependencyTrait;
 
   /**
    * The URL.

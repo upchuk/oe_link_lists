@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Url;
 
 /**
@@ -11,7 +12,7 @@ use Drupal\Core\Url;
  *
  * @see \Drupal\oe_link_lists\LinkSourceInterface
  */
-interface LinkInterface {
+interface LinkInterface extends RefinableCacheableDependencyInterface {
 
   /**
    * Returns the URL of the link.
