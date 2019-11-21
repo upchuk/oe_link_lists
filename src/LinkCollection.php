@@ -28,8 +28,8 @@ class LinkCollection implements LinkCollectionInterface {
    */
   public function __construct(array $links = []) {
     // Make use of the type declaration in the add() method.
-    foreach ($links as $link) {
-      $this->add($link);
+    foreach ($links as $offset => $value) {
+      $this->offsetSet($offset, $value);
     }
   }
 
