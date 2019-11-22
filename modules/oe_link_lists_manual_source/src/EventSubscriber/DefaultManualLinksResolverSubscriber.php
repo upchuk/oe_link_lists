@@ -62,6 +62,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
     foreach ($link_entities as $link_entity) {
       $link = $this->getLinkFromEntity($link_entity);
       if ($link) {
+        $link->addCacheableDependency($link_entity);
         $links[] = $link;
       }
     }
@@ -97,6 +98,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
       $link = new DefaultLink($url, $link_entity->getTitle(), ['#markup' => $link_entity->getTeaser()]);
       $event = new ManualLinkOverrideResolverEvent($link, $link_entity);
       $this->eventDispatcher->dispatch(ManualLinkOverrideResolverEvent::NAME, $event);
+
       return $event->getLink();
     }
 
@@ -109,8 +111,8 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
     $referenced_entity = $link_entity->get('target')->entity;
     $event = new EntityValueResolverEvent($referenced_entity);
     $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
-
     $link = $event->getLink();
+    $link->addCacheableDependency($referenced_entity);
 
     // Override the title and teaser.
     if (!$link_entity->get('title')->isEmpty()) {

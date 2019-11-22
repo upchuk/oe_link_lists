@@ -42,7 +42,6 @@ class LinkListLinkTest extends EntityKernelTestBase {
       'oe_link_lists_manual_source',
       'entity_reference_revisions',
     ]);
-
   }
 
   /**
