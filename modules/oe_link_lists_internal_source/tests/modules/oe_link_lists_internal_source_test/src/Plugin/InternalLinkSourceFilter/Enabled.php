@@ -60,6 +60,8 @@ class Enabled extends InternalLinkSourceFilterPluginBase {
    */
   public function apply(QueryInterface $query, array $context, RefinableCacheableDependencyInterface $cacheability): void {
     $query->addTag('enabled');
+    $cacheability->addCacheTags(['enabled_plugin_test_tag']);
+    $cacheability->mergeCacheMaxAge(1800);
   }
 
 }

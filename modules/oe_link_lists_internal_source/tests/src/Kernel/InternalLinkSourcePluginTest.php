@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\Tests\oe_link_lists_internal_source\Kernel;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\entity_test\Entity\EntityTestMulRevPub;
 use Drupal\entity_test\Entity\EntityTestNoBundle;
@@ -43,7 +44,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
   }
 
   /**
-   * Tests the referenced entities method.
+   * Tests the getLinks() method.
    *
    * @covers ::getLinks
    */
@@ -281,6 +282,79 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
     ], $state->get('internal_source_test_creation_time_context'));
+  }
+
+  /**
+   * Tests that the proper cacheability metadata is returned by the plugin.
+   */
+  public function testCacheabilityMetadata(): void {
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('internal');
+
+    $links = $plugin->getLinks();
+    $this->assertEquals([], $links->getCacheTags());
+    $this->assertEquals([], $links->getCacheContexts());
+    $this->assertEquals(Cache::PERMANENT, $links->getCacheMaxAge());
+
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+    ]);
+    $links = $plugin->getLinks();
+    $this->assertEquals(['entity_test_list'], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(Cache::PERMANENT, $links->getCacheMaxAge());
+
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [
+        'enabled' => [
+          'enabled' => TRUE,
+        ],
+      ],
+    ]);
+    $links = $plugin->getLinks();
+    $this->assertEquals([
+      'enabled_plugin_test_tag',
+      'entity_test_list',
+    ], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(1800, $links->getCacheMaxAge());
+
+    // Create a test entity.
+    $test_entity_one = EntityTest::create([
+      'name' => $this->randomString(),
+      'type' => 'foo',
+    ]);
+    $test_entity_one->save();
+
+    $links = $plugin->getLinks();
+    $this->assertEquals([
+      'enabled_plugin_test_tag',
+      'entity_test:' . $test_entity_one->id(),
+      'entity_test_list',
+    ], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(1800, $links->getCacheMaxAge());
+
+    // Add another entity.
+    $test_entity_two = EntityTest::create([
+      'name' => $this->randomString(),
+      'type' => 'foo',
+    ]);
+    $test_entity_two->save();
+
+    $links = $plugin->getLinks();
+    $this->assertEquals([
+      'enabled_plugin_test_tag',
+      'entity_test:' . $test_entity_one->id(),
+      'entity_test:' . $test_entity_two->id(),
+      'entity_test_list',
+    ], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(1800, $links->getCacheMaxAge());
   }
 
   /**
