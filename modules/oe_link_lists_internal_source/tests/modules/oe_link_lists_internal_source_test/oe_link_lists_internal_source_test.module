@@ -20,3 +20,17 @@ function oe_link_lists_internal_source_test_internal_link_source_filter_info_alt
     $info['creation_time']['entity_types'] = $entity_types;
   }
 }
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Fix the entity_test_no_bundle entity type declaration that misses the label
+ * entity key.
+ */
+function oe_link_lists_internal_source_test_entity_type_alter(array &$entity_types) {
+  if (isset($entity_types['entity_test_no_bundle'])) {
+    $keys = $entity_types['entity_test_no_bundle']->getKeys();
+    $keys['label'] = 'name';
+    $entity_types['entity_test_no_bundle']->set('entity_keys', $keys);
+  }
+}
