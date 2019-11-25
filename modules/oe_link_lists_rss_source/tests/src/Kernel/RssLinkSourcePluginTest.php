@@ -322,24 +322,11 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');
     $plugin->setConfiguration(['url' => $url]);
-    $links = $plugin->getLinks();
-    /** @var \Drupal\Core\Render\Renderer $renderer */
-    $renderer = $this->container->get('renderer');
 
-    $teasers = [];
-    foreach ($links as $link) {
-      $teaser = $link->getTeaser();
-      $teasers[] = (string) $renderer->renderRoot($teaser);
-    }
-
-    // By default, multiple tags are allowed, including paragraphs and links.
-    foreach ($teasers as $key => $teaser) {
-      $this->assertTrue(strpos($teaser, '</p>') !== FALSE);
-      if ($key === 0) {
-        // The first teaser also has a link tag.
-        $this->assertTrue(strpos($teaser, '</a>') !== FALSE);
-      }
-    }
+    $this->assertEquals([
+      '<p>Second example feed item <a href="http://example.com">description</a> with link.</p>',
+      '<p>First example feed item.</p>',
+    ], $this->renderLinksTeaser($plugin->getLinks()));
 
     // Configure the aggregator to strip link tags but still allow paragraphs.
     $this->container->get('config.factory')
@@ -347,13 +334,10 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       ->set('items.allowed_html', '<p>')
       ->save();
 
-    $links = $plugin->getLinks();
-    foreach ($links as $link) {
-      $teaser = $link->getTeaser();
-      $rendered = (string) $renderer->renderRoot($teaser);
-      $this->assertTrue(strpos($rendered, '</p>') !== FALSE);
-      $this->assertFalse(strpos($rendered, '</a>'));
-    }
+    $this->assertEquals([
+      '<p>Second example feed item description with link.</p>',
+      '<p>First example feed item.</p>',
+    ], $this->renderLinksTeaser($plugin->getLinks()));
 
     // Strip all tags now.
     $this->container->get('config.factory')
@@ -361,13 +345,10 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       ->set('items.allowed_html', '')
       ->save();
 
-    $links = $plugin->getLinks();
-    foreach ($links as $link) {
-      $teaser = $link->getTeaser();
-      $rendered = (string) $renderer->renderRoot($teaser);
-      $this->assertFalse(strpos($rendered, '</p>'));
-      $this->assertFalse(strpos($rendered, '</a>'));
-    }
+    $this->assertEquals([
+      'Second example feed item description with link.',
+      'First example feed item.',
+    ], $this->renderLinksTeaser($plugin->getLinks()));
   }
 
   /**
@@ -403,6 +384,28 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     }
 
     return $links;
+  }
+
+  /**
+   * Renders the teaser for a list of link elements.
+   *
+   * @param array $links
+   *   A list of LinkInterface objects.
+   *
+   * @return array
+   *   The rendered teasers.
+   */
+  protected function renderLinksTeaser(array $links): array {
+    /** @var \Drupal\Core\Render\Renderer $renderer */
+    $renderer = $this->container->get('renderer');
+
+    $teasers = [];
+    foreach ($links as $link) {
+      $teaser = $link->getTeaser();
+      $teasers[] = (string) $renderer->renderRoot($teaser);
+    }
+
+    return $teasers;
   }
 
 }
