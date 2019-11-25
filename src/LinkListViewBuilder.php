@@ -133,7 +133,7 @@ class LinkListViewBuilder extends EntityViewBuilder {
       foreach (array_keys($view_mode_entities) as $key) {
         // Allow for alterations while building, before rendering.
         $entity = $build_list[$key][$entity_type_key];
-        $build_list[$key] += $this->buildEntity($entity);
+        $build_list[$key]['entity'] = $this->buildEntity($entity);
 
         $display = $displays[$entity->bundle()];
 
