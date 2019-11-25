@@ -391,7 +391,10 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       foreach ($item_storage->loadByFeed($feed->id()) as $item) {
         /** @var \Drupal\aggregator\ItemInterface $item */
         $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
-        $link = new DefaultEntityLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+        $link = new DefaultEntityLink($url, $item->getTitle(), [
+          '#markup' => $item->getDescription(),
+          '#allowed_tags' => preg_split('/\s+|<|>/', $this->config('aggregator.settings')->get('items.allowed_html'), -1, PREG_SPLIT_NO_EMPTY),
+        ]);
         $link->setEntity($item);
         $links[$name][] = $link;
       }
