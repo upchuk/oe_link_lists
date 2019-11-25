@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultLink;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
+use Drupal\oe_link_lists\LinkCollection;
 use Drupal\oe_link_lists\LinkInterface;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface;
 use Drupal\oe_link_lists_manual_source\Event\EntityValueOverrideResolverEvent;
@@ -57,10 +58,11 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $links = [];
+    $links = new LinkCollection();
     foreach ($link_entities as $link_entity) {
       $link = $this->getLinkFromEntity($link_entity);
       if ($link) {
+        $link->addCacheableDependency($link_entity);
         $links[] = $link;
       }
     }
@@ -96,6 +98,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
       $link = new DefaultLink($url, $link_entity->getTitle(), ['#markup' => $link_entity->getTeaser()]);
       $event = new ManualLinkOverrideResolverEvent($link, $link_entity);
       $this->eventDispatcher->dispatch(ManualLinkOverrideResolverEvent::NAME, $event);
+
       return $event->getLink();
     }
 
@@ -108,8 +111,8 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
     $referenced_entity = $link_entity->get('target')->entity;
     $event = new EntityValueResolverEvent($referenced_entity);
     $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
-
     $link = $event->getLink();
+    $link->addCacheableDependency($referenced_entity);
 
     // Override the title and teaser.
     if (!$link_entity->get('title')->isEmpty()) {

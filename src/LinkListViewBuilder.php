@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -132,7 +133,7 @@ class LinkListViewBuilder extends EntityViewBuilder {
       foreach (array_keys($view_mode_entities) as $key) {
         // Allow for alterations while building, before rendering.
         $entity = $build_list[$key][$entity_type_key];
-        $build_list[$key] += $this->buildEntity($entity);
+        $build_list[$key]['entity'] = $this->buildEntity($entity);
 
         $display = $displays[$entity->bundle()];
 
@@ -188,8 +189,13 @@ class LinkListViewBuilder extends EntityViewBuilder {
     }
 
     $plugin = $this->linkDisplayManager->createInstance($display_plugin, $display_plugin_configuration);
+    $build = $plugin->build($links);
 
-    return $plugin->build($links);
+    // Apply the cacheability information of the link collection to the render
+    // array.
+    CacheableMetadata::createFromObject($links)->applyTo($build);
+
+    return $build;
   }
 
   /**
@@ -198,10 +204,10 @@ class LinkListViewBuilder extends EntityViewBuilder {
    * @param \Drupal\oe_link_lists\Entity\LinkListInterface $link_list
    *   The link list.
    *
-   * @return \Drupal\oe_link_lists\LinkInterface[]
+   * @return \Drupal\oe_link_lists\LinkCollectionInterface
    *   The link objects.
    */
-  protected function getLinksFromList(LinkListInterface $link_list): array {
+  protected function getLinksFromList(LinkListInterface $link_list): LinkCollectionInterface {
     $configuration = $link_list->getConfiguration();
     $source_plugin = $configuration['source']['plugin'] ?? NULL;
     $source_plugin_configuration = $configuration['source']['plugin_configuration'] ?? [];
@@ -213,7 +219,7 @@ class LinkListViewBuilder extends EntityViewBuilder {
       return $plugin->getLinks($size);
     }
 
-    return [];
+    return new LinkCollection();
   }
 
   /**

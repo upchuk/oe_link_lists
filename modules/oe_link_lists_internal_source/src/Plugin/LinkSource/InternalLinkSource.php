@@ -7,6 +7,7 @@ namespace Drupal\oe_link_lists_internal_source\Plugin\LinkSource;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
@@ -15,6 +16,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
+use Drupal\oe_link_lists\LinkCollection;
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
 use Drupal\oe_link_lists_internal_source\Event\InternalSourceQueryEvent;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
@@ -285,13 +288,14 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function getLinks(int $limit = NULL, int $offset = 0): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface {
     $entity_type_id = $this->configuration['entity_type'];
     $bundle_id = $this->configuration['bundle'];
+    $links = new LinkCollection();
 
     // Bail out if the configuration is not provided.
     if (empty($entity_type_id) || empty($bundle_id)) {
-      return [];
+      return $links;
     }
 
     try {
@@ -299,7 +303,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     }
     catch (PluginNotFoundException $exception) {
       // The entity is not available anymore in the system.
-      return [];
+      return $links;
     }
 
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
@@ -323,7 +327,12 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     foreach ($this->configuration['filters'] as $plugin_id => $configuration) {
       /** @var \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterInterface $plugin */
       $plugin = $this->filterPluginManager->createInstance($plugin_id, $configuration);
-      $plugin->apply($query, $context);
+      $cacheability = new CacheableMetadata();
+      $plugin->apply($query, $context, $cacheability);
+
+      // Apply the cacheability information provided by the plugin to the link
+      // collection.
+      $links->addCacheableDependency($cacheability);
     }
 
     // Allow others to alter the query to apply things like sorting, etc.
@@ -333,12 +342,14 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = $storage->loadMultiple($query->execute());
-    $links = [];
     foreach ($entities as $entity) {
       $event = new EntityValueResolverEvent($entity);
       $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
       $links[] = $event->getLink();
     }
+
+    $links->addCacheContexts($entity_type->getListCacheContexts());
+    $links->addCacheTags($entity_type->getListCacheTags());
 
     return $links;
   }

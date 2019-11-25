@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_manual_source\Event;
 
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -24,11 +25,11 @@ class ManualLinksResolverEvent extends Event {
   protected $linkEntities = [];
 
   /**
-   * The link objects.
+   * The link collection.
    *
-   * @var \Drupal\oe_link_lists\LinkInterface[]
+   * @var \Drupal\oe_link_lists\LinkCollectionInterface
    */
-  protected $links = [];
+  protected $links;
 
   /**
    * LinkResolverEvent constructor.
@@ -53,20 +54,20 @@ class ManualLinksResolverEvent extends Event {
   /**
    * Returns the link objects.
    *
-   * @return \Drupal\oe_link_lists\LinkInterface[]
+   * @return \Drupal\oe_link_lists\LinkCollectionInterface
    *   The link objects.
    */
-  public function getLinks(): array {
+  public function getLinks(): LinkCollectionInterface {
     return $this->links;
   }
 
   /**
    * Sets the link objects.
    *
-   * @param \Drupal\oe_link_lists\LinkInterface[] $links
+   * @param \Drupal\oe_link_lists\LinkCollectionInterface $links
    *   The link objects.
    */
-  public function setLinks(array $links): void {
+  public function setLinks(LinkCollectionInterface $links): void {
     $this->links = $links;
   }
 

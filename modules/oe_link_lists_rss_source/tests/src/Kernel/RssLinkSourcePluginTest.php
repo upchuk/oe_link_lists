@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists_rss_source\Kernel;
 
 use Drupal\aggregator\FeedStorageInterface;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
@@ -270,6 +271,8 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       ]);
       $feed->save();
       $feed->refreshItems();
+      // Save the feed ID to check the cache tags later.
+      $feeds[$name] = $feed->id();
     }
 
     $plugin_manager = $this->container->get('plugin.manager.link_source');
@@ -277,25 +280,35 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');
     // Test a plugin with empty configuration.
-    $this->assertEquals([], $plugin->getLinks());
+    $this->assertTrue($plugin->getLinks()->isEmpty());
 
     // Tests that the plugin doesn't break if it's referring a non-existing
     // feed, for example one that existed in the system and has been removed.
     $plugin->setConfiguration(['url' => 'http://www.example.com/deleted.xml']);
-    $this->assertEquals([], $plugin->getLinks());
+    $this->assertTrue($plugin->getLinks()->isEmpty());
 
-    // Check that the correct links are retrieved.
+    // Generate the expected links.
     $expected = $this->getExpectedLinks();
-    $plugin->setConfiguration(['url' => $feeds['atom']]);
-    $this->assertEquals($expected['atom'], $plugin->getLinks());
-    $plugin->setConfiguration(['url' => $feeds['rss']]);
-    $this->assertEquals($expected['rss'], $plugin->getLinks());
+
+    $plugin->setConfiguration(['url' => 'http://www.example.com/atom.xml']);
+    $links = $plugin->getLinks();
+    $this->assertEquals($expected['atom'], $links->toArray());
+    $this->assertEquals(['aggregator_feed:' . $feeds['atom']], $links->getCacheTags());
+    $this->assertEquals([], $links->getCacheContexts());
+    $this->assertEquals(Cache::PERMANENT, $links->getCacheMaxAge());
+
+    $plugin->setConfiguration(['url' => 'http://www.example.com/rss.xml']);
+    $links = $plugin->getLinks();
+    $this->assertEquals($expected['rss'], $links->toArray());
+    $this->assertEquals(['aggregator_feed:' . $feeds['rss']], $links->getCacheTags());
+    $this->assertEquals([], $links->getCacheContexts());
+    $this->assertEquals(Cache::PERMANENT, $links->getCacheMaxAge());
 
     // Check the limit and offset parameters.
-    $links = $plugin->getLinks(5);
+    $links = $plugin->getLinks(5)->toArray();
     $this->assertEquals(array_slice($expected['rss'], 0, 5), $links);
 
-    $links = $plugin->getLinks(5, 2);
+    $links = $plugin->getLinks(5, 2)->toArray();
     $this->assertEquals(array_slice($expected['rss'], 2, 5), $links);
   }
 

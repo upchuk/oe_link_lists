@@ -6,6 +6,7 @@ namespace Drupal\oe_link_lists_internal_source;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
@@ -42,7 +43,9 @@ interface InternalLinkSourceFilterInterface extends ConfigurableInterface, Plugi
    *   The query of the internal link source plugin.
    * @param array $context
    *   An array containing information about the internal source plugin.
+   * @param \Drupal\Core\Cache\RefinableCacheableDependencyInterface $cacheability
+   *   The refinable cacheability metadata for the current plugin.
    */
-  public function apply(QueryInterface $query, array $context): void;
+  public function apply(QueryInterface $query, array $context, RefinableCacheableDependencyInterface $cacheability): void;
 
 }

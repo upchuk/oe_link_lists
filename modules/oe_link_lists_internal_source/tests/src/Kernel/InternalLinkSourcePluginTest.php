@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\Tests\oe_link_lists_internal_source\Kernel;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\entity_test\Entity\EntityTestMulRevPub;
 use Drupal\entity_test\Entity\EntityTestNoBundle;
@@ -43,7 +44,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
   }
 
   /**
-   * Tests the referenced entities method.
+   * Tests the getLinks() method.
    *
    * @covers ::getLinks
    */
@@ -65,7 +66,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $plugin = $plugin_manager->createInstance('internal');
 
     // Test a plugin without configuration.
-    $this->assertEquals([], $plugin->getLinks());
+    $this->assertEquals([], $plugin->getLinks()->toArray());
 
     // Test partial configuration.
     $partial_configurations = [
@@ -74,7 +75,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ];
     foreach ($partial_configurations as $case => $configuration) {
       $plugin->setConfiguration($configuration);
-      $this->assertEquals([], $plugin->getLinks(), "Invalid referenced entities for $case case.");
+      $this->assertEquals([], $plugin->getLinks()->toArray(), "Invalid referenced entities for $case case.");
     }
 
     // If a non existing entity type is passed, the plugin should just return
@@ -83,26 +84,26 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       'entity_type' => 'non_existing_type',
       'bundle' => 'page',
     ]);
-    $this->assertEquals([], $plugin->getLinks());
+    $this->assertEquals([], $plugin->getLinks()->toArray());
 
     // An empty list is returned if the bundle doesn't exist.
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'entity_test',
     ]);
-    $this->assertEquals([], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertEquals([], $plugin->getLinks()->toArray());
 
     // Test that only the entities of the specified bundle are returned.
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'foo',
     ]);
-    $this->assertEquals($test_entities_by_bundle['foo'], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertEquals($test_entities_by_bundle['foo'], $this->extractEntityNames($plugin->getLinks()->toArray()));
     $plugin->setConfiguration([
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
     ]);
-    $this->assertEquals($test_entities_by_bundle['bar'], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertEquals($test_entities_by_bundle['bar'], $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Test that the limit is applied to the results.
     $plugin->setConfiguration([
@@ -111,7 +112,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ]);
     $this->assertEquals(
       array_slice($test_entities_by_bundle['foo'], 0, 2, TRUE),
-      $this->extractEntityNames($plugin->getLinks(2))
+      $this->extractEntityNames($plugin->getLinks(2)->toArray())
     );
 
     // Test non bundleable entities.
@@ -123,7 +124,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ]);
     $this->assertEquals([
       $test_entity->id() => $test_entity->label(),
-    ], $this->extractEntityNames($plugin->getLinks()));
+    ], $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Test that only published entities are returned, if the entity implements
     // the published interface.
@@ -152,7 +153,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $this->assertEquals([
       $published_entity->id() => $published_entity->label(),
       $pending_unpublished_entity->id() => $published_revision_title,
-    ], $this->extractEntityNames($plugin->getLinks()));
+    ], $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Test that filters are applied correctly.
     // Only 3 entity_test entities of bundle foo start with the letter A.
@@ -165,8 +166,11 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(3, $plugin->getLinks());
-    $this->assertEquals($test_entities_by_bundle_and_first_letter['foo']['A'], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertCount(3, $plugin->getLinks()->toArray());
+    $this->assertEquals(
+      $test_entities_by_bundle_and_first_letter['foo']['A'],
+      $this->extractEntityNames($plugin->getLinks()->toArray())
+    );
 
     // Only 1 entity_test entity of bundle foo starts with the letter B.
     $plugin->setConfiguration([
@@ -178,8 +182,11 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(1, $plugin->getLinks());
-    $this->assertEquals($test_entities_by_bundle_and_first_letter['foo']['B'], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertCount(1, $plugin->getLinks()->toArray());
+    $this->assertEquals(
+      $test_entities_by_bundle_and_first_letter['foo']['B'],
+      $this->extractEntityNames($plugin->getLinks()->toArray())
+    );
 
     // No entity_test entities of bundle bar start with the letter A.
     $plugin->setConfiguration([
@@ -191,7 +198,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertEquals([], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertEquals([], $plugin->getLinks()->toArray());
 
     // Only 2 entity_test entities of bundle bar start with the letter B.
     $plugin->setConfiguration([
@@ -203,8 +210,11 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(2, $plugin->getLinks());
-    $this->assertEquals($test_entities_by_bundle_and_first_letter['bar']['B'], $this->extractEntityNames($plugin->getLinks()));
+    $this->assertCount(2, $plugin->getLinks()->toArray());
+    $this->assertEquals(
+      $test_entities_by_bundle_and_first_letter['bar']['B'],
+      $this->extractEntityNames($plugin->getLinks()->toArray())
+    );
 
     // Test multiple filter plugins together.
     $plugin->setConfiguration([
@@ -219,10 +229,10 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(1, $plugin->getLinks());
+    $this->assertCount(1, $plugin->getLinks()->toArray());
     $this->assertEquals([
       1 => $test_entities_by_bundle['foo'][1],
-    ], $this->extractEntityNames($plugin->getLinks()));
+    ], $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Verify that the proper context has been passed down the plugin.
     // @todo This should be in a unit test.
@@ -246,7 +256,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertEquals([], $plugin->getLinks());
+    $this->assertEquals([], $plugin->getLinks()->toArray());
 
     // There are two entities of bundle bar created more than two years ago and
     // name starting with letter B.
@@ -265,13 +275,86 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     $this->assertEquals([
       8 => $test_entities_by_bundle['bar'][8],
       9 => $test_entities_by_bundle['bar'][9],
-    ], $this->extractEntityNames($plugin->getLinks()));
+    ], $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Verify again the context.
     $this->assertEquals([
       'entity_type' => 'entity_test',
       'bundle' => 'bar',
     ], $state->get('internal_source_test_creation_time_context'));
+  }
+
+  /**
+   * Tests that the proper cacheability metadata is returned by the plugin.
+   */
+  public function testCacheabilityMetadata(): void {
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('internal');
+
+    $links = $plugin->getLinks();
+    $this->assertEquals([], $links->getCacheTags());
+    $this->assertEquals([], $links->getCacheContexts());
+    $this->assertEquals(Cache::PERMANENT, $links->getCacheMaxAge());
+
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+    ]);
+    $links = $plugin->getLinks();
+    $this->assertEquals(['entity_test_list'], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(Cache::PERMANENT, $links->getCacheMaxAge());
+
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [
+        'enabled' => [
+          'enabled' => TRUE,
+        ],
+      ],
+    ]);
+    $links = $plugin->getLinks();
+    $this->assertEquals([
+      'enabled_plugin_test_tag',
+      'entity_test_list',
+    ], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(1800, $links->getCacheMaxAge());
+
+    // Create a test entity.
+    $test_entity_one = EntityTest::create([
+      'name' => $this->randomString(),
+      'type' => 'foo',
+    ]);
+    $test_entity_one->save();
+
+    $links = $plugin->getLinks();
+    $this->assertEquals([
+      'enabled_plugin_test_tag',
+      'entity_test:' . $test_entity_one->id(),
+      'entity_test_list',
+    ], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(1800, $links->getCacheMaxAge());
+
+    // Add another entity.
+    $test_entity_two = EntityTest::create([
+      'name' => $this->randomString(),
+      'type' => 'foo',
+    ]);
+    $test_entity_two->save();
+
+    $links = $plugin->getLinks();
+    $this->assertEquals([
+      'enabled_plugin_test_tag',
+      'entity_test:' . $test_entity_one->id(),
+      'entity_test:' . $test_entity_two->id(),
+      'entity_test_list',
+    ], $links->getCacheTags());
+    $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
+    $this->assertEquals(1800, $links->getCacheMaxAge());
   }
 
   /**
@@ -305,13 +388,13 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ]);
 
     // The query has not yet been altered.
-    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()));
+    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Trigger the event subscriber to alter the query.
     $this->container->get('state')->set('internal_source_query_test_enable', TRUE);
     // The test query alter should filter out the first entity.
     unset($test_entities[1]);
-    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()));
+    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()->toArray()));
     $metadata = $this->container->get('state')->get('internal_source_query_test_metadata');
     $this->assertEquals([
       'entity_type' => 'entity_test',

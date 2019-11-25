@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -118,7 +119,7 @@ class CreationTime extends InternalLinkSourceFilterPluginBase implements Contain
   /**
    * {@inheritdoc}
    */
-  public function apply(QueryInterface $query, array $context): void {
+  public function apply(QueryInterface $query, array $context, RefinableCacheableDependencyInterface $cacheability): void {
     // Allow to verify the context passed in tests.
     $this->state->set('internal_source_test_creation_time_context', $context);
 

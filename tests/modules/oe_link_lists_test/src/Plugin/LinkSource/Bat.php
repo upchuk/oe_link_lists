@@ -7,6 +7,8 @@ namespace Drupal\oe_link_lists_test\Plugin\LinkSource;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultLink;
+use Drupal\oe_link_lists\LinkCollection;
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
 
 /**
@@ -23,18 +25,18 @@ class Bat extends LinkSourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getLinks(int $limit = NULL, int $offset = 0): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface {
     $links = [
       new DefaultLink(Url::fromUri('http://example.com'), 'Example', ['#markup' => 'Example teaser']),
       new DefaultLink(Url::fromUri('http://ec.europa.eu'), 'European Commission', ['#markup' => 'European teaser']),
       new DefaultLink(Url::fromUri('https://ec.europa.eu/info/departments/informatics_en'), 'DIGIT', ['#markup' => 'Informatics teaser']),
     ];
 
-    if (!$limit) {
-      return $links;
+    if ($limit) {
+      $links = array_slice($links, $offset, $limit);
     }
 
-    return array_slice($links, $offset, $limit);
+    return new LinkCollection($links);
   }
 
   /**

@@ -23,12 +23,12 @@ interface LinkDisplayInterface extends PluginFormInterface, ConfigurableInterfac
   /**
    * Builds a render array for a list of links.
    *
-   * @param \Drupal\oe_link_lists\LinkInterface[] $links
+   * @param \Drupal\oe_link_lists\LinkCollectionInterface $links
    *   The link objects.
    *
    * @return array
    *   The render array.
    */
-  public function build(array $links): array;
+  public function build(LinkCollectionInterface $links): array;
 
 }

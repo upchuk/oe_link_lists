@@ -8,6 +8,8 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\oe_link_lists\LinkCollection;
+use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
 use Drupal\oe_link_lists_manual_source\Event\ManualLinksResolverEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -116,10 +118,10 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
   /**
    * {@inheritdoc}
    */
-  public function getLinks(int $limit = NULL, int $offset = 0): array {
+  public function getLinks(int $limit = NULL, int $offset = 0): LinkCollectionInterface {
     $ids = $this->configuration['links'];
     if (!$ids) {
-      return [];
+      return new LinkCollection();
     }
 
     $link_entities = $this->entityTypeManager->getStorage('link_list_link')->loadMultipleRevisions(array_column($ids, 'entity_revision_id'));

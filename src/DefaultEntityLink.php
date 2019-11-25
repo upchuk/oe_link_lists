@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
@@ -33,6 +34,27 @@ class DefaultEntityLink extends DefaultLink implements EntityAwareLinkInterface 
    */
   public function setEntity(ContentEntityInterface $entity): void {
     $this->entity = $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    return Cache::mergeTags($this->cacheTags, $this->entity->getCacheTags());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return Cache::mergeContexts($this->cacheContexts, $this->entity->getCacheContexts());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge() {
+    return Cache::mergeMaxAges($this->cacheMaxAge, $this->entity->getCacheMaxAge());
   }
 
 }

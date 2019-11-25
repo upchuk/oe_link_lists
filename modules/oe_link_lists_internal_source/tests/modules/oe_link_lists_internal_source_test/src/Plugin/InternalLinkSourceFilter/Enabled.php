@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists_internal_source_test\Plugin\InternalLinkSourceFilter;
 
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginBase;
@@ -57,8 +58,10 @@ class Enabled extends InternalLinkSourceFilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function apply(QueryInterface $query, array $context): void {
+  public function apply(QueryInterface $query, array $context, RefinableCacheableDependencyInterface $cacheability): void {
     $query->addTag('enabled');
+    $cacheability->addCacheTags(['enabled_plugin_test_tag']);
+    $cacheability->mergeCacheMaxAge(1800);
   }
 
 }
