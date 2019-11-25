@@ -379,6 +379,8 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   protected function getExpectedLinks(): array {
     $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
     $item_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_item');
+    // Mimic the RssLinkSource::getAllowedTeaserTags() method.
+    $allowed_tags = preg_split('/\s+|<|>/', $this->config('aggregator.settings')->get('items.allowed_html'), -1, PREG_SPLIT_NO_EMPTY);
 
     $links = [];
     $rss_urls = [
@@ -393,7 +395,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
         $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
         $link = new DefaultEntityLink($url, $item->getTitle(), [
           '#markup' => $item->getDescription(),
-          '#allowed_tags' => preg_split('/\s+|<|>/', $this->config('aggregator.settings')->get('items.allowed_html'), -1, PREG_SPLIT_NO_EMPTY),
+          '#allowed_tags' => $allowed_tags,
         ]);
         $link->setEntity($item);
         $links[$name][] = $link;
