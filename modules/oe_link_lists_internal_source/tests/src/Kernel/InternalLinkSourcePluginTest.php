@@ -166,7 +166,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(3, $plugin->getLinks());
+    $this->assertCount(3, $plugin->getLinks()->toArray());
     $this->assertEquals(
       $test_entities_by_bundle_and_first_letter['foo']['A'],
       $this->extractEntityNames($plugin->getLinks()->toArray())
@@ -182,7 +182,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(1, $plugin->getLinks());
+    $this->assertCount(1, $plugin->getLinks()->toArray());
     $this->assertEquals(
       $test_entities_by_bundle_and_first_letter['foo']['B'],
       $this->extractEntityNames($plugin->getLinks()->toArray())
@@ -210,7 +210,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(2, $plugin->getLinks());
+    $this->assertCount(2, $plugin->getLinks()->toArray());
     $this->assertEquals(
       $test_entities_by_bundle_and_first_letter['bar']['B'],
       $this->extractEntityNames($plugin->getLinks()->toArray())
@@ -229,7 +229,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         ],
       ],
     ]);
-    $this->assertCount(1, $plugin->getLinks());
+    $this->assertCount(1, $plugin->getLinks()->toArray());
     $this->assertEquals([
       1 => $test_entities_by_bundle['foo'][1],
     ], $this->extractEntityNames($plugin->getLinks()->toArray()));
@@ -355,6 +355,52 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ], $links->getCacheTags());
     $this->assertEquals(['entity_test_view_grants'], $links->getCacheContexts());
     $this->assertEquals(1800, $links->getCacheMaxAge());
+  }
+
+  /**
+   * Tests that the query alter using the event subscriber works.
+   */
+  public function testInternalSourceQueryAlter(): void {
+    $test_entities = [];
+    $test_entities_values = [
+      [
+        'name' => 'Entity one',
+        'type' => 'foo',
+      ],
+      [
+        'name' => 'Entity two',
+        'type' => 'foo',
+      ],
+    ];
+
+    foreach ($test_entities_values as $entity_values) {
+      $entity = EntityTest::create($entity_values);
+      $entity->save();
+      $test_entities[$entity->id()] = $entity->label();
+    }
+
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('internal');
+    $plugin->setConfiguration([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+    ]);
+
+    // The query has not yet been altered.
+    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()->toArray()));
+
+    // Trigger the event subscriber to alter the query.
+    $this->container->get('state')->set('internal_source_query_test_enable', TRUE);
+    // The test query alter should filter out the first entity.
+    unset($test_entities[1]);
+    $this->assertEquals($test_entities, $this->extractEntityNames($plugin->getLinks()->toArray()));
+    $metadata = $this->container->get('state')->get('internal_source_query_test_metadata');
+    $this->assertEquals([
+      'entity_type' => 'entity_test',
+      'bundle' => 'foo',
+      'filters' => [],
+    ], $metadata);
   }
 
   /**

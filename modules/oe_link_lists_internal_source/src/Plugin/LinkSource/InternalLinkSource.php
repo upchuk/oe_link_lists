@@ -19,6 +19,7 @@ use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkCollection;
 use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
+use Drupal\oe_link_lists_internal_source\Event\InternalSourceQueryEvent;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -333,6 +334,11 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       // collection.
       $links->addCacheableDependency($cacheability);
     }
+
+    // Allow others to alter the query to apply things like sorting, etc.
+    $query->addMetaData('oe_link_lists_internal_source', $this->configuration);
+    $event = new InternalSourceQueryEvent($query);
+    $this->eventDispatcher->dispatch(InternalSourceQueryEvent::NAME, $event);
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = $storage->loadMultiple($query->execute());
