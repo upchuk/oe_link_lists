@@ -1,6 +1,6 @@
 services:
-  oe_link_lists_internal_source_test.event_subscriber.internal_source_query_alter_test:
-    class: Drupal\oe_link_lists_internal_source_test\EventSubscriber\InternalSourceQuerySubscriberTest
+  oe_link_lists_internal_source_test.event_subscriber.internal_source_alter_test:
+    class: Drupal\oe_link_lists_internal_source_test\EventSubscriber\InternalSourceTestSubscriber
     arguments: ['@state']
     tags:
       - { name: event_subscriber }
