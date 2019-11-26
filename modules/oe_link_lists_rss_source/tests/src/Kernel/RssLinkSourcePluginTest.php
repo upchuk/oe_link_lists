@@ -107,18 +107,21 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       ->willReturnCallback(function (RequestInterface $request, array $options = []) use ($test_module_path) {
         switch ($request->getUri()) {
           case 'http://www.example.com/atom.xml':
-            $filename = 'aggregator_test_atom.xml';
+            $filename = $test_module_path . DIRECTORY_SEPARATOR . 'aggregator_test_atom.xml';
             break;
 
           case 'http://www.example.com/rss.xml':
-            $filename = 'aggregator_test_rss091.xml';
+            $filename = $test_module_path . DIRECTORY_SEPARATOR . 'aggregator_test_rss091.xml';
+            break;
+
+          case 'http://ec.europa.eu/rss.xml':
+            $filename = drupal_get_path('module', 'oe_link_lists_rss_source') . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'rss_links_source_test_rss.xml';
             break;
 
           default:
             return new Response(404);
         }
 
-        $filename = $test_module_path . DIRECTORY_SEPARATOR . $filename;
         return new Response(200, [], file_get_contents($filename));
       });
 
@@ -313,6 +316,55 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   }
 
   /**
+   * Tests that the RSS teaser is stripped according to the aggregator config.
+   */
+  public function testLinkTeaserTags(): void {
+    $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
+    $url = 'http://ec.europa.eu/rss.xml';
+
+    /** @var \Drupal\aggregator\FeedInterface $feed */
+    $feed = $feed_storage->create([
+      'title' => $this->randomString(),
+      'url' => $url,
+    ]);
+    $feed->save();
+    $feed->refreshItems();
+
+    $plugin_manager = $this->container->get('plugin.manager.link_source');
+
+    /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
+    $plugin = $plugin_manager->createInstance('rss');
+    $plugin->setConfiguration(['url' => $url]);
+
+    $this->assertEquals([
+      '<p>Second example feed item <a href="http://example.com">description</a> with link.</p>',
+      '<p>First example feed item.</p>',
+    ], $this->renderLinksTeaser($plugin->getLinks()));
+
+    // Configure the aggregator to strip link tags but still allow paragraphs.
+    $this->container->get('config.factory')
+      ->getEditable('aggregator.settings')
+      ->set('items.allowed_html', '<p>')
+      ->save();
+
+    $this->assertEquals([
+      '<p>Second example feed item description with link.</p>',
+      '<p>First example feed item.</p>',
+    ], $this->renderLinksTeaser($plugin->getLinks()));
+
+    // Strip all tags now.
+    $this->container->get('config.factory')
+      ->getEditable('aggregator.settings')
+      ->set('items.allowed_html', '')
+      ->save();
+
+    $this->assertEquals([
+      'Second example feed item description with link.',
+      'First example feed item.',
+    ], $this->renderLinksTeaser($plugin->getLinks()));
+  }
+
+  /**
    * Returns expected feed data.
    *
    * @return array
@@ -321,6 +373,8 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
   protected function getExpectedLinks(): array {
     $feed_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_feed');
     $item_storage = $this->container->get('entity_type.manager')->getStorage('aggregator_item');
+    // Mimic the RssLinkSource::getAllowedTeaserTags() method.
+    $allowed_tags = preg_split('/\s+|<|>/', $this->config('aggregator.settings')->get('items.allowed_html'), -1, PREG_SPLIT_NO_EMPTY);
 
     $links = [];
     $rss_urls = [
@@ -333,13 +387,38 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       foreach ($item_storage->loadByFeed($feed->id()) as $item) {
         /** @var \Drupal\aggregator\ItemInterface $item */
         $url = $item->getLink() ? Url::fromUri($item->getLink()) : Url::fromRoute('<front>');
-        $link = new DefaultEntityLink($url, $item->getTitle(), ['#markup' => $item->getDescription()]);
+        $link = new DefaultEntityLink($url, $item->getTitle(), [
+          '#markup' => $item->getDescription(),
+          '#allowed_tags' => $allowed_tags,
+        ]);
         $link->setEntity($item);
         $links[$name][] = $link;
       }
     }
 
     return $links;
+  }
+
+  /**
+   * Renders the teaser for a list of link elements.
+   *
+   * @param array $links
+   *   A list of LinkInterface objects.
+   *
+   * @return array
+   *   The rendered teasers.
+   */
+  protected function renderLinksTeaser(array $links): array {
+    /** @var \Drupal\Core\Render\Renderer $renderer */
+    $renderer = $this->container->get('renderer');
+
+    $teasers = [];
+    foreach ($links as $link) {
+      $teaser = $link->getTeaser();
+      $teasers[] = (string) $renderer->renderRoot($teaser);
+    }
+
+    return $teasers;
   }
 
 }
