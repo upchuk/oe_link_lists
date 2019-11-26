@@ -339,7 +339,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertEquals([
       '<p>Second example feed item <a href="http://example.com">description</a> with link.</p>',
       '<p>First example feed item.</p>',
-    ], $this->renderLinksTeaser($plugin->getLinks()));
+    ], $this->renderLinksTeaser($plugin->getLinks()->toArray()));
 
     // Configure the aggregator to strip link tags but still allow paragraphs.
     $this->container->get('config.factory')
@@ -350,7 +350,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertEquals([
       '<p>Second example feed item description with link.</p>',
       '<p>First example feed item.</p>',
-    ], $this->renderLinksTeaser($plugin->getLinks()));
+    ], $this->renderLinksTeaser($plugin->getLinks()->toArray()));
 
     // Strip all tags now.
     $this->container->get('config.factory')
@@ -361,7 +361,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $this->assertEquals([
       'Second example feed item description with link.',
       'First example feed item.',
-    ], $this->renderLinksTeaser($plugin->getLinks()));
+    ], $this->renderLinksTeaser($plugin->getLinks()->toArray()));
   }
 
   /**
