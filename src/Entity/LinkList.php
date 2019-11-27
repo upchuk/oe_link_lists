@@ -159,6 +159,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
       ->setLabel(t('Administrative title'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
@@ -200,6 +201,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
     $fields['configuration'] = BaseFieldDefinition::create('link_list_configuration')
       ->setLabel(t('Configuration'))
       ->setDescription(t('The list configuration.'))
+      ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'link_list_configuration',
