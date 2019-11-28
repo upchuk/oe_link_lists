@@ -7,6 +7,7 @@ namespace Drupal\oe_link_lists\Entity;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\oe_link_lists\LinkListConfigurationManager;
 
 /**
  * Defines the LinkList entity.
@@ -88,7 +89,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
    * {@inheritdoc}
    */
   public function getConfiguration(): array {
-    return !$this->get('configuration')->isEmpty() ? unserialize($this->get('configuration')->value) : [];
+    return LinkListConfigurationManager::getConfiguration($this);
   }
 
   /**
