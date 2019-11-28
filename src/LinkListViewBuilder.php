@@ -176,7 +176,6 @@ class LinkListViewBuilder extends EntityViewBuilder {
    *   The built link list.
    */
   protected function buildEntity(LinkListInterface $link_list): array {
-    $links = $this->getLinksFromList($link_list);
     $configuration = $link_list->getConfiguration();
 
     $display_plugin = $configuration['display']['plugin'];
@@ -188,12 +187,27 @@ class LinkListViewBuilder extends EntityViewBuilder {
       $display_plugin_configuration['more'] = $this->prepareMoreLink($configuration['more']);
     }
 
+    $links = new LinkCollection();
+    $access_cacheability = new CacheableMetadata();
+    foreach ($this->getLinksFromList($link_list) as $link) {
+      /** @var \Drupal\oe_link_lists\LinkInterface $link */
+      $access = $link->access('view', NULL, TRUE);
+      $access_cacheability->addCacheableDependency($access);
+
+      if ($access->isAllowed()) {
+        $links->add($link);
+      }
+    }
+
+    /** @var \Drupal\oe_link_lists\LinkDisplayInterface $plugin */
     $plugin = $this->linkDisplayManager->createInstance($display_plugin, $display_plugin_configuration);
     $build = $plugin->build($links);
 
     // Apply the cacheability information of the link collection to the render
     // array.
-    CacheableMetadata::createFromObject($links)->applyTo($build);
+    CacheableMetadata::createFromObject($links)
+      ->merge($access_cacheability)
+      ->applyTo($build);
 
     return $build;
   }
