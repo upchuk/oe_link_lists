@@ -121,6 +121,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface $referenced_entity */
     $referenced_entity = $link_entity->get('target')->entity;
+    $referenced_entity = $this->entityRepository->getTranslationFromContext($referenced_entity);
     $event = new EntityValueResolverEvent($referenced_entity);
     $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
     $link = $event->getLink();
