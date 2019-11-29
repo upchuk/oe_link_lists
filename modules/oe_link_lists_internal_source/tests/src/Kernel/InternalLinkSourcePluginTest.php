@@ -423,11 +423,11 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         'type' => 'foo',
       ],
       [
-        'name' => $this->randomString(),
+        'name' => 'T' . $this->randomString(),
         'type' => 'bar',
       ],
       [
-        'name' => $this->randomString(),
+        'name' => 'S' . $this->randomString(),
         'type' => 'bar',
       ],
       [
