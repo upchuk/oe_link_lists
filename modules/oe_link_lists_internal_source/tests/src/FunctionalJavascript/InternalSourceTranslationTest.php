@@ -7,7 +7,7 @@ namespace Drupal\Tests\oe_link_lists_internal_source\FunctionalJavascript;
 /**
  * Tests that the internal source shows content in the current language.
  */
-class InternalSourceTranslationTest extends InternalLinkSourcePluginTest {
+class InternalSourceTranslationTest extends InternalLinkSourceTestBase {
 
   /**
    * {@inheritdoc}
@@ -80,7 +80,8 @@ class InternalSourceTranslationTest extends InternalLinkSourcePluginTest {
     $this->assertSession()->pageTextContains('Page 2');
 
     // In French we should see one of nodes in FR.
-    $this->drupalGet('link_list/1', ['language' => \Drupal::languageManager()->getLanguage('fr')]);
+    $link_list = $this->getLinkListByTitle('Internal list');
+    $this->drupalGet($link_list->toUrl('canonical', ['language' => \Drupal::languageManager()->getLanguage('fr')]));
     $this->assertSession()->pageTextContains('Page 1');
     $this->assertSession()->pageTextContains('deuxieme page');
     $this->assertSession()->pageTextNotContains('Page 2');
