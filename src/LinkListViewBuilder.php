@@ -176,6 +176,7 @@ class LinkListViewBuilder extends EntityViewBuilder {
    *   The built link list.
    */
   protected function buildEntity(LinkListInterface $link_list): array {
+    $links = $this->getLinksFromList($link_list);
     $configuration = $link_list->getConfiguration();
 
     $display_plugin = $configuration['display']['plugin'];
@@ -187,15 +188,14 @@ class LinkListViewBuilder extends EntityViewBuilder {
       $display_plugin_configuration['more'] = $this->prepareMoreLink($configuration['more']);
     }
 
-    $links = new LinkCollection();
     $access_cacheability = new CacheableMetadata();
-    foreach ($this->getLinksFromList($link_list) as $link) {
+    foreach ($links as $key => $link) {
       /** @var \Drupal\oe_link_lists\LinkInterface $link */
       $access = $link->access('view', NULL, TRUE);
       $access_cacheability->addCacheableDependency($access);
 
-      if ($access->isAllowed()) {
-        $links->add($link);
+      if (!$access->isAllowed()) {
+        unset($links[$key]);
       }
     }
 
