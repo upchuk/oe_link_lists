@@ -10,7 +10,6 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -68,13 +67,6 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
   protected $filterPluginManager;
 
   /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Constructs an InternalLinkSource object.
    *
    * @param array $configuration
@@ -91,17 +83,14 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
    *   The event dispatcher.
    * @param \Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface $filter_plugin_manager
    *   The internal link source filter plugin manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EventDispatcherInterface $event_dispatcher, InternalLinkSourceFilterPluginManagerInterface $filter_plugin_manager, EntityRepositoryInterface $entity_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EventDispatcherInterface $event_dispatcher, InternalLinkSourceFilterPluginManagerInterface $filter_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->eventDispatcher = $event_dispatcher;
     $this->filterPluginManager = $filter_plugin_manager;
-    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -127,8 +116,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
       $container->get('event_dispatcher'),
-      $container->get('plugin.manager.oe_link_lists.internal_source_filter'),
-      $container->get('entity.repository')
+      $container->get('plugin.manager.oe_link_lists.internal_source_filter')
     );
   }
 
@@ -356,7 +344,6 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     $entities = $storage->loadMultiple($query->execute());
     foreach ($entities as $entity) {
       /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-      $entity = $this->entityRepository->getTranslationFromContext($entity);
       $event = new EntityValueResolverEvent($entity);
       $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
       $links[] = $event->getLink();
