@@ -7,7 +7,7 @@ namespace Drupal\Tests\oe_link_lists_manual_source\FunctionalJavascript;
 /**
  * Tests the translatability of manual link lists.
  */
-class ManualLinkListTranslationTest extends ManualLinkListFormTest {
+class ManualLinkListTranslationTest extends ManualLinkListTestBase {
 
   /**
    * {@inheritdoc}
@@ -75,7 +75,8 @@ class ManualLinkListTranslationTest extends ManualLinkListFormTest {
     $this->assertSession()->linkNotExists('Titre redéfinie');
 
     // Assert the rendering in French.
-    $this->drupalGet('link_list/1', ['language' => \Drupal::languageManager()->getLanguage('fr')]);
+    $link_list = $this->getLinkListByTitle('Test translation');
+    $this->drupalGet($link_list->toUrl('canonical', ['language' => \Drupal::languageManager()->getLanguage('fr')]));
     $this->assertSession()->linkNotExists('Overridden title');
     $this->assertSession()->linkExists('Titre redéfinie');
     $this->assertSession()->linkExists('Page 1');
