@@ -7,7 +7,7 @@ namespace Drupal\Tests\oe_link_lists\Unit;
 use Drupal\Core\Access\AccessResultAllowed;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultLink;
-use Drupal\Tests\UnitTestCase;
+use Drupal\oe_link_lists\LinkInterface;
 
 /**
  * Tests the default link class.
@@ -15,50 +15,25 @@ use Drupal\Tests\UnitTestCase;
  * @group oe_link_lists
  * @coversDefaultClass \Drupal\oe_link_lists\DefaultLink
  */
-class DefaultLinkTest extends UnitTestCase {
+class DefaultLinkTest extends DefaultLinkTestBase {
 
   /**
-   * Tests that the link class throws an exception for unsupported operations.
-   *
-   * @param string $operation
-   *   The access operation to check.
-   *
-   * @dataProvider unsupportedOperationsProvider
-   * @covers ::access
+   * {@inheritdoc}
    */
-  public function testUnsupportedAccessOperation(string $operation): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Only the "view" permission is supported for links.');
-
+  protected function getLinkInstance(): LinkInterface {
     $url = $this->prophesize(Url::class);
-    $link = new DefaultLink($url->reveal(), 'Test', []);
-    $link->access($operation);
+    return new DefaultLink($url->reveal(), 'Test', []);
   }
 
   /**
    * Tests the view access operation.
+   *
+   * @covers ::access
    */
   public function testViewAccessOperation(): void {
-    $url = $this->prophesize(Url::class);
-    $link = new DefaultLink($url->reveal(), 'Test', []);
-
+    $link = $this->getLinkInstance();
     $this->assertTrue($link->access('view'));
     $this->assertInstanceOf(AccessResultAllowed::class, $link->access('view', NULL, TRUE));
-  }
-
-  /**
-   * A data provider of unsupported access operations.
-   *
-   * @return array
-   *   A list of unsupported operations.
-   */
-  public function unsupportedOperationsProvider(): array {
-    return [
-      ['create'],
-      ['edit'],
-      ['update'],
-      ['delete'],
-    ];
   }
 
 }
