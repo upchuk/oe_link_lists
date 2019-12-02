@@ -124,6 +124,10 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
       return new LinkCollection();
     }
 
+    if ($limit !== NULL) {
+      $ids = array_slice($ids, $offset, $limit);
+    }
+
     $link_entities = $this->entityTypeManager->getStorage('link_list_link')->loadMultipleRevisions(array_column($ids, 'entity_revision_id'));
     $event = new ManualLinksResolverEvent($link_entities);
     $this->eventDispatcher->dispatch(ManualLinksResolverEvent::NAME, $event);
