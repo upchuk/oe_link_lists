@@ -414,7 +414,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       }
 
       $this->applyGeneralListConfiguration($configuration, $element, $form_state);
-      $items->get($delta)->setValue(serialize($configuration));
+      $items->get($delta)->setValue($configuration);
     }
   }
 
@@ -520,17 +520,6 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       'type' => 'custom',
       'url' => $target,
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    foreach ($values as $delta => $value) {
-      $values[$delta] = serialize($value);
-    }
-
-    return $values;
   }
 
   /**
