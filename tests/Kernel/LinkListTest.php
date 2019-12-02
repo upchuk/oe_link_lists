@@ -86,7 +86,6 @@ class LinkListTest extends KernelTestBase {
 
       /** @var \Drupal\Core\Block\BlockPluginInterface $plugin */
       $plugin = $block_manager->createInstance("oe_link_list_block:$uuid");
-      $this->assertFalse($plugin->access(\Drupal::currentUser()) === $link_list->access('view'));
       $build = $plugin->build();
       $this->assertEqual('full', $build['#view_mode']);
       $this->assertTrue(isset($build['#link_list']));
