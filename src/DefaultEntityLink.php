@@ -6,6 +6,7 @@ namespace Drupal\oe_link_lists;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Default link implementation for LinkSource links that have entities.
@@ -40,21 +41,37 @@ class DefaultEntityLink extends DefaultLink implements EntityAwareLinkInterface 
    * {@inheritdoc}
    */
   public function getCacheTags() {
-    return Cache::mergeTags($this->cacheTags, $this->entity->getCacheTags());
+    $entity_tags = $this->entity ? $this->entity->getCacheTags() : [];
+    return Cache::mergeTags($this->cacheTags, $entity_tags);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCacheContexts() {
-    return Cache::mergeContexts($this->cacheContexts, $this->entity->getCacheContexts());
+    $entity_contexts = $this->entity ? $this->entity->getCacheContexts() : [];
+    return Cache::mergeContexts($this->cacheContexts, $entity_contexts);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCacheMaxAge() {
-    return Cache::mergeMaxAges($this->cacheMaxAge, $this->entity->getCacheMaxAge());
+    $max_age = $this->entity ? $this->entity->getCacheMaxAge() : Cache::PERMANENT;
+    return Cache::mergeMaxAges($this->cacheMaxAge, $max_age);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    $result = parent::access($operation, $account, TRUE);
+
+    if ($this->entity) {
+      $result = $result->andIf($this->entity->access('view', $account, TRUE));
+    }
+
+    return $return_as_object ? $result : $result->isAllowed();
   }
 
 }

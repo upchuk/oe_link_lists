@@ -325,9 +325,6 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     if ($entity_type->hasKey('bundle')) {
       $query->condition($entity_type->getKey('bundle'), $bundle_id);
     }
-    if ($entity_type->hasKey('published')) {
-      $query->condition($entity_type->getKey('published'), TRUE);
-    }
     if ($limit !== NULL) {
       $query->range($offset, $limit);
     }

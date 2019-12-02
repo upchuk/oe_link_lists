@@ -68,7 +68,8 @@ class LinkListBlock extends BlockBase implements ContainerFactoryPluginInterface
     if (!$link_list) {
       return AccessResult::forbidden();
     }
-    return $link_list->access('view', $account, TRUE);
+    // @todo implement proper access check for link lists.
+    return AccessResult::allowed();
   }
 
   /**

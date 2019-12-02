@@ -6,7 +6,6 @@ namespace Drupal\Tests\oe_link_lists_internal_source\Kernel;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\entity_test\Entity\EntityTest;
-use Drupal\entity_test\Entity\EntityTestMulRevPub;
 use Drupal\entity_test\Entity\EntityTestNoBundle;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -37,7 +36,6 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
 
     $this->installEntitySchema('entity_test');
     $this->installEntitySchema('entity_test_no_bundle');
-    $this->installEntitySchema('entity_test_mulrevpub');
     // Create two bundles for the entity_test entity type.
     entity_test_create_bundle('foo');
     entity_test_create_bundle('bar');
@@ -124,35 +122,6 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
     ]);
     $this->assertEquals([
       $test_entity->id() => $test_entity->label(),
-    ], $this->extractEntityNames($plugin->getLinks()->toArray()));
-
-    // Test that only published entities are returned, if the entity implements
-    // the published interface.
-    // First create a published entity.
-    $published_entity = EntityTestMulRevPub::create(['name' => $this->randomString()]);
-    $published_entity->setPublished()->save();
-    // An unpublished entity.
-    $unpublished_entity = EntityTestMulRevPub::create(['name' => $this->randomString()]);
-    $unpublished_entity->setUnpublished()->save();
-    // An entity with a published revision and a pending unpublished revision.
-    $published_revision_title = $this->randomString();
-    $pending_unpublished_entity = EntityTestMulRevPub::create(['name' => $published_revision_title]);
-    $pending_unpublished_entity->setPublished()->save();
-    // Create the pending revision.
-    $pending_unpublished_entity->setName($this->randomString());
-    $pending_unpublished_entity->setNewRevision();
-    $pending_unpublished_entity->isDefaultRevision(FALSE);
-    $pending_unpublished_entity->save();
-
-    $plugin->setConfiguration([
-      'entity_type' => 'entity_test_mulrevpub',
-      'bundle' => 'entity_test_mulrevpub',
-    ]);
-    // The unpublished entity should not be returned. The default published
-    // revision should be returned for the entity with a pending revision.
-    $this->assertEquals([
-      $published_entity->id() => $published_entity->label(),
-      $pending_unpublished_entity->id() => $published_revision_title,
     ], $this->extractEntityNames($plugin->getLinks()->toArray()));
 
     // Test that filters are applied correctly.
@@ -454,11 +423,11 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
         'type' => 'foo',
       ],
       [
-        'name' => $this->randomString(),
+        'name' => 'T' . $this->randomString(),
         'type' => 'bar',
       ],
       [
-        'name' => $this->randomString(),
+        'name' => 'S' . $this->randomString(),
         'type' => 'bar',
       ],
       [

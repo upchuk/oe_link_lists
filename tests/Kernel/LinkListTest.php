@@ -13,13 +13,6 @@ use Symfony\Component\DomCrawler\Crawler;
 class LinkListTest extends KernelTestBase {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -40,8 +33,6 @@ class LinkListTest extends KernelTestBase {
       'oe_link_lists',
       'system',
     ]);
-
-    $this->entityTypeManager = $this->container->get('entity_type.manager');
   }
 
   /**
@@ -49,7 +40,7 @@ class LinkListTest extends KernelTestBase {
    */
   public function testLinkList(): void {
     // Create a link list.
-    $link_list_storage = $this->entityTypeManager->getStorage('link_list');
+    $link_list_storage = $this->container->get('entity_type.manager')->getStorage('link_list');
     $values = [
       'bundle' => 'dynamic',
       'title' => 'My link list',
@@ -68,7 +59,7 @@ class LinkListTest extends KernelTestBase {
    * Tests that we have a block derivative for each link list.
    */
   public function testBlockDerivatives(): void {
-    $link_list_storage = $this->entityTypeManager->getStorage('link_list');
+    $link_list_storage = $this->container->get('entity_type.manager')->getStorage('link_list');
     $values = [
       [
         'bundle' => 'dynamic',
@@ -95,7 +86,6 @@ class LinkListTest extends KernelTestBase {
 
       /** @var \Drupal\Core\Block\BlockPluginInterface $plugin */
       $plugin = $block_manager->createInstance("oe_link_list_block:$uuid");
-      $this->assertTrue($plugin->access(\Drupal::currentUser()) === $link_list->access('view'));
       $build = $plugin->build();
       $this->assertEqual('full', $build['#view_mode']);
       $this->assertTrue(isset($build['#link_list']));
