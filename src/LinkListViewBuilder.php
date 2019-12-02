@@ -94,8 +94,8 @@ class LinkListViewBuilder extends EntityViewBuilder {
       $container->get('language_manager'),
       $container->get('theme.registry'),
       $container->get('entity_display.repository'),
-      $container->get('plugin.manager.link_source'),
-      $container->get('plugin.manager.link_display'),
+      $container->get('plugin.manager.oe_link_lists.link_source'),
+      $container->get('plugin.manager.oe_link_lists.link_display'),
       $container->get('event_dispatcher'),
       $container->get('entity_type.manager')
     );

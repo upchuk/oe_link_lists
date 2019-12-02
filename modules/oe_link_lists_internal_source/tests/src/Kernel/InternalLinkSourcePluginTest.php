@@ -59,7 +59,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       $test_entities_by_bundle_and_first_letter[$entity->bundle()][substr($entity->label(), 0, 1)][$entity->id()] = $entity->label();
     }
 
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
     /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('internal');
 
@@ -257,7 +257,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
    * Tests that the proper cacheability metadata is returned by the plugin.
    */
   public function testCacheabilityMetadata(): void {
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
     /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('internal');
 
@@ -348,7 +348,7 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       $test_entities[$entity->id()] = $entity->label();
     }
 
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
     /** @var \Drupal\oe_link_lists_internal_source\Plugin\LinkSource\InternalLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('internal');
     $plugin->setConfiguration([

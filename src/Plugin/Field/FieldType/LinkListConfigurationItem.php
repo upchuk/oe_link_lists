@@ -2,7 +2,7 @@
 
 namespace Drupal\oe_link_lists\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem;
+use Drupal\Core\Field\Plugin\Field\FieldType\MapItem;
 
 /**
  * Defines the 'link_list_configuration' field type.
@@ -15,7 +15,6 @@ use Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem;
  *   label = @Translation("Link List Configuration"),
  *   category = @Translation("OpenEuropa"),
  *   default_widget = "link_list_configuration",
- *   default_formatter = "basic_string",
  * )
  */
-class LinkListConfigurationItem extends StringLongItem {}
+class LinkListConfigurationItem extends MapItem {}

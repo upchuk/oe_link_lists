@@ -1,8 +1,8 @@
 services:
-  plugin.manager.link_source:
+  plugin.manager.oe_link_lists.link_source:
     class: Drupal\oe_link_lists\LinkSourcePluginManager
     parent: default_plugin_manager
-  plugin.manager.link_display:
+  plugin.manager.oe_link_lists.link_display:
     class: Drupal\oe_link_lists\LinkDisplayPluginManager
     parent: default_plugin_manager
   oe_link_lists.event_subscriber.default_entity_value_link_resolver:

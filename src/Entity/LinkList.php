@@ -88,14 +88,14 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
    * {@inheritdoc}
    */
   public function getConfiguration(): array {
-    return !$this->get('configuration')->isEmpty() ? unserialize($this->get('configuration')->value) : [];
+    return !$this->get('configuration')->isEmpty() ? $this->get('configuration')->get(0)->getValue() : [];
   }
 
   /**
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration): LinkListInterface {
-    $this->set('configuration', serialize($configuration));
+    $this->set('configuration', $configuration);
     return $this;
   }
 
@@ -206,7 +206,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
         'weight' => 4,
       ])
       ->setDisplayConfigurable('form', TRUE)
-      ->setDefaultValue(serialize([]));
+      ->setDefaultValue([]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
