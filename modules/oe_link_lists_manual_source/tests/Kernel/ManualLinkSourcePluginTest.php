@@ -104,7 +104,7 @@ class ManualLinkSourcePluginTest extends KernelTestBase {
     ]);
     $list->save();
 
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
     /** @var \Drupal\oe_link_lists_manual_source\Plugin\LinkSource\ManualLinkSource $plugin */
     $plugin_configuration = $list->getConfiguration()['source']['plugin_configuration'];
     $plugin = $plugin_manager->createInstance('manual_links', $plugin_configuration);

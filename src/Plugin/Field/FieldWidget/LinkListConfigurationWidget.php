@@ -103,8 +103,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('plugin.manager.link_source'),
-      $container->get('plugin.manager.link_display'),
+      $container->get('plugin.manager.oe_link_lists.link_source'),
+      $container->get('plugin.manager.oe_link_lists.link_display'),
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.element_info')
     );

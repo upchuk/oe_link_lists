@@ -119,7 +119,7 @@ abstract class ManualLinkListTestBase extends WebDriverTestBase {
   protected function getLinksFromList(LinkListInterface $link_list): array {
     $configuration = $link_list->getConfiguration();
     /** @var \Drupal\oe_link_lists\LinkSourceInterface $plugin */
-    $plugin = \Drupal::service('plugin.manager.link_source')->createInstance($configuration['source']['plugin'], $configuration['source']['plugin_configuration']);
+    $plugin = \Drupal::service('plugin.manager.oe_link_lists.link_source')->createInstance($configuration['source']['plugin'], $configuration['source']['plugin_configuration']);
     return $plugin->getLinks()->toArray();
   }
 
