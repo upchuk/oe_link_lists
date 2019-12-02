@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists_manual_source\EventSubscriber;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultLink;
 use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
@@ -30,13 +31,23 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
   protected $eventDispatcher;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * DefaultManualLinkResolverSubscriber constructor.
    *
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+   *   The entity repository.
    */
-  public function __construct(EventDispatcherInterface $eventDispatcher) {
+  public function __construct(EventDispatcherInterface $eventDispatcher, EntityRepositoryInterface $entityRepository) {
     $this->eventDispatcher = $eventDispatcher;
+    $this->entityRepository = $entityRepository;
   }
 
   /**
@@ -85,6 +96,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
    *   The link object.
    */
   protected function getLinkFromEntity(LinkListLinkInterface $link_entity): ?LinkInterface {
+    $link_entity = $this->entityRepository->getTranslationFromContext($link_entity);
     if ($link_entity->bundle() === 'external') {
       try {
         $url = Url::fromUri($link_entity->get('url')->uri);
@@ -109,6 +121,7 @@ class DefaultManualLinksResolverSubscriber implements EventSubscriberInterface {
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface $referenced_entity */
     $referenced_entity = $link_entity->get('target')->entity;
+    $referenced_entity = $this->entityRepository->getTranslationFromContext($referenced_entity);
     $event = new EntityValueResolverEvent($referenced_entity);
     $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
     $link = $event->getLink();
