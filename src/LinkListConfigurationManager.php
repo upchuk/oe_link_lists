@@ -2,40 +2,178 @@
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
+use Drupal\oe_link_lists\Plugin\Field\FieldType\LinkListConfigurationItem;
 
+/**
+ * Manages the setting an getting the configuration out of the link list.
+ */
 class LinkListConfigurationManager {
 
+  /**
+   * The link source manager.
+   *
+   * @var \Drupal\oe_link_lists\LinkSourcePluginManagerInterface
+   */
+  protected $linkSourceManager;
 
+  /**
+   * The link display manager.
+   *
+   * @var \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface
+   */
+  protected $linkDisplayManager;
 
-  public static function setConfiguration(array $configuration, FieldItemInterface $item) {
-    $link_list = $item->getEntity();
-    $test = '';
+  /**
+   * LinkListConfigurationManager constructor.
+   *
+   * @param \Drupal\oe_link_lists\LinkSourcePluginManagerInterface $linkSourceManager
+   *   The link source manager.
+   * @param \Drupal\oe_link_lists\LinkDisplayPluginManagerInterface $linkDisplayManager
+   *   The link display manager.
+   */
+  public function __construct(LinkSourcePluginManagerInterface $linkSourceManager, LinkDisplayPluginManagerInterface $linkDisplayManager) {
+    $this->linkSourceManager = $linkSourceManager;
+    $this->linkDisplayManager = $linkDisplayManager;
   }
 
-  public static function getConfiguration(LinkListInterface $link_list) {
-    $untranslated = self::extractConfiguration($link_list->getUntranslated());
+  /**
+   * Sets the configuration on the field item.
+   *
+   * If the entity onto which we are setting the configuration is the original,
+   * untranslated value, we set the configuration as it comes. If, however,
+   * it is a translation, we only set the values for the configuration that
+   * have been marked as translatable.
+   *
+   * @param array $configuration
+   *   The configuration.
+   * @param \Drupal\oe_link_lists\Plugin\Field\FieldType\LinkListConfigurationItem $item
+   *   The individual field item.
+   *
+   * @return \Drupal\Core\Field\FieldItemInterface
+   *   The updated field item.
+   */
+  public function setConfiguration(array $configuration, LinkListConfigurationItem $item): FieldItemInterface {
+    /** @var LinkListInterface $link_list */
+    $link_list = $item->getEntity();
+
+    if ($link_list->isDefaultTranslation()) {
+      // If we are setting the configuration on the original, untranslated
+      // entity, we set the entire value and return.
+      $item->setValue(serialize($configuration));
+      return $item;
+    }
+
+    // If we are saving a translation, we need to only save the configuration
+    // values that are marked as translatable.
+    $translated_configuration = [];
+
+    $translatable_map = $this->getTranslatableParents();
+    foreach ($translatable_map as $path) {
+      $translatable_value = NestedArray::getValue($configuration, $path);
+      NestedArray::setValue($translated_configuration, $path, $translatable_value);
+    }
+
+    $item->setValue(serialize($translated_configuration));
+    return $item;
+  }
+
+  /**
+   * Gets the configuration from the field item.
+   *
+   * When retrieving the configuration values for translations of the list,
+   * we merge the untranslated values with the ones stored in the translation
+   * of the field.
+   *
+   * @param \Drupal\oe_link_lists\Plugin\Field\FieldType\LinkListConfigurationItem $item
+   *   The individual field item.
+   *
+   * @return array
+   *   The configuration.
+   */
+  public function getConfiguration(LinkListConfigurationItem $item): array {
+    /** @var LinkListInterface $link_list */
+    $link_list = $item->getEntity();
+
+    $field_name = $item->getFieldDefinition()->getName();
+    $delta = $item->getName();
+
+    /** @var LinkListConfigurationItem $untranslated_item */
+    $untranslated_item = $link_list->getUntranslated()->get($field_name)->get($delta);
+    $untranslated = $this->extractConfiguration($untranslated_item);
 
     if ($link_list->isDefaultTranslation()) {
       return $untranslated;
     }
 
-    $translated = self::extractConfiguration($link_list);
+    $translated = $this->extractConfiguration($item);
     $configuration = NestedArray::mergeDeep($untranslated, $translated);
 
     return $configuration;
   }
 
-  protected static function extractConfiguration(LinkListInterface $link_list) {
-    return !$link_list->get('configuration')->isEmpty() ? unserialize($link_list->get('configuration')->value) : [];
+  /**
+   * Extracts the configuration from the field item.
+   *
+   * @param \Drupal\oe_link_lists\Plugin\Field\FieldType\LinkListConfigurationItem $item
+   *   The field item.
+   *
+   * @return array
+   *   The configuration values.
+   */
+  protected function extractConfiguration(LinkListConfigurationItem $item): array {
+    return !$item->isEmpty() ? unserialize($item->value) : [];
   }
 
-  public static function getTranslatableMap() {
-    return [
+  /**
+   * Returns the list of parents for the translatable values.
+   *
+   * @return array
+   *   The list of parents.
+   */
+  protected function getTranslatableParents() {
+    // We start by adding the values that are not provided by plugins.
+    $parents = [
       ['more', 'title_override'],
     ];
+
+    // Then we load all the plugins and ask for their parents.
+    $parents = array_merge($parents, $this->getPluginTranslatableParents($this->linkSourceManager, ['source', 'plugin_configuration']));
+    $parents = array_merge($parents, $this->getPluginTranslatableParents($this->linkDisplayManager, ['display', 'plugin_configuration']));
+
+    return $parents;
+  }
+
+  /**
+   * Creates the list of parents from the plugins that provide them.
+   *
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
+   *   The plugin manager.
+   * @param array $base_parents
+   *   The parents under the main configuration schema to append to the plugin
+   * specific ones.
+   *
+   * @return array
+   *   The parents.
+   */
+  protected function getPluginTranslatableParents(PluginManagerInterface $manager, array $base_parents = []): array {
+    $parents = [];
+    foreach ($manager->getDefinitions() as $plugin_id => $definition) {
+      $plugin = $manager->createInstance($plugin_id);
+      if (!$plugin instanceof TranslatableLinkListPluginInterface) {
+        continue;
+      }
+
+      $plugin_parents = $plugin->getTranslatableParents();
+      foreach ($plugin_parents as $plugin_parent_set) {
+        $parents[] = array_merge($base_parents, $plugin_parent_set);
+      }
+    }
+
+    return $parents;
   }
 
 }

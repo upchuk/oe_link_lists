@@ -89,14 +89,14 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
    * {@inheritdoc}
    */
   public function getConfiguration(): array {
-    return LinkListConfigurationManager::getConfiguration($this);
+    return \Drupal::service('oe_link_list.link_list_configuration_manager')->getConfiguration($this->get('configuration')->first());
   }
 
   /**
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration): LinkListInterface {
-    $this->set('configuration', serialize($configuration));
+    \Drupal::service('oe_link_list.link_list_configuration_manager')->set($configuration, $this->get('configuration')->first());
     return $this;
   }
 

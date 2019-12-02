@@ -16,6 +16,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
+use Drupal\oe_link_lists\LinkListConfigurationManager;
 use Drupal\oe_link_lists\LinkSourcePluginManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -63,6 +64,13 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
   protected $linkSourcePluginManager;
 
   /**
+   * The link list configuration manager.
+   *
+   * @var \Drupal\oe_link_lists\LinkListConfigurationManager
+   */
+  protected $linkListConfigurationManager;
+
+  /**
    * Constructs a LinkListConfigurationWidget object.
    *
    * @param string $plugin_id
@@ -83,14 +91,17 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The entity type manager.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info_manager
    *   The element info manager.
+   * @param \Drupal\oe_link_lists\LinkListConfigurationManager $link_list_configuration_manager
+   *   The link list configuration manager.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EntityTypeManagerInterface $entity_type_manager, ElementInfoManagerInterface $element_info_manager) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EntityTypeManagerInterface $entity_type_manager, ElementInfoManagerInterface $element_info_manager, LinkListConfigurationManager $link_list_configuration_manager) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
 
     $this->linkSourcePluginManager = $link_source_plugin_manager;
     $this->linkDisplayPluginManager = $link_display_plugin_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->elementInfoManager = $element_info_manager;
+    $this->linkListConfigurationManager = $link_list_configuration_manager;
   }
 
   /**
@@ -106,7 +117,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       $container->get('plugin.manager.link_source'),
       $container->get('plugin.manager.link_display'),
       $container->get('entity_type.manager'),
-      $container->get('plugin.manager.element_info')
+      $container->get('plugin.manager.element_info'),
+      $container->get('oe_link_list.link_list_configuration_manager')
     );
   }
 
@@ -414,7 +426,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       }
 
       $this->applyGeneralListConfiguration($configuration, $element, $form_state);
-      $items->get($delta)->setValue(serialize($configuration));
+      $this->linkListConfigurationManager->setConfiguration($configuration, $items->get($delta));
     }
   }
 

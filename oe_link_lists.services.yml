@@ -10,3 +10,6 @@ services:
     arguments: ['@entity.repository']
     tags:
       - { name: event_subscriber }
+  oe_link_list.link_list_configuration_manager:
+    class: Drupal\oe_link_lists\LinkListConfigurationManager
+    arguments: ['@plugin.manager.link_source', '@plugin.manager.link_display']
