@@ -19,6 +19,7 @@ use Drupal\oe_link_lists\Event\EntityValueResolverEvent;
 use Drupal\oe_link_lists\LinkCollection;
 use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
+use Drupal\oe_link_lists_internal_source\Event\InternalSourceEntityTypesEvent;
 use Drupal\oe_link_lists_internal_source\Event\InternalSourceQueryEvent;
 use Drupal\oe_link_lists_internal_source\InternalLinkSourceFilterPluginManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -340,9 +341,9 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     $event = new InternalSourceQueryEvent($query);
     $this->eventDispatcher->dispatch(InternalSourceQueryEvent::NAME, $event);
 
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = $storage->loadMultiple($query->execute());
     foreach ($entities as $entity) {
+      /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
       $event = new EntityValueResolverEvent($entity);
       $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
       $links[] = $event->getLink();
@@ -376,6 +377,10 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
 
       $entity_types[$entity_type_id] = $entity_type->getLabel();
     }
+
+    $event = new InternalSourceEntityTypesEvent(array_keys($entity_types));
+    $this->eventDispatcher->dispatch(InternalSourceEntityTypesEvent::NAME, $event);
+    $entity_types = array_intersect_key($entity_types, array_flip($event->getEntityTypes()));
 
     return $entity_types;
   }

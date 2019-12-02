@@ -47,7 +47,8 @@
     "autoload-dev": {
         "psr-4": {
             "Drupal\\Tests\\oe_link_lists\\": "./tests/",
-            "Drupal\\Tests\\oe_link_lists_manual_source\\": "./modules/oe_link_lists_manual_source/tests/"
+            "Drupal\\Tests\\oe_link_lists_internal_source\\": "./modules/oe_link_lists_internal_source/tests/src",
+            "Drupal\\Tests\\oe_link_lists_manual_source\\": "./modules/oe_link_lists_manual_source/tests"
         }
     },
     "extra": {

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\EventSubscriber;
 
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\DefaultEntityLink;
@@ -14,6 +15,23 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * Default subscriber that resolves event values into a link object.
  */
 class DefaultEntityValueResolverSubscriber implements EventSubscriberInterface {
+
+  /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
+   * DefaultEntityValueResolverSubscriber constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+   *   The entity repository.
+   */
+  public function __construct(EntityRepositoryInterface $entityRepository) {
+    $this->entityRepository = $entityRepository;
+  }
 
   /**
    * {@inheritdoc}
@@ -29,7 +47,7 @@ class DefaultEntityValueResolverSubscriber implements EventSubscriberInterface {
    *   The event.
    */
   public function resolveEntityValues(EntityValueResolverEvent $event): void {
-    $entity = $event->getEntity();
+    $entity = $this->entityRepository->getTranslationFromContext($event->getEntity());
     $title = $entity->label() ?? '';
     $teaser = [
       '#markup' => '',
