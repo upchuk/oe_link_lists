@@ -57,6 +57,68 @@ class ManualLinkSourcePluginTest extends KernelTestBase {
     ]);
 
     $this->createContentType(['type' => 'page']);
+
+  }
+
+  /**
+   * Tests the getLinks() method.
+   *
+   * @covers ::getLinks
+   */
+  public function testGetLinks(): void {
+    // Create a node to be used by an internal link.
+    $node_one = $this->createNode(['type' => 'page']);
+
+    // Create an internal link and an external link.
+    $entity_type_manager = $this->container->get('entity_type.manager');
+    $link_storage = $entity_type_manager->getStorage('link_list_link');
+    $internal_link_one = $link_storage->create([
+      'bundle' => 'internal',
+      'target' => $node_one->id(),
+      'status' => 1,
+    ]);
+    $internal_link_one->save();
+
+    $external_link = $link_storage->create([
+      'bundle' => 'external',
+      'url' => 'http://example.com',
+      'title' => 'Example title',
+      'teaser' => 'Example teaser',
+      'status' => 1,
+    ]);
+    $external_link->save();
+
+    // Create a list that references one internal and one external link.
+    $list_storage = $entity_type_manager->getStorage('link_list');
+    $list = $list_storage->create([
+      'bundle' => 'manual',
+      'links' => [
+        $external_link,
+        $internal_link_one,
+      ],
+      'status' => 1,
+    ]);
+    $list->save();
+
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
+    /** @var \Drupal\oe_link_lists_manual_source\Plugin\LinkSource\ManualLinkSource $plugin */
+    $plugin_configuration = $list->getConfiguration()['source']['plugin_configuration'];
+    $plugin = $plugin_manager->createInstance('manual_links', $plugin_configuration);
+
+    $links = $plugin->getLinks();
+    $this->assertCount(2, $links);
+    $this->assertEquals('Example title', $links[0]->getTitle());
+    $this->assertEquals($node_one->label(), $links[1]->getTitle());
+
+    // Assert we can filter the amount of links we get.
+    $links = $plugin->getLinks(1);
+    $this->assertCount(1, $links);
+    $this->assertEquals('Example title', $links[0]->getTitle());
+
+    // Verify the offset.
+    $links = $plugin->getLinks(NULL, 1);
+    $this->assertCount(1, $links);
+    $this->assertEquals($node_one->label(), $links[0]->getTitle());
   }
 
   /**
