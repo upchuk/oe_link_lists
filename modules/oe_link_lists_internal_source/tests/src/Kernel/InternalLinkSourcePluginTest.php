@@ -113,6 +113,12 @@ class InternalLinkSourcePluginTest extends KernelTestBase {
       $this->extractEntityNames($plugin->getLinks(2)->toArray())
     );
 
+    // Test that the offset and limit are applied to the results.
+    $this->assertEquals(
+      array_slice($test_entities_by_bundle['foo'], 2, 2, TRUE),
+      $this->extractEntityNames($plugin->getLinks(2, 2)->toArray())
+    );
+
     // Test non bundleable entities.
     $test_entity = EntityTestNoBundle::create(['name' => $this->randomString()]);
     $test_entity->save();
