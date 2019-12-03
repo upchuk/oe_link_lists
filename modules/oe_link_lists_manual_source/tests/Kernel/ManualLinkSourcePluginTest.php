@@ -106,10 +106,19 @@ class ManualLinkSourcePluginTest extends KernelTestBase {
     $plugin = $plugin_manager->createInstance('manual_links', $plugin_configuration);
 
     $links = $plugin->getLinks();
+    $this->assertCount(2, $links);
+    $this->assertEquals('Example title', $links[0]->getTitle());
+    $this->assertEquals($node_one->label(), $links[1]->getTitle());
 
     // Assert we can filter the amount of links we get.
-    $this->assertCount(2, $plugin->getLinks());
-    $this->assertCount(1, $plugin->getLinks(1));
+    $links = $plugin->getLinks(1);
+    $this->assertCount(1, $links);
+    $this->assertEquals('Example title', $links[0]->getTitle());
+
+    // Verify the offset.
+    $links = $plugin->getLinks(NULL, 1);
+    $this->assertCount(1, $links);
+    $this->assertEquals($node_one->label(), $links[0]->getTitle());
   }
 
   /**
