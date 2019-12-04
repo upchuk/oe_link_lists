@@ -93,6 +93,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The element info manager.
    * @param \Drupal\oe_link_lists\LinkListConfigurationManager $link_list_configuration_manager
    *   The link list configuration manager.
+   *
+   * @SuppressWarnings(PHPMD.ExcessiveParameterList)
    */
   public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, LinkSourcePluginManagerInterface $link_source_plugin_manager, LinkDisplayPluginManagerInterface $link_display_plugin_manager, EntityTypeManagerInterface $entity_type_manager, ElementInfoManagerInterface $element_info_manager, LinkListConfigurationManager $link_list_configuration_manager) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);

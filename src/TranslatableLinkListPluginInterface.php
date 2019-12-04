@@ -17,7 +17,7 @@ interface TranslatableLinkListPluginInterface {
    *
    * @return array
    *   An array of the parents of the configuration values that can be
-   * translated.
+   *   translated.
    */
   public function getTranslatableParents(): array;
 

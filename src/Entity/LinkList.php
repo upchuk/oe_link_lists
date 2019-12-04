@@ -89,14 +89,14 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
    * {@inheritdoc}
    */
   public function getConfiguration(): array {
-    return \Drupal::service('oe_link_list.link_list_configuration_manager')->getConfiguration($this->get('configuration')->first());
+    return $this->getConfigurationManager()->getConfiguration($this->get('configuration')->first());
   }
 
   /**
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration): LinkListInterface {
-    \Drupal::service('oe_link_list.link_list_configuration_manager')->set($configuration, $this->get('configuration')->first());
+    $this->getConfigurationManager()->setConfiguration($configuration, $this->get('configuration')->first());
     return $this;
   }
 
@@ -148,6 +148,16 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
 
     // Invalidate the block cache to update the derivatives.
     \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+  }
+
+  /**
+   * Returns the configuration manager for link lists.
+   *
+   * @return \Drupal\oe_link_lists\LinkListConfigurationManager
+   *   The configuration manager.
+   */
+  protected function getConfigurationManager(): LinkListConfigurationManager {
+    return \Drupal::service('oe_link_list.link_list_configuration_manager');
   }
 
   /**

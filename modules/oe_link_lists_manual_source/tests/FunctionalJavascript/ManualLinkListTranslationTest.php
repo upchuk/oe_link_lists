@@ -25,10 +25,6 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $pages = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['title' => 'Page 2']);
-    $page_two = reset($pages);
-    $page_two->addTranslation('fr', ['title' => 'deuxieme page'])->save();
-
     \Drupal::service('content_translation.manager')->setEnabled('link_list', 'manual', TRUE);
     $bundles = [
       'internal',
@@ -41,25 +37,30 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
     \Drupal::service('content_translation.manager')->setEnabled('node', 'page', TRUE);
     \Drupal::service('router.builder')->rebuild();
 
+    $pages = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['title' => 'Page 2']);
+    $page_two = reset($pages);
+    $page_two->addTranslation('fr', ['title' => 'deuxieme page'])->save();
+
     $web_user = $this->drupalCreateUser([
       'bypass node access',
       'administer link_lists',
       'administer link list link entities',
       'translate any entity',
     ]);
+
     $this->drupalLogin($web_user);
   }
 
   /**
    * Tests that the link lists are translatable.
    */
-  public function testTranslateLinkList(): void {
+  public function testManualLinkListTranslatability(): void {
     $this->drupalGet('link_list/add/manual');
     $this->getSession()->getPage()->fillField('Title', 'Test translation');
     $this->getSession()->getPage()->fillField('Administrative title', 'Test translation admin title');
 
     // Select and configure the display plugin.
-    $this->getSession()->getPage()->selectFieldOption('Link display', 'Foo');
+    $this->getSession()->getPage()->selectFieldOption('Link display', 'Baz');
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Create an external link.
@@ -68,13 +69,14 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
     $this->getSession()->getPage()->pressButton('Save');
 
     // Translate into FR.
-    $this->drupalGet('/link_list/1/translations/add/en/fr');
+    $link_list = $this->getLinkListByTitle('Test translation');
+    $url = $link_list->toUrl('drupal:content-translation-add');
+    $url->setRouteParameter('source', 'en');
+    $url->setRouteParameter('target', 'fr');
+    $this->drupalGet($url);
+
     $this->getSession()->getPage()->fillField('Title', 'Test de traduction');
     $this->getSession()->getPage()->fillField('Administrative title', 'Test la traduction admin titre');
-
-    // Change the display plugin.
-    $this->getSession()->getPage()->selectFieldOption('Link display', 'Baz');
-    $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Edit the external link.
     $edit = $this->getSession()->getPage()->find('xpath', '(//input[@type="submit" and @value="Edit"])[1]');
@@ -82,9 +84,9 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     $links_wrapper = $this->getSession()->getPage()->find('css', '.field--widget-inline-entity-form-complex');
-    $links_wrapper->fillField('URL', 'http://example.com/fr');
+    $links_wrapper->fillField('URL', 'http://traduction.com/fr');
     $links_wrapper->fillField('Title', 'Titre du test');
-    $links_wrapper->fillField('Teaser', 'Teaser de test');
+    $links_wrapper->fillField('Teaser', 'Description du test');
     $this->getSession()->getPage()->pressButton('Update Link');
     $this->assertSession()->assertWaitOnAjaxRequest();
 
@@ -101,24 +103,38 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
     $this->getSession()->getPage()->pressButton('Save');
 
     // Assert we have the link list translated.
-    $link_list = $this->getLinkListByTitle('Test translation');
+    $link_list = $this->getLinkListByTitle('Test translation', TRUE);
     $this->assertTrue($link_list->hasTranslation('fr'));
     $translation = $link_list->getTranslation('fr');
     $this->assertEquals('Test de traduction', $translation->get('title')->value);
     $this->assertEquals('Test la traduction admin titre', $translation->get('administrative_title')->value);
 
     // Navigate to the list and assert we still have the original values in EN.
-    $this->drupalGet('link_list/1');
-    $this->assertSession()->linkExists('Test title');
-    $this->assertSession()->linkExists('Overridden title');
+    $this->drupalGet($link_list->toUrl());
+    $this->assertSession()->pageTextContains('Test title');
+    $this->assertSession()->pageTextContains('Test teaser');
+    $this->assertSession()->pageTextContains('http://example.com');
+    $this->assertSession()->pageTextContains('Overridden title');
+    $this->assertSession()->pageTextContains('Overridden teaser');
+    $this->assertSession()->pageTextNotContains('Titre du test');
+    $this->assertSession()->pageTextNotContains('Description du test');
+    $this->assertSession()->pageTextNotContains('http://traduction.com/fr');
+    $this->assertSession()->pageTextNotContains('Titre redéfinie');
+    $this->assertSession()->pageTextNotContains('Teaser redéfinie');
 
-    // Navigate to the list translation and assert we have translated values.
-    $this->drupalGet('link_list/1', ['language' => \Drupal::languageManager()->getLanguage('fr')]);
+    // Navigate to the list translation and assert we show translated values.
+    $this->drupalGet($link_list->toUrl('canonical', ['language' => \Drupal::languageManager()->getLanguage('fr')]));
+    file_put_contents('/var/www/html/print.html', $this->getSession()->getPage()->getContent());
     $this->assertSession()->pageTextContains('Titre du test');
-    $this->assertSession()->pageTextContains('Teaser de test');
-    $this->assertSession()->pageTextContains('http://example.com/fr');
+    $this->assertSession()->pageTextContains('Description du test');
+    $this->assertSession()->pageTextContains('http://traduction.com/fr');
     $this->assertSession()->pageTextContains('Titre redéfinie');
     $this->assertSession()->pageTextContains('Teaser redéfinie');
+    $this->assertSession()->pageTextNotContains('Test title');
+    $this->assertSession()->pageTextNotContains('Test teaser');
+    $this->assertSession()->pageTextNotContains('http://example.com');
+    $this->assertSession()->pageTextNotContains('Overridden title');
+    $this->assertSession()->pageTextNotContains('Overridden teaser');
   }
 
   /**

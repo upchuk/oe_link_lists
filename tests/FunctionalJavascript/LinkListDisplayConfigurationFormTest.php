@@ -178,7 +178,7 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     $this->assertSession()->pageTextNotContains('Display link to see all');
 
     // Select and configure the source plugin.
-    $this->getSession()->getPage()->selectFieldOption('Link source', 'Bat');
+    $this->getSession()->getPage()->selectFieldOption('Link source', 'Baz');
     $this->assertSession()->assertWaitOnAjaxRequest();
 
     // Save the link list.
