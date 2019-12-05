@@ -4,7 +4,9 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 
 /**
@@ -97,6 +99,19 @@ class DefaultLink implements LinkInterface {
    */
   public function setTeaser(array $teaser): void {
     $this->teaser = $teaser;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    if ($operation !== 'view') {
+      throw new \InvalidArgumentException('Only the "view" permission is supported for links.');
+    }
+
+    $result = AccessResult::allowed();
+
+    return $return_as_object ? $result : $result->isAllowed();
   }
 
 }

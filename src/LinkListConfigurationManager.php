@@ -61,7 +61,7 @@ class LinkListConfigurationManager {
     if ($link_list->isDefaultTranslation()) {
       // If we are setting the configuration on the original, untranslated
       // entity, we set the entire value and return.
-      $item->setValue(serialize($configuration));
+      $item->setValue($configuration);
       return $item;
     }
 
@@ -75,7 +75,7 @@ class LinkListConfigurationManager {
       NestedArray::setValue($translated_configuration, $path, $translatable_value);
     }
 
-    $item->setValue(serialize($translated_configuration));
+    $item->setValue($translated_configuration);
     return $item;
   }
 
@@ -120,7 +120,7 @@ class LinkListConfigurationManager {
    *   The configuration values.
    */
   protected function extractConfiguration(LinkListConfigurationItem $item): array {
-    return !$item->isEmpty() ? unserialize($item->value) : [];
+    return !$item->isEmpty() ? $item->getValue() : [];
   }
 
   /**

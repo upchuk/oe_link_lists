@@ -48,7 +48,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
 
     /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss', $form_state->get('plugin_configuration') ?? []);
@@ -180,7 +180,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
    * @covers ::submitConfigurationForm
    */
   public function testPluginSubmitConfiguration(): void {
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
     $entity_type_manager = $this->container->get('entity_type.manager');
     $feed_storage = $entity_type_manager->getStorage('aggregator_feed');
     $item_storage = $entity_type_manager->getStorage('aggregator_item');
@@ -278,7 +278,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
       $feeds[$name] = $feed->id();
     }
 
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
 
     /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');
@@ -330,7 +330,7 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $feed->save();
     $feed->refreshItems();
 
-    $plugin_manager = $this->container->get('plugin.manager.link_source');
+    $plugin_manager = $this->container->get('plugin.manager.oe_link_lists.link_source');
 
     /** @var \Drupal\oe_link_lists_rss_source\Plugin\LinkSource\RssLinkSource $plugin */
     $plugin = $plugin_manager->createInstance('rss');

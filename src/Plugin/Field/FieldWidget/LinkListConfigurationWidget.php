@@ -116,8 +116,8 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('plugin.manager.link_source'),
-      $container->get('plugin.manager.link_display'),
+      $container->get('plugin.manager.oe_link_lists.link_source'),
+      $container->get('plugin.manager.oe_link_lists.link_display'),
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.element_info'),
       $container->get('oe_link_list.link_list_configuration_manager')
@@ -534,17 +534,6 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       'type' => 'custom',
       'url' => $target,
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    foreach ($values as $delta => $value) {
-      $values[$delta] = serialize($value);
-    }
-
-    return $values;
   }
 
   /**

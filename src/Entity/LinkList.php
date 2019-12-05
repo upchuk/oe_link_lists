@@ -219,7 +219,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
         'weight' => 4,
       ])
       ->setDisplayConfigurable('form', TRUE)
-      ->setDefaultValue(serialize([]));
+      ->setDefaultValue([]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))

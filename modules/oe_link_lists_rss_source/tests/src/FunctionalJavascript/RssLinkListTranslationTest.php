@@ -33,13 +33,8 @@ class RssLinkListTranslationTest extends WebDriverTestBase {
    */
   protected static $modules = [
     'oe_link_lists',
-    'oe_link_lists_manual_source',
     'oe_link_lists_rss_source',
     'oe_link_lists_test',
-    'node',
-    'content_translation',
-    'locale',
-    'language',
     'oe_multilingual',
   ];
 
@@ -107,6 +102,7 @@ class RssLinkListTranslationTest extends WebDriverTestBase {
       'bypass node access',
       'administer link_lists',
       'translate any entity',
+      'access news feeds',
     ]);
 
     $this->drupalLogin($web_user);

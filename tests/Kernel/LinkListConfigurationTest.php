@@ -89,7 +89,7 @@ class LinkListConfigurationTest extends KernelTestBase {
 
     // Assert that the configuration is set and read in the exact same way.
     $link_list->setConfiguration($configuration);
-    $this->assertEquals($link_list->getConfiguration(), $configuration);
+    $this->assertEquals($configuration, $link_list->getConfiguration());
 
     $translated_configuration = $configuration;
     $this->translateConfiguration($translated_configuration);
@@ -136,7 +136,7 @@ class LinkListConfigurationTest extends KernelTestBase {
         'title_override' => NULL,
       ],
     ];
-    $this->assertEquals($expected_partial, unserialize($translation->get('configuration')->value));
+    $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());
 
     // Add a source plugin that has a translatable configuration and set the
     // new configuration onto the original list.
@@ -173,7 +173,7 @@ class LinkListConfigurationTest extends KernelTestBase {
         'title_override' => NULL,
       ],
     ];
-    $this->assertEquals($expected_partial, unserialize($translation->get('configuration')->value));
+    $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());
   }
 
   /**
