@@ -7,7 +7,6 @@ services:
     parent: default_plugin_manager
   oe_link_lists.event_subscriber.default_entity_value_link_resolver:
     class: Drupal\oe_link_lists\EventSubscriber\DefaultEntityValueResolverSubscriber
-    arguments: ['@entity.repository']
     tags:
       - { name: event_subscriber }
   oe_link_list.link_list_configuration_manager:
