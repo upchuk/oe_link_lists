@@ -34,6 +34,7 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
     $this->installEntitySchema('link_list_link');
+    $this->installEntitySchema('link_list');
     $this->installSchema('node', 'node_access');
     $this->installConfig([
       'field',
@@ -116,6 +117,54 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $this->assertEquals('Title field is required.', $violation->getMessage());
     $violation = $violations->get(1);
     $this->assertEquals('Teaser field is required.', $violation->getMessage());
+  }
+
+  /**
+   * Tests referenced Link list links are deleted when the link list is deleted.
+   */
+  public function testLinkListsDelete(): void {
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+    $entity_type_manager = $this->container->get('entity_type.manager');
+
+    $link_storage = $entity_type_manager->getStorage('link_list_link');
+
+    // Create a valid external link.
+    /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link_entity */
+    $link_entity = $link_storage->create([
+      'bundle' => 'external',
+      'url' => 'http://example.com',
+      'title' => 'Example title',
+      'teaser' => 'Example teaser',
+      'status' => 1,
+    ]);
+    $link_entity->save();
+
+    $link_entity = $link_storage->load($link_entity->id());
+    // Asserts that external link was correctly saved.
+    $this->assertEquals('http://example.com', $link_entity->get('url')->uri);
+    $this->assertEquals('Example title', $link_entity->getTitle());
+    $this->assertEquals('Example teaser', $link_entity->getTeaser());
+
+    // Create a list that references one internal and one external link.
+    $list_storage = $entity_type_manager->getStorage('link_list');
+    $list_entity = $list_storage->create([
+      'bundle' => 'manual',
+      'links' => [
+        $link_entity,
+      ],
+      'status' => 1,
+    ]);
+    $list_entity->save();
+
+    $list_entity = $list_storage->load($list_entity->id());
+    // Asserts that link list was correctly saved.
+    $this->assertEquals('manual', $list_entity->bundle());
+    $target_id = array_column($list_entity->get('links')->getValue(), 'target_id');
+    $this->assertEquals($link_entity->id(), reset($target_id));
+
+    // Delete the link list and assert that the referenced link was deleted.
+    $list_entity->delete();
+    $this->assertNull($link_storage->load($link_entity->id()));
   }
 
 }
