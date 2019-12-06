@@ -8,7 +8,7 @@
 declare(strict_types = 1);
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\oe_link_lists\Entity\LinkList;
+use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLink;
 use Drupal\oe_link_lists_manual_source\LinkListLinkInlineForm;
 
@@ -70,8 +70,7 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
  * Delete orphan manual link list links.
  */
 function oe_link_lists_manual_source_entity_delete(EntityInterface $entity) {
-  /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $entity */
-  if (!$entity instanceof LinkList) {
+  if (!$entity instanceof LinkListInterface) {
     return;
   }
 
