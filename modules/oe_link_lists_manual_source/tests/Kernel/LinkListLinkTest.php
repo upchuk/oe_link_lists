@@ -144,15 +144,15 @@ class LinkListLinkTest extends EntityKernelTestBase {
     $node->save();
 
     // Create a valid external link.
-    /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link_entity */
-    $link_entity = $link_storage->create([
+    /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $external_link_entity */
+    $external_link_entity = $link_storage->create([
       'bundle' => 'external',
       'url' => 'http://example.com',
       'title' => 'Example title',
       'teaser' => 'Example teaser',
       'status' => 1,
     ]);
-    $link_entity->save();
+    $external_link_entity->save();
 
     $internal_link_entity = $link_storage->create([
       'bundle' => 'internal',
@@ -161,16 +161,12 @@ class LinkListLinkTest extends EntityKernelTestBase {
     ]);
     $internal_link_entity->save();
 
-    // Load the created link entities.
-    $internal_link_entity = $link_storage->load($internal_link_entity->id());
-    $link_entity = $link_storage->load($link_entity->id());
-
     // Create a list that references one internal and one external link.
     $list_storage = $entity_type_manager->getStorage('link_list');
     $list_entity = $list_storage->create([
       'bundle' => 'manual',
       'links' => [
-        $link_entity,
+        $external_link_entity,
         $internal_link_entity,
       ],
       'status' => 1,
@@ -181,12 +177,12 @@ class LinkListLinkTest extends EntityKernelTestBase {
     // Asserts that link list was correctly saved.
     $this->assertEquals('manual', $list_entity->bundle());
     $target_ids = array_column($list_entity->get('links')->getValue(), 'target_id');
-    $this->assertTrue(in_array($link_entity->id(), $target_ids));
+    $this->assertTrue(in_array($external_link_entity->id(), $target_ids));
     $this->assertTrue(in_array($internal_link_entity->id(), $target_ids));
 
     // Delete the link list and assert that the referenced link was deleted.
     $list_entity->delete();
-    $this->assertNull($link_storage->load($link_entity->id()));
+    $this->assertNull($link_storage->load($external_link_entity->id()));
     $this->assertNull($link_storage->load($internal_link_entity->id()));
   }
 
