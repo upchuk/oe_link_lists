@@ -570,20 +570,20 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    * @SuppressWarnings(PHPMD.NPathComplexity)
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
-    $string = trim($element['#value']);
+    $raw_url = trim($element['#value']);
 
     $button_parents = array_merge(
       array_slice($element['#parents'], 0, -1),
       ['button']
     );
     $button = $form_state->getValue($button_parents);
-    if ($button === 'custom' && $string === '') {
+    if ($button === 'custom' && $raw_url === '') {
       $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
       return;
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::getUserEnteredStringAsUri()
-    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($string);
+    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($raw_url);
     if ($entity_id !== NULL) {
       /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
       $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance([
@@ -599,22 +599,22 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     }
 
     // Make sure that we have valid schema in external URL.
-    $scheme_delimiter_position = strpos($string, '://');
+    $scheme_delimiter_position = strpos($raw_url, '://');
     // We won't check schema in query part of URL.
-    $query_delimiter_position = strpos($string, '?');
-    if (!empty($string) &&
+    $query_delimiter_position = strpos($raw_url, '?');
+    if (!empty($raw_url) &&
       $scheme_delimiter_position !== FALSE &&
       ($query_delimiter_position === FALSE || $scheme_delimiter_position < $query_delimiter_position) &&
-      !in_array(parse_url($string, PHP_URL_SCHEME), UrlHelper::getAllowedProtocols())) {
-      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $string]));
+      !in_array(parse_url($raw_url, PHP_URL_SCHEME), UrlHelper::getAllowedProtocols())) {
+      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $raw_url]));
     }
 
     $uri = '';
-    if (!empty($string) && parse_url($string, PHP_URL_SCHEME) === NULL) {
-      if (strpos($string, '<front>') === 0) {
-        $string = '/' . substr($string, strlen('<front>'));
+    if (!empty($raw_url) && parse_url($raw_url, PHP_URL_SCHEME) === NULL) {
+      if (strpos($raw_url, '<front>') === 0) {
+        $raw_url = '/' . substr($raw_url, strlen('<front>'));
       }
-      $uri = 'internal:' . $string;
+      $uri = 'internal:' . $raw_url;
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
