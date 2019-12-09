@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -566,6 +567,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The form state.
    *
    * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+   * @SuppressWarnings(PHPMD.NPathComplexity)
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
     $string = trim($element['#value']);
@@ -594,6 +596,17 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
 
       // Either an error or a valid entity is present. Exit early.
       return;
+    }
+
+    // Make sure that we have valid schema in external URL.
+    $scheme_delimiter_position = strpos($string, '://');
+    // We won't check schema in query part of URL.
+    $query_delimiter_position = strpos($string, '?');
+    if (!empty($string) &&
+      $scheme_delimiter_position !== FALSE &&
+      ($query_delimiter_position === FALSE || $scheme_delimiter_position < $query_delimiter_position) &&
+      !in_array(parse_url($string, PHP_URL_SCHEME), UrlHelper::getAllowedProtocols())) {
+      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $string]));
     }
 
     $uri = '';
