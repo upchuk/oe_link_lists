@@ -8,6 +8,7 @@
 declare(strict_types = 1);
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLink;
 use Drupal\oe_link_lists_manual_source\LinkListLinkInlineForm;
 
@@ -61,4 +62,29 @@ function oe_link_lists_manual_source_link_list_presave(EntityInterface $entity) 
   }
   $configuration['source']['plugin_configuration']['links'] = $ids;
   $entity->setConfiguration($configuration);
+}
+
+/**
+ * Implements hook_entity_delete().
+ *
+ * Delete orphan manual link list links.
+ */
+function oe_link_lists_manual_source_entity_delete(EntityInterface $entity) {
+  if (!$entity instanceof LinkListInterface) {
+    return;
+  }
+
+  if ($entity->bundle() !== 'manual' || $entity->get('links')->isEmpty()) {
+    return;
+  }
+
+  $ids = $entity->get('links')->getValue();
+  $link_list_link_storage = \Drupal::entityTypeManager()->getStorage('link_list_link');
+  $link_entities = $link_list_link_storage->loadMultipleRevisions(array_column($ids, 'target_revision_id'));
+
+  if (empty($link_entities)) {
+    return;
+  }
+
+  $link_list_link_storage->delete($link_entities);
 }
