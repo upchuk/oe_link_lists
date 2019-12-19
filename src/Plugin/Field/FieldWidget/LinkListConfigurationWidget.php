@@ -577,8 +577,11 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       ['button']
     );
     $button = $form_state->getValue($button_parents);
-    if ($button === 'custom' && $raw_url === '') {
-      $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+    if ($raw_url === '') {
+      if ($button === 'custom') {
+        $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+      }
+      // No other validation is needed if the uri is empty.
       return;
     }
 
