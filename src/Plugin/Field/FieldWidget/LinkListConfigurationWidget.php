@@ -15,6 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\ElementInfoManagerInterface;
+use Drupal\Core\Url;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
 use Drupal\oe_link_lists\LinkSourcePluginManagerInterface;
@@ -601,32 +602,31 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       return;
     }
 
-    // Make sure that we have valid schema in external URL.
-    $scheme_delimiter_position = strpos($raw_url, '://');
-    // We won't check schema in query part of URL.
-    $query_delimiter_position = strpos($raw_url, '?');
-    if (!empty($raw_url) &&
-      $scheme_delimiter_position !== FALSE &&
-      ($query_delimiter_position === FALSE || $scheme_delimiter_position < $query_delimiter_position) &&
-      !in_array(parse_url($raw_url, PHP_URL_SCHEME), UrlHelper::getAllowedProtocols())) {
-      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $raw_url]));
-    }
-
-    $uri = '';
-    if (!empty($raw_url) && parse_url($raw_url, PHP_URL_SCHEME) === NULL) {
+    if (parse_url($raw_url, PHP_URL_SCHEME) === NULL) {
       if (strpos($raw_url, '<front>') === 0) {
         $raw_url = '/' . substr($raw_url, strlen('<front>'));
       }
-      $uri = 'internal:' . $raw_url;
+      $raw_url = 'internal:' . $raw_url;
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
     if (
-      parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
+      parse_url($raw_url, PHP_URL_SCHEME) === 'internal' &&
       !in_array($element['#value'][0], ['/', '?', '#'], TRUE) &&
       substr($element['#value'], 0, 7) !== '<front>'
     ) {
       $form_state->setError($element, t('The specified target is invalid. Manually entered paths should start with one of the following characters: / ? #'));
+    }
+
+    try {
+      $url = Url::fromUri($raw_url);
+    }
+    catch (\InvalidArgumentException $exception) {
+      // Mark the url as invalid.
+      $url = FALSE;
+    }
+    if ($url === FALSE || ($url->isExternal() && !in_array(parse_url($url->getUri(), PHP_URL_SCHEME), UrlHelper::getAllowedProtocols()))) {
+      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $raw_url]));
     }
   }
 
