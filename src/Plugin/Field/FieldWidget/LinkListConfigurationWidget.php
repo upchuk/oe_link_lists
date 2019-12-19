@@ -571,14 +571,14 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    * @SuppressWarnings(PHPMD.NPathComplexity)
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
-    $raw_url = trim($element['#value']);
+    $uri = trim($element['#value']);
 
     $button_parents = array_merge(
       array_slice($element['#parents'], 0, -1),
       ['button']
     );
     $button = $form_state->getValue($button_parents);
-    if ($raw_url === '') {
+    if ($uri === '') {
       if ($button === 'custom') {
         $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
       }
@@ -587,7 +587,7 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::getUserEnteredStringAsUri()
-    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($raw_url);
+    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($uri);
     if ($entity_id !== NULL) {
       /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
       $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance([
@@ -602,16 +602,16 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       return;
     }
 
-    if (parse_url($raw_url, PHP_URL_SCHEME) === NULL) {
-      if (strpos($raw_url, '<front>') === 0) {
-        $raw_url = '/' . substr($raw_url, strlen('<front>'));
+    if (parse_url($uri, PHP_URL_SCHEME) === NULL) {
+      if (strpos($uri, '<front>') === 0) {
+        $uri = '/' . substr($uri, strlen('<front>'));
       }
-      $raw_url = 'internal:' . $raw_url;
+      $uri = 'internal:' . $uri;
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
     if (
-      parse_url($raw_url, PHP_URL_SCHEME) === 'internal' &&
+      parse_url($uri, PHP_URL_SCHEME) === 'internal' &&
       !in_array($element['#value'][0], ['/', '?', '#'], TRUE) &&
       substr($element['#value'], 0, 7) !== '<front>'
     ) {
@@ -619,14 +619,14 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
     }
 
     try {
-      $url = Url::fromUri($raw_url);
+      $url = Url::fromUri($uri);
     }
     catch (\InvalidArgumentException $exception) {
       // Mark the url as invalid.
       $url = FALSE;
     }
     if ($url === FALSE || ($url->isExternal() && !in_array(parse_url($url->getUri(), PHP_URL_SCHEME), UrlHelper::getAllowedProtocols()))) {
-      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $raw_url]));
+      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $uri]));
     }
   }
 
