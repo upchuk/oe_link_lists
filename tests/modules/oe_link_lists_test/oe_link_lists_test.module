@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Contains module hooks for oe_link_lists_test module.
+ */
+
+declare(strict_types = 1);
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ *
+ * Adds a tag to nodes of bundle pages for testing purposes. One tag per node
+ * is added to verify that all the access cacheability is merged into the build
+ * array.
+ *
+ * @see \Drupal\Tests\oe_link_lists\Kernel\LinkListAccessTest::testLinkAccess()
+ */
+function oe_link_lists_test_node_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  $result = AccessResult::neutral();
+
+  if ($entity instanceof NodeInterface && $entity->bundle() === 'page') {
+    $result->addCacheTags(['oe_link_list_test_access_tag:' . $entity->id()]);
+  }
+
+  return $result;
+}

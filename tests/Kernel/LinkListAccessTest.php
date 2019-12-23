@@ -114,12 +114,26 @@ class LinkListAccessTest extends KernelTestBase {
     $html = (string) $renderer->renderRoot($build);
     $this->assertEquals('', $html);
 
+    // Verify that the access checks cacheability metadata is added to the
+    // render array. Since the user.permissions is a required cache context,
+    // and our custom access tags are not added if the user has no access
+    // to nodes, we assert the presence of said context into the inner render
+    // array.
+    $this->assertContains('user.permissions', $build['entity']['#cache']['contexts']);
+
     // Create a user that can access content.
     $this->setUpCurrentUser([], ['access content']);
     $build = $builder->view($link_list);
     $html = (string) $renderer->renderRoot($build);
     // Only the published nodes are rendered.
     $this->assertEquals('<ul><li><a href="/node/1" hreflang="en">Published</a></li><li><a href="/node/3" hreflang="en">Published revision</a></li></ul>', $html);
+
+    // Cacheability information added during access checks is correctly appended
+    // to the render array.
+    // @see oe_link_lists_test_node_access()
+    $this->assertContains('oe_link_list_test_access_tag:1', $build['#cache']['tags']);
+    $this->assertContains('oe_link_list_test_access_tag:2', $build['#cache']['tags']);
+    $this->assertContains('oe_link_list_test_access_tag:3', $build['#cache']['tags']);
 
     // Create a user that can edit all content.
     $editor = $this->createUser(['bypass node access']);
