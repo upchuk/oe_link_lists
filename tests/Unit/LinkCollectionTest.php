@@ -122,6 +122,7 @@ class LinkCollectionTest extends UnitTestCase {
     $this->assertSame($test_data['a'], $collection['a']);
     $this->assertSame($test_data[1], $collection[1]);
     $this->assertSame($test_data[NULL], $collection[NULL]);
+    $this->assertNull($collection[2]);
   }
 
   /**
@@ -142,6 +143,15 @@ class LinkCollectionTest extends UnitTestCase {
     $this->assertSame([
       0 => $link_one,
       3 => $link_two,
+      'a' => $link_three,
+    ], $collection->toArray());
+
+    // Test overwriting an element.
+    $link_four = new DefaultEntityLink(new Url('<front>'), $this->randomMachineName(), []);
+    $collection[3] = $link_four;
+    $this->assertSame([
+      0 => $link_one,
+      3 => $link_four,
       'a' => $link_three,
     ], $collection->toArray());
   }
