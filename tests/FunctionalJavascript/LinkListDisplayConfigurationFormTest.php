@@ -219,6 +219,12 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     $this->disableNativeBrowserRequiredFieldValidation();
     $this->getSession()->getPage()->pressButton('Save');
     $this->assertSession()->elementTextContains('css', '.messages--error', 'The target is required if you want to override the "See all" button.');
+    $this->getSession()->getPage()->fillField('Target', 'httq://example.com/more-link');
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->assertSession()->elementTextContains('css', '.messages--error', 'The path httq://example.com/more-link is invalid.');
+    $this->getSession()->getPage()->fillField('Target', 'fake:url');
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->assertSession()->elementTextContains('css', '.messages--error', 'The path fake:url is invalid.');
 
     $this->getSession()->getPage()->fillField('Target', 'http://example.com/more-link');
     $this->getSession()->getPage()->pressButton('Save');

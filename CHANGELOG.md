@@ -1,8 +1,18 @@
 # Change Log
 
+## [0.2.0](https://github.com/openeuropa/oe_link_lists/tree/0.2.0) (2019-12-16)
+[Full Changelog](https://github.com/openeuropa/oe_link_lists/compare/0.1.0...0.2.0)
+
+**Merged pull requests:**
+
+- OPENEUROPA-2596: Delete referenced links when manual link list deleted. [\#37](https://github.com/openeuropa/oe_link_lists/pull/37) ([nagyad](https://github.com/nagyad))
+- OPENEUROPA-2597: Add missed test coverage. [\#35](https://github.com/openeuropa/oe_link_lists/pull/35) ([sergepavle](https://github.com/sergepavle))
+- OPENEUROPA-2512: Make sure the manual links source respects the limit parameter. [\#34](https://github.com/openeuropa/oe_link_lists/pull/34) ([imanoleguskiza](https://github.com/imanoleguskiza))
+
 ## [0.1.0](https://github.com/openeuropa/oe_link_lists/tree/0.1.0) (2019-12-02)
 **Merged pull requests:**
 
+- Update CHANGELOG.md for release 0.1.0. [\#33](https://github.com/openeuropa/oe_link_lists/pull/33) ([ademarco](https://github.com/ademarco))
 - OPENEUROPA-2585: Fix field type and rename services [\#32](https://github.com/openeuropa/oe_link_lists/pull/32) ([brummbar](https://github.com/brummbar))
 - OPENEUROPA-2555: Translation contexts for rendering internal entities. [\#31](https://github.com/openeuropa/oe_link_lists/pull/31) ([upchuk](https://github.com/upchuk))
 - OPENEUROPA-2545: run access checks on referenced entities [\#30](https://github.com/openeuropa/oe_link_lists/pull/30) ([brummbar](https://github.com/brummbar))

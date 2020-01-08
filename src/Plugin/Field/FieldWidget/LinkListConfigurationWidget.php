@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\oe_link_lists\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -14,6 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\ElementInfoManagerInterface;
+use Drupal\Core\Url;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
 use Drupal\oe_link_lists\LinkDisplayPluginManagerInterface;
 use Drupal\oe_link_lists\LinkListConfigurationManager;
@@ -580,22 +582,26 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The form state.
    *
    * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+   * @SuppressWarnings(PHPMD.NPathComplexity)
    */
   public static function validateMoreTarget(array $element, FormStateInterface $form_state): void {
-    $string = trim($element['#value']);
+    $uri = trim($element['#value']);
 
     $button_parents = array_merge(
       array_slice($element['#parents'], 0, -1),
       ['button']
     );
     $button = $form_state->getValue($button_parents);
-    if ($button === 'custom' && $string === '') {
-      $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+    if ($uri === '') {
+      if ($button === 'custom') {
+        $form_state->setError($element, t('The target is required if you want to override the "See all" button.'));
+      }
+      // No other validation is needed if the uri is empty.
       return;
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::getUserEnteredStringAsUri()
-    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($string);
+    $entity_id = EntityAutocomplete::extractEntityIdFromAutocompleteInput($uri);
     if ($entity_id !== NULL) {
       /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $handler */
       $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance([
@@ -610,12 +616,11 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       return;
     }
 
-    $uri = '';
-    if (!empty($string) && parse_url($string, PHP_URL_SCHEME) === NULL) {
-      if (strpos($string, '<front>') === 0) {
-        $string = '/' . substr($string, strlen('<front>'));
+    if (parse_url($uri, PHP_URL_SCHEME) === NULL) {
+      if (strpos($uri, '<front>') === 0) {
+        $uri = '/' . substr($uri, strlen('<front>'));
       }
-      $uri = 'internal:' . $string;
+      $uri = 'internal:' . $uri;
     }
 
     // @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
@@ -625,6 +630,17 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
       substr($element['#value'], 0, 7) !== '<front>'
     ) {
       $form_state->setError($element, t('The specified target is invalid. Manually entered paths should start with one of the following characters: / ? #'));
+    }
+
+    try {
+      $url = Url::fromUri($uri);
+    }
+    catch (\InvalidArgumentException $exception) {
+      // Mark the url as invalid.
+      $url = FALSE;
+    }
+    if ($url === FALSE || ($url->isExternal() && !in_array(parse_url($url->getUri(), PHP_URL_SCHEME), UrlHelper::getAllowedProtocols()))) {
+      $form_state->setError($element, t('The path %uri is invalid.', ['%uri' => $uri]));
     }
   }
 

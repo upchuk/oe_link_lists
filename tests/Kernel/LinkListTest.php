@@ -120,11 +120,26 @@ class LinkListTest extends KernelTestBase {
     $builder = $this->container->get('entity_type.manager')->getViewBuilder('link_list');
     $build = $builder->view($link_list);
     $html = (string) $this->container->get('renderer')->renderRoot($build);
+
     $crawler = new Crawler($html);
     $items = $crawler->filter('ul li');
     $this->assertCount(2, $items);
     $this->assertEquals('Example', $items->first()->text());
     $this->assertEquals('European Commission', $items->eq(1)->text());
+
+    // Verify that the proper cacheability metadata has been added to the
+    // render array.
+    $this->assertEquals([
+      'bar_test_tag:1',
+      'bar_test_tag:2',
+      'bar_test_tag_list',
+      'link_list:1',
+      'link_list_view',
+    ], $build['#cache']['tags']);
+    $this->assertEquals(1800, $build['#cache']['max-age']);
+    // The renderer service adds required cache contexts to render arrays, so
+    // we just assert the presence of the context added by the source plugin.
+    $this->assertContains('user.is_super_user', $build['#cache']['contexts']);
   }
 
 }
