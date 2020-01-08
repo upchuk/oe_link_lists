@@ -111,11 +111,11 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
 
     // Navigate to the list and assert we still have the original values in EN.
     $this->drupalGet($link_list->toUrl());
-    $this->assertSession()->pageTextContains('Test title');
-    $this->assertSession()->pageTextContains('Test teaser');
-    $this->assertSession()->pageTextContains('http://example.com');
-    $this->assertSession()->pageTextContains('Overridden title');
-    $this->assertSession()->pageTextContains('Overridden teaser');
+    $this->assertEquals('Test title', $this->getSession()->getPage()->findAll('css', '.link-list-test--title')[0]->getText());
+    $this->assertEquals('Test teaser', $this->getSession()->getPage()->findAll('css', '.link-list-test--teaser')[0]->getText());
+    $this->assertEquals('http://example.com', $this->getSession()->getPage()->findAll('css', '.link-list-test--url')[0]->getText());
+    $this->assertEquals('Overridden title', $this->getSession()->getPage()->findAll('css', '.link-list-test--title')[1]->getText());
+    $this->assertEquals('Overridden teaser', $this->getSession()->getPage()->findAll('css', '.link-list-test--teaser')[1]->getText());
     $this->assertSession()->pageTextNotContains('Titre du test');
     $this->assertSession()->pageTextNotContains('Description du test');
     $this->assertSession()->pageTextNotContains('http://traduction.com/fr');
@@ -124,12 +124,11 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
 
     // Navigate to the list translation and assert we show translated values.
     $this->drupalGet($link_list->toUrl('canonical', ['language' => \Drupal::languageManager()->getLanguage('fr')]));
-    file_put_contents('/var/www/html/print.html', $this->getSession()->getPage()->getContent());
-    $this->assertSession()->pageTextContains('Titre du test');
-    $this->assertSession()->pageTextContains('Description du test');
-    $this->assertSession()->pageTextContains('http://traduction.com/fr');
-    $this->assertSession()->pageTextContains('Titre redéfinie');
-    $this->assertSession()->pageTextContains('Teaser redéfinie');
+    $this->assertEquals('Titre du test', $this->getSession()->getPage()->findAll('css', '.link-list-test--title')[0]->getText());
+    $this->assertEquals('Description du test', $this->getSession()->getPage()->findAll('css', '.link-list-test--teaser')[0]->getText());
+    $this->assertEquals('http://traduction.com/fr', $this->getSession()->getPage()->findAll('css', '.link-list-test--url')[0]->getText());
+    $this->assertEquals('Titre redéfinie', $this->getSession()->getPage()->findAll('css', '.link-list-test--title')[1]->getText());
+    $this->assertEquals('Teaser redéfinie', $this->getSession()->getPage()->findAll('css', '.link-list-test--teaser')[1]->getText());
     $this->assertSession()->pageTextNotContains('Test title');
     $this->assertSession()->pageTextNotContains('Test teaser');
     $this->assertSession()->pageTextNotContains('http://example.com');

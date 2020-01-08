@@ -25,10 +25,18 @@ class Baz extends LinkDisplayPluginBase {
   public function build(LinkCollectionInterface $links): array {
     $items = [];
     foreach ($links as $link) {
-      $items[] = $link->getTitle();
-      $items[] = $link->getTeaser();
-      $items[] = $link->getUrl()->toString();
-    }
+      $items[] = [
+        // We use an inline template so that in the test we can target the
+        // values using the corresponding classes.
+        '#type' => 'inline_template',
+        '#template' => '<div class="link-list-test"><div class="link-list-test--title">{{ title }}</div><div class="link-list-test--teaser">{{ teaser }}</div><div class="link-list-test--url">{{ url }}</div></div>',
+        '#context' => [
+          'title' => $link->getTitle(),
+          'teaser' => $link->getTeaser(),
+          'url' => $link->getUrl()->toString(),
+        ],
+      ];
+    };
 
     return [
       '#theme' => 'item_list',
