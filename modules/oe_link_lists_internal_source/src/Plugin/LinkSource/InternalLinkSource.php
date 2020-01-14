@@ -354,6 +354,7 @@ class InternalLinkSource extends LinkSourcePluginBase implements ContainerFactor
     foreach ($entities as $entity) {
       /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
       $entity = $this->entityRepository->getTranslationFromContext($entity);
+      /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
       $event = new EntityValueResolverEvent($entity);
       $this->eventDispatcher->dispatch(EntityValueResolverEvent::NAME, $event);
       $links[] = $event->getLink();

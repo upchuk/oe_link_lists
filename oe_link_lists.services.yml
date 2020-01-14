@@ -9,3 +9,6 @@ services:
     class: Drupal\oe_link_lists\EventSubscriber\DefaultEntityValueResolverSubscriber
     tags:
       - { name: event_subscriber }
+  oe_link_list.link_list_configuration_manager:
+    class: Drupal\oe_link_lists\LinkListConfigurationManager
+    arguments: ['@plugin.manager.oe_link_lists.link_source', '@plugin.manager.oe_link_lists.link_display']

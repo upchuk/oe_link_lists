@@ -15,6 +15,7 @@ use Drupal\oe_link_lists\DefaultEntityLink;
 use Drupal\oe_link_lists\LinkCollection;
 use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\Plugin\ExternalLinkSourcePluginBase;
+use Drupal\oe_link_lists\TranslatableLinkListPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -26,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Source plugin that handles external RSS sources.")
  * )
  */
-class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFactoryPluginInterface {
+class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFactoryPluginInterface, TranslatableLinkListPluginInterface {
 
   use DependencySerializationTrait;
 
@@ -146,6 +147,16 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
     }
 
     return $this->prepareLinks($storage->loadMultiple($ids));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslatableParents(): array {
+    return [
+      // The URL of the RSS source needs to be translatable.
+      ['url'],
+    ];
   }
 
   /**

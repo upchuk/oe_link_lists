@@ -7,6 +7,7 @@ namespace Drupal\oe_link_lists\Entity;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\oe_link_lists\LinkListConfigurationManager;
 
 /**
  * Defines the LinkList entity.
@@ -88,14 +89,14 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
    * {@inheritdoc}
    */
   public function getConfiguration(): array {
-    return !$this->get('configuration')->isEmpty() ? $this->get('configuration')->get(0)->getValue() : [];
+    return $this->getConfigurationManager()->getConfiguration($this->get('configuration')->first());
   }
 
   /**
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration): LinkListInterface {
-    $this->set('configuration', $configuration);
+    $this->getConfigurationManager()->setConfiguration($configuration, $this->get('configuration')->first());
     return $this;
   }
 
@@ -150,6 +151,16 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
   }
 
   /**
+   * Returns the configuration manager for link lists.
+   *
+   * @return \Drupal\oe_link_lists\LinkListConfigurationManager
+   *   The configuration manager.
+   */
+  protected function getConfigurationManager(): LinkListConfigurationManager {
+    return \Drupal::service('oe_link_list.link_list_configuration_manager');
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
@@ -159,6 +170,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
       ->setLabel(t('Administrative title'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
@@ -200,6 +212,7 @@ class LinkList extends EditorialContentEntityBase implements LinkListInterface {
     $fields['configuration'] = BaseFieldDefinition::create('link_list_configuration')
       ->setLabel(t('Configuration'))
       ->setDescription(t('The list configuration.'))
+      ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'link_list_configuration',

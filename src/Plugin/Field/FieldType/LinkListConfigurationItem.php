@@ -15,6 +15,7 @@ use Drupal\Core\Field\Plugin\Field\FieldType\MapItem;
  *   label = @Translation("Link List Configuration"),
  *   category = @Translation("OpenEuropa"),
  *   default_widget = "link_list_configuration",
+ *   list_class = "\Drupal\oe_link_lists\Plugin\Field\FieldType\LinkListConfigurationItemList"
  * )
  */
 class LinkListConfigurationItem extends MapItem {}

@@ -11,6 +11,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\oe_link_lists\LinkCollection;
 use Drupal\oe_link_lists\LinkCollectionInterface;
 use Drupal\oe_link_lists\LinkSourcePluginBase;
+use Drupal\oe_link_lists\TranslatableLinkListPluginInterface;
 use Drupal\oe_link_lists_manual_source\Event\ManualLinksResolverEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -25,7 +26,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  *   internal = TRUE
  * )
  */
-class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryPluginInterface {
+class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryPluginInterface, TranslatableLinkListPluginInterface {
 
   use DependencySerializationTrait;
 
@@ -129,6 +130,20 @@ class ManualLinkSource extends LinkSourcePluginBase implements ContainerFactoryP
     $event = new ManualLinksResolverEvent($link_entities);
     $this->eventDispatcher->dispatch(ManualLinksResolverEvent::NAME, $event);
     return $event->getLinks();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslatableParents(): array {
+    return [
+      [
+        // We want to translate the links key because we store entity IDs
+        // and revisions so when we translate links, new revisions are created
+        // so the list translations need to keep track of these.
+        'links',
+      ],
+    ];
   }
 
 }
