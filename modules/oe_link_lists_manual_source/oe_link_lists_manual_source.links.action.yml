@@ -1,5 +1,3 @@
 entity.link_list_link.add_form:
   route_name: entity.link_list_link.add_form
   title: 'Add Link list link'
-  appears_on:
-    - entity.link_list_link.collection
