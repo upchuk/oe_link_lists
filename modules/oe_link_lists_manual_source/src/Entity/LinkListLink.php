@@ -64,7 +64,6 @@ use Drupal\node\NodeInterface;
  *     "add-page" = "/admin/content/link_list_link/add",
  *     "edit-form" = "/admin/content/link_list_link/{link_list_link}/edit",
  *     "delete-form" = "/admin/content/link_list_link/{link_list_link}/delete",
- *     "collection" = "/admin/content/link_list_link",
  *     "drupal:content-translation-overview" = "/admin/content/link_list_link/translations"
  *   },
  *   bundle_entity_type = "link_list_link_type",
