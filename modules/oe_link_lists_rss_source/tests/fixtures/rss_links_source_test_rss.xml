@@ -17,7 +17,7 @@
       <description>Example updates</description>
     </image>
     <item>
-      <title>First example feed item title</title>
+      <title><p>First <b>example</b> feed <a hre="http://example.com">item</a> title</p></title>
       <link>http://example.com/example-turns-one</link>
       <description>&lt;p&gt;First example feed item.&lt;/p&gt;</description>
     </item>

@@ -337,6 +337,11 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     $plugin->setConfiguration(['url' => $url]);
 
     $this->assertEquals([
+      'Second example feed item title',
+      'First example feed item title',
+    ], $this->getLinkTitles($plugin->getLinks()->toArray()));
+
+    $this->assertEquals([
       '<p>Second example feed item <a href="http://example.com">description</a> with link.</p>',
       '<p>First example feed item.</p>',
     ], $this->renderLinksTeaser($plugin->getLinks()->toArray()));
@@ -419,6 +424,24 @@ class RssLinkSourcePluginTest extends KernelTestBase implements FormInterface {
     }
 
     return $teasers;
+  }
+
+  /**
+   * Retrieve the link titles for assertion.
+   *
+   * @param array $links
+   *   A list of LinkInterface objects.
+   *
+   * @return array
+   *   The link titles.
+   */
+  protected function getLinkTitles(array $links): array {
+    $titles = [];
+    foreach ($links as $link) {
+      $titles[] = $link->getTitle();
+    }
+
+    return $titles;
   }
 
 }
