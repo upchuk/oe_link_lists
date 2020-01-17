@@ -202,7 +202,7 @@ class RssLinkSource extends ExternalLinkSourcePluginBase implements ContainerFac
       catch (\InvalidArgumentException $exception) {
         $url = Url::fromRoute('<front>');
       }
-      $link = new DefaultEntityLink($url, $entity->getTitle(), $teaser);
+      $link = new DefaultEntityLink($url, strip_tags($entity->getTitle()), $teaser);
       $link->setEntity($entity);
       $links[] = $link;
     }
