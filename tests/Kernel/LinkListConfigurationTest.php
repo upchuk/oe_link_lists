@@ -211,8 +211,10 @@ class LinkListConfigurationTest extends KernelTestBase {
       if (is_bool($value)) {
         $value = !$value;
       }
+      else {
+        $value .= ' FR';
+      }
 
-      $value .= ' FR';
     }
   }
 
