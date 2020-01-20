@@ -174,6 +174,28 @@ class LinkListConfigurationTest extends KernelTestBase {
       ],
     ];
     $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());
+
+    // Change the source plugin completely and ensure that the translatable
+    // configuration of the previous plugin doesn't get wiped out.
+    $link_list->removeTranslation('fr');
+    $link_list->save();
+    $this->assertFalse($link_list->hasTranslation('fr'));
+    $translated_configuration = $configuration;
+    // In the translation, we essentially force the change of the source plugin
+    // (which should not be technically allowed) but ensure that as the source
+    // plugin doesn't change, it's configuration remains in place.
+    $translated_configuration['source']['plugin'] = 'baz';
+    $translated_configuration['source']['plugin_configuration'] = [];
+    $translation = $link_list->addTranslation('fr');
+    $translation->setConfiguration($translated_configuration);
+    $expected_source = [
+      'plugin' => 'qux',
+      'plugin_configuration' => [
+        // The original (translatable) string has been kept.
+        'my_string' => 'Original string',
+      ],
+    ];
+    $this->assertEquals($expected_source, $translation->getConfiguration()['source']);
   }
 
   /**
