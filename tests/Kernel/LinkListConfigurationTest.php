@@ -118,9 +118,6 @@ class LinkListConfigurationTest extends KernelTestBase {
         'target' => [
           'test' => 'test FR',
         ],
-        // This gets appended because it's marked as translatable but there
-        // was no value so it gets stored as NULL.
-        'title_override' => NULL,
       ],
     ];
 
@@ -133,7 +130,6 @@ class LinkListConfigurationTest extends KernelTestBase {
         'target' => [
           'test' => 'test FR',
         ],
-        'title_override' => NULL,
       ],
     ];
     $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());
@@ -170,7 +166,6 @@ class LinkListConfigurationTest extends KernelTestBase {
         'target' => [
           'test' => 'test FR',
         ],
-        'title_override' => NULL,
       ],
     ];
     $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());

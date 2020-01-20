@@ -65,22 +65,11 @@ class LinkListConfigurationManager {
       return $item;
     }
 
-    // If we are saving a translation, we need to only save the configuration
-    // values that are marked as translatable.
-    $translated_configuration = [];
-    // Load the existing configuration in the untranslated version because we
-    // need to check if the path to the translatable value exists in the data
-    // being set. If it doesn't we need to use the original value.
-    $exiting_configuration = $link_list->getUntranslated()->getConfiguration();
-
-    $translatable_map = $this->getTranslatableParents($item);
-    foreach ($translatable_map as $path) {
-      $exists = NestedArray::keyExists($configuration, $path);
-      $translatable_value = $exists ? NestedArray::getValue($configuration, $path) : NestedArray::getValue($exiting_configuration, $path);
-      NestedArray::setValue($translated_configuration, $path, $translatable_value);
-    }
-
+    // We are working on a translation, so we need to only save the
+    // configuration values that are marked as translatable.
+    $translated_configuration = $this->mergeConfigurationValues($item, [], $configuration);
     $item->setValue($translated_configuration);
+
     return $item;
   }
 
@@ -198,8 +187,10 @@ class LinkListConfigurationManager {
   protected function mergeConfigurationValues(LinkListConfigurationItem $item, array $configuration, array $translated): array {
     $translatable_parents = $this->getTranslatableParents($item);
     foreach ($translatable_parents as $parents) {
-      $translated_value = NestedArray::getValue($translated, $parents);
-      NestedArray::setValue($configuration, $parents, $translated_value);
+      $translated_value = NestedArray::getValue($translated, $parents, $key_exists);
+      if ($key_exists) {
+        NestedArray::setValue($configuration, $parents, $translated_value);
+      }
     }
 
     return $configuration;
