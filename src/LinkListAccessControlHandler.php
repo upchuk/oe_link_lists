@@ -18,29 +18,27 @@ class LinkListAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    $type = $entity->bundle();
+    $access = parent::checkAccess($entity, $operation, $account);
+    if (!$access->isNeutral()) {
+      return $access;
+    }
 
+    $type = $entity->bundle();
     switch ($operation) {
       case 'view':
         if ($entity->isPublished()) {
           return AccessResult::allowedIfHasPermission($account, 'view link list');
-          break;
         }
         return AccessResult::allowedIfHasPermission($account, 'view unpublished link list');
-        break;
 
-      case 'edit':
+      case 'update':
         return AccessResult::allowedIfHasPermission($account, 'edit ' . $type . ' link list');
-        break;
 
       case 'delete':
-        return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
-        break;
+        return AccessResult::allowedIfHasPermission($account, 'delete ' . $type . ' link list');
 
       default:
-        return parent::checkAccess($entity, $operation, $account);
-        break;
-
+        return AccessResult::neutral();
     }
   }
 
