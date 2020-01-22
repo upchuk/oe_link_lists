@@ -18,12 +18,19 @@ class LinkListAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+    $type = $entity->bundle();
+
     switch ($operation) {
       case 'view':
         if ($entity->isPublished()) {
           return AccessResult::allowedIfHasPermission($account, 'view link list');
+          break;
         }
         return AccessResult::allowedIfHasPermission($account, 'view unpublished link list');
+        break;
+
+      case 'edit':
+        return AccessResult::allowedIfHasPermission($account, 'edit ' . $type . ' link list');
         break;
 
       case 'delete':
@@ -32,6 +39,7 @@ class LinkListAccessControlHandler extends EntityAccessControlHandler {
 
       default:
         return parent::checkAccess($entity, $operation, $account);
+        break;
 
     }
   }

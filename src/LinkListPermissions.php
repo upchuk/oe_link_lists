@@ -47,16 +47,10 @@ class LinkListPermissions {
       "create $type_id link list" => [
         'title' => $this->t('Create new %type_name link list', $type_params),
       ],
-      "edit own $type_id link list" => [
-        'title' => $this->t('Edit own %type_name link list', $type_params),
-      ],
-      "edit any $type_id link list" => [
+      "edit $type_id link list" => [
         'title' => $this->t('Edit any %type_name link list', $type_params),
       ],
-      "delete own $type_id link list" => [
-        'title' => $this->t('Delete own %type_name link list', $type_params),
-      ],
-      "delete any $type_id link list" => [
+      "delete $type_id link list" => [
         'title' => $this->t('Delete any %type_name link list', $type_params),
       ],
     ];
