@@ -118,9 +118,6 @@ class LinkListConfigurationTest extends KernelTestBase {
         'target' => [
           'test' => 'test FR',
         ],
-        // This gets appended because it's marked as translatable but there
-        // was no value so it gets stored as NULL.
-        'title_override' => NULL,
       ],
     ];
 
@@ -133,7 +130,6 @@ class LinkListConfigurationTest extends KernelTestBase {
         'target' => [
           'test' => 'test FR',
         ],
-        'title_override' => NULL,
       ],
     ];
     $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());
@@ -170,10 +166,31 @@ class LinkListConfigurationTest extends KernelTestBase {
         'target' => [
           'test' => 'test FR',
         ],
-        'title_override' => NULL,
       ],
     ];
     $this->assertEquals($expected_partial, $translation->get('configuration')->first()->getValue());
+
+    // Change the source plugin completely and ensure that the translatable
+    // configuration of the previous plugin doesn't get wiped out.
+    $link_list->removeTranslation('fr');
+    $link_list->save();
+    $this->assertFalse($link_list->hasTranslation('fr'));
+    $translated_configuration = $configuration;
+    // In the translation, we essentially force the change of the source plugin
+    // (which should not be technically allowed) but ensure that as the source
+    // plugin doesn't change, its configuration remains in place.
+    $translated_configuration['source']['plugin'] = 'baz';
+    $translated_configuration['source']['plugin_configuration'] = [];
+    $translation = $link_list->addTranslation('fr');
+    $translation->setConfiguration($translated_configuration);
+    $expected_source = [
+      'plugin' => 'qux',
+      'plugin_configuration' => [
+        // The original (translatable) string has been kept.
+        'my_string' => 'Original string',
+      ],
+    ];
+    $this->assertEquals($expected_source, $translation->getConfiguration()['source']);
   }
 
   /**
@@ -194,8 +211,10 @@ class LinkListConfigurationTest extends KernelTestBase {
       if (is_bool($value)) {
         $value = !$value;
       }
+      else {
+        $value .= ' FR';
+      }
 
-      $value .= ' FR';
     }
   }
 

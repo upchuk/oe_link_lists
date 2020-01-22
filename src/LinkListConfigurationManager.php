@@ -65,17 +65,11 @@ class LinkListConfigurationManager {
       return $item;
     }
 
-    // If we are saving a translation, we need to only save the configuration
-    // values that are marked as translatable.
-    $translated_configuration = [];
-
-    $translatable_map = $this->getTranslatableParents($item);
-    foreach ($translatable_map as $path) {
-      $translatable_value = NestedArray::getValue($configuration, $path);
-      NestedArray::setValue($translated_configuration, $path, $translatable_value);
-    }
-
+    // We are working on a translation, so we need to only save the
+    // configuration values that are marked as translatable.
+    $translated_configuration = $this->mergeConfigurationValues($item, [], $configuration);
     $item->setValue($translated_configuration);
+
     return $item;
   }
 
@@ -193,8 +187,10 @@ class LinkListConfigurationManager {
   protected function mergeConfigurationValues(LinkListConfigurationItem $item, array $configuration, array $translated): array {
     $translatable_parents = $this->getTranslatableParents($item);
     foreach ($translatable_parents as $parents) {
-      $translated_value = NestedArray::getValue($translated, $parents);
-      NestedArray::setValue($configuration, $parents, $translated_value);
+      $translated_value = NestedArray::getValue($translated, $parents, $key_exists);
+      if ($key_exists) {
+        NestedArray::setValue($configuration, $parents, $translated_value);
+      }
     }
 
     return $configuration;
