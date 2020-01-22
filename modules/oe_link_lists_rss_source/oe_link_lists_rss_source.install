@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the OpenEuropa RSS Link Lists.
+ */
+
+declare(strict_types = 1);
+
+/**
+ * Implements hook_install().
+ */
+function oe_link_lists_rss_source_install() {
+  if (\Drupal::isConfigSyncing() === TRUE) {
+    // If config is syncing, we do nothing here.
+    return;
+  }
+
+  \Drupal::configFactory()
+    ->getEditable('aggregator.settings')
+    ->set('parser', 'aggregator_source_parser')
+    ->save();
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function oe_link_lists_rss_source_uninstall() {
+  if (\Drupal::isConfigSyncing() === TRUE) {
+    // If config is syncing, we do nothing here.
+    return;
+  }
+
+  \Drupal::configFactory()
+    ->getEditable('aggregator.settings')
+    ->set('parser', 'aggregator')
+    ->save();
+}
