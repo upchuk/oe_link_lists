@@ -34,7 +34,7 @@ class LinkListLinkPermissions {
    * Returns a list of link list link permissions for a given link list link
    * type.
    *
-   * @param Drupal\oe_link_lists_manual_source\Entity\LinkListLink $type
+   * @param \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkType $type
    *   The link list link type.
    *
    * @return array
@@ -48,16 +48,10 @@ class LinkListLinkPermissions {
       "create $type_id link list link" => [
         'title' => $this->t('Create new %type_name link list link', $type_params),
       ],
-      "edit own $type_id link list link" => [
-        'title' => $this->t('Edit own %type_name link list link', $type_params),
-      ],
-      "edit any $type_id link list link" => [
+      "edit $type_id link list link" => [
         'title' => $this->t('Edit any %type_name link list link', $type_params),
       ],
-      "delete own $type_id link list link" => [
-        'title' => $this->t('Delete own %type_name link list link', $type_params),
-      ],
-      "delete any $type_id link list link" => [
+      "delete $type_id link list link" => [
         'title' => $this->t('Delete any %type_name link list link', $type_params),
       ],
     ];

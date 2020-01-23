@@ -4,6 +4,15 @@ administer link list link entities:
 administer link list link types:
   title: 'Administer Link list link types'
   restrict access: true
+access link list link overview:
+  title: 'Access link list link overview'
+  description: 'Users with this permission can access the link list link overview page.'
+view link list link:
+  title: 'View link list link'
+  description: 'View any published link list link'
+view unpublished link list link:
+  title: 'View unpublished link list link'
+  description: 'View any unpublished link list link'
 
 permission_callbacks:
   - \Drupal\oe_link_lists_manual_source\LinkListLinkPermissions::linkListLinkPermissions
