@@ -21,6 +21,11 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
     'oe_link_lists_manual_source',
     'system',
     'user',
+    'link',
+    'node',
+    'entity_reference_revisions',
+    'inline_entity_form',
+    'field',
   ];
 
   /**
@@ -100,6 +105,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
   public function testAccess(array $permissions, $bundle, $operation, AccessResultInterface $expected_result) {
     $user = $this->drupalCreateUser($permissions);
     $link_list_link_storage = $this->entityTypeManager->getStorage('link_list_link');
+
     if ($bundle === 'internal') {
       $values = [
         'type' => 'test_ct',
@@ -118,6 +124,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
       ]);
       $entity->save();
     }
+
     if ($bundle === 'external') {
       // Create an external manual link list.
       /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $link_link_link */
@@ -128,17 +135,6 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
         'teaser' => 'Example teaser',
         'status' => 1,
       ]);
-      $entity->save();
-    }
-    if ($bundle === 'manual') {
-      $link_list_storage = $this->entityTypeManager->getStorage('link_list');
-      $values = [
-        'bundle' => $bundle,
-        'title' => 'My link list',
-        'administrative_title' => 'Link list 1',
-      ];
-      /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
-      $entity = $link_list_storage->create($values);
       $entity->save();
     }
 
@@ -156,7 +152,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
    * @dataProvider createAccessProvider
    */
   public function testCreateAccess(array $permissions, $bundle, AccessResultInterface $expected_result) {
-    $user = $this->createUser($permissions);
+    $user = $this->drupalCreateUser($permissions);
 
     $this->assertAccess($expected_result, $this->accessControlHandler->createAccess($bundle, $user, [], TRUE));
   }
@@ -181,13 +177,6 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
         ['user.permissions'],
       ],
-      'user without permissions / manual' => [
-        [],
-        'manual',
-        'view',
-        AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
-      ],
       'admin / external' => [
         ['administer link list link entities'],
         'external',
@@ -198,16 +187,6 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
       'admin / internal' => [
         ['administer link list link entities'],
         'internal',
-        'view',
-        AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
-      ],
-      'admin / manual' => [
-        [
-          'administer link list link entities',
-          'administer link_lists'
-        ],
-        'manual',
         'view',
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
         ['user.permissions'],
@@ -240,13 +219,6 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
         ['user.permissions'],
       ],
-      'user with update access / manual' => [
-        ['edit manual link list'],
-        'manual',
-        'update',
-        AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
-      ],
       'user with delete access / internal' => [
         ['delete internal link list link'],
         'internal',
@@ -261,13 +233,6 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
         ['user.permissions'],
       ],
-      'user with delete access / manual' => [
-        ['delete manual link list'],
-        'manual',
-        'delete',
-        AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
-      ]
     ];
   }
 
@@ -317,7 +282,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
           'view link list link',
           'view unpublished link list link',
           'edit internal link list link',
-          'delete internal link list',
+          'delete internal link list link',
         ],
         'internal',
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
@@ -328,7 +293,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
           'view link list link',
           'view unpublished link list link',
           'edit external link list link',
-          'delete external link list',
+          'delete external link list link',
         ],
         'external',
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
