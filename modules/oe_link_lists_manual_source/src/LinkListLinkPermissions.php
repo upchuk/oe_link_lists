@@ -16,9 +16,6 @@ class LinkListLinkPermissions {
 
   /**
    * Returns an array of link list link permissions.
-   *
-   * @return array
-   *   The link list link permissions.
    */
   public function linkListLinkPermissions() {
     $perms = [];
@@ -31,8 +28,7 @@ class LinkListLinkPermissions {
   }
 
   /**
-   * Returns a list of link list link permissions for a given link list link
-   * type.
+   * Returns a list of permissions for a given link list link type.
    *
    * @param \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkType $type
    *   The link list link type.
@@ -56,4 +52,5 @@ class LinkListLinkPermissions {
       ],
     ];
   }
+
 }

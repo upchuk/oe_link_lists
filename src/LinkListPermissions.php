@@ -16,9 +16,6 @@ class LinkListPermissions {
 
   /**
    * Returns an array of link list permissions.
-   *
-   * @return array
-   *   The link list permissions.
    */
   public function linkListPermissions() {
     $perms = [];
@@ -55,4 +52,5 @@ class LinkListPermissions {
       ],
     ];
   }
+
 }

@@ -7,6 +7,9 @@ namespace Drupal\oe_link_lists\Routing;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;
 
+/**
+ * Subscriber for link list routes.
+ */
 class RouteSubscriber extends RouteSubscriberBase {
 
   /**

@@ -53,5 +53,4 @@ class LinkListAccessControlHandler extends EntityAccessControlHandler {
     return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
   }
 
-
 }

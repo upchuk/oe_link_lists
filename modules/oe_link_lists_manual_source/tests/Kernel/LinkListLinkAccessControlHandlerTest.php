@@ -80,6 +80,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
+   *
    * @dataProvider accessProvider
    */
   public function testAccess(array $permissions, $operation, AccessResultInterface $expected_result) {
@@ -106,6 +107,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
    *   The expected result.
    *
    * @throws \Exception
+   *
    * @dataProvider createAccessProvider
    */
   public function testCreateAccess(array $permissions, AccessResultInterface $expected_result) {
