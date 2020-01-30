@@ -211,7 +211,7 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
    * @param \Drupal\Core\Access\AccessResultInterface $actual
    *   The actual result.
    */
-  public function assertAccess(AccessResultInterface $expected, AccessResultInterface $actual) {
+  protected function assertAccess(AccessResultInterface $expected, AccessResultInterface $actual) {
     $this->assertEquals($expected->isAllowed(), $actual->isAllowed());
     $this->assertEquals($expected->isForbidden(), $actual->isForbidden());
     $this->assertEquals($expected->isNeutral(), $actual->isNeutral());
