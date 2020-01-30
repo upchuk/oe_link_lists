@@ -4,23 +4,31 @@ declare(strict_types = 1);
 
 namespace Drupal\Tests\oe_link_lists\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Core\Access\AccessResult;
+use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Tests the Link list entity.
  */
-class LinkListTest extends KernelTestBase {
+class LinkListTest extends EntityKernelTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'oe_link_lists',
     'oe_link_lists_test',
     'user',
     'system',
   ];
+
+  /**
+   * The access control handler.
+   *
+   * @var \Drupal\oe_link_lists\LinkListAccessControlHandler
+   */
+  protected $accessControlHandler;
 
   /**
    * {@inheritdoc}
@@ -33,6 +41,8 @@ class LinkListTest extends KernelTestBase {
       'oe_link_lists',
       'system',
     ]);
+
+    $this->accessControlHandler = $this->container->get('entity_type.manager')->getAccessControlHandler('link_list');
   }
 
   /**
@@ -90,6 +100,19 @@ class LinkListTest extends KernelTestBase {
       $this->assertEqual('full', $build['#view_mode']);
       $this->assertTrue(isset($build['#link_list']));
     }
+
+    // Make sure the block checks the link list permissions.
+    // User with view access.
+    $user = $this->drupalCreateUser(['view link list']);
+    $expected = AccessResult::allowed()->addCacheContexts(['user.permissions']);
+    $actual = $this->accessControlHandler->access($build['#link_list'], 'view', $user, TRUE);
+    $this->assertEquals($expected->isAllowed(), $actual->isAllowed());
+
+    // User without permissions.
+    $user = $this->drupalCreateUser([]);
+    $expected = AccessResult::neutral()->addCacheContexts(['user.permissions']);
+    $actual = $this->accessControlHandler->access($build['#link_list'], 'view', $user, TRUE);
+    $this->assertEquals($expected->isNeutral(), $actual->isNeutral());
   }
 
   /**

@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_link_lists\Plugin\Block;
 
-use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -65,11 +64,7 @@ class LinkListBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public function blockAccess(AccountInterface $account) {
     $link_list = $this->getLinkList();
-    if (!$link_list) {
-      return AccessResult::forbidden();
-    }
-    // @todo implement proper access check for link lists.
-    return AccessResult::allowed();
+    return $link_list->access('view', $account, TRUE);
   }
 
   /**
