@@ -115,49 +115,41 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
         [],
         'view',
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'admin view' => [
         ['administer link_lists'],
         'view',
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'admin update' => [
         ['administer link_lists'],
         'update',
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with only view access' => [
         ['view link list'],
         'view',
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with update access' => [
         ['edit test link list'],
         'update',
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with update access on different bundle' => [
         ['edit dynamic link list'],
         'update',
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with delete access' => [
         ['delete test link list'],
         'delete',
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with delete access on different bundle' => [
         ['delete dynamic link list'],
         'delete',
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
     ];
   }
@@ -173,17 +165,14 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
       'user without permissions' => [
         [],
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'admin' => [
         ['administer link_lists'],
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with view access' => [
         ['view link list'],
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with view, update and delete access' => [
         [
@@ -193,17 +182,14 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
           'delete test link list',
         ],
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with create access' => [
         ['create test link list'],
         AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
       'user with create access on different bundle' => [
         ['create dynamic link list'],
         AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        ['user.permissions'],
       ],
     ];
   }
