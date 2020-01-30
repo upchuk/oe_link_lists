@@ -15,4 +15,4 @@ view unpublished link list link:
   description: 'View any unpublished link list link'
 
 permission_callbacks:
-  - \Drupal\oe_link_lists_manual_source\LinkListLinkPermissions::linkListLinkPermissions
+  - \Drupal\oe_link_lists_manual_source\LinkListLinkPermissions::linkListLinkTypePermissions

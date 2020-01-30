@@ -17,7 +17,7 @@ class LinkListPermissions {
   /**
    * Returns an array of link list permissions.
    */
-  public function linkListPermissions() {
+  public function linkListTypePermissions() {
     $perms = [];
     // Generate link list permissions for all link list types.
     foreach (LinkListType::loadMultiple() as $type) {
