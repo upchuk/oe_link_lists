@@ -12,7 +12,3 @@ services:
   oe_link_list.link_list_configuration_manager:
     class: Drupal\oe_link_lists\LinkListConfigurationManager
     arguments: ['@plugin.manager.oe_link_lists.link_source', '@plugin.manager.oe_link_lists.link_display']
-  oe_authentication.route_subscriber:
-    class: Drupal\oe_link_lists\Routing\RouteSubscriber
-    tags:
-      - { name: event_subscriber }
