@@ -14,6 +14,7 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\Url;
 use Drupal\oe_link_lists\Entity\LinkListInterface;
@@ -130,10 +131,88 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $this->buildLinkSourceElements($items, $delta, $element, $form, $form_state);
-    $this->buildLinkDisplayElements($items, $delta, $element, $form, $form_state);
+    /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLinkInterface $entity */
+    $entity = $items->getEntity();
+    $is_translating = !$entity->isDefaultTranslation();
+
+    $this->buildLinkSourceElements($items, $delta, $element, $form, $form_state, $is_translating);
+    $this->buildLinkDisplayElements($items, $delta, $element, $form, $form_state, $is_translating);
+
+    if (!$is_translating) {
+      return $element;
+    }
+
+    $element['#translatable_parents'] = $this->linkListConfigurationManager->getTranslatableParents($items->first());
+    $element['#process'][] = [get_class($this), 'processDisabledForTranslation'];
 
     return $element;
+  }
+
+  /**
+   * Process callback for disabling non-translatable elements.
+   *
+   * This is applied for the main widget form as well as the individual plugin
+   * (source and display) forms and is meant to recursively disable all the
+   * form elements that are not translatable.
+   *
+   * When adding this callback, "#translatable_parents" needs to be set on the
+   * element to inform where the translatable elements are located. See
+   * LinkListConfigurationManager::getTranslatableParents().
+   *
+   * @param array $element
+   *   The form element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The processed element.
+   */
+  public static function processDisabledForTranslation(array &$element, FormStateInterface $form_state): array {
+    $translatable_parents = $element['#translatable_parents'] ?? [];
+    if (!$translatable_parents) {
+      return $element;
+    }
+
+    $parents = [];
+    foreach (array_keys($translatable_parents) as $parents_string) {
+      $parents[] = explode('][', $parents_string);
+    }
+    static::disableNonTranslatableElements($element, $parents);
+
+    return $element;
+  }
+
+  /**
+   * Disables the non-translatable form elements in a given form structure.
+   *
+   * Recursively goes through the form structure and uses the
+   * $translatable_parents argument to determine which sub elements are
+   * translatable and disables all the rest.
+   *
+   * @param array $element
+   *   The form structure.
+   * @param array $translatable_parents
+   *   An array of parent sets which point to all the elements that are
+   *   translatable.
+   */
+  protected static function disableNonTranslatableElements(array &$element, array $translatable_parents): void {
+    foreach ($translatable_parents as $parent_set) {
+      $sub_element = &NestedArray::getValue($element, $parent_set, $exists);
+      if (!$exists) {
+        continue;
+      }
+
+      $sub_element['#translatable'] = TRUE;
+    }
+
+    if (empty(Element::children($element)) && !isset($element['#translatable']) && !isset($element['#plugin'])) {
+      $element['#disabled'] = TRUE;
+      return;
+    }
+
+    foreach (Element::children($element) as $key) {
+      static::disableNonTranslatableElements($element[$key], $translatable_parents);
+    }
   }
 
   /**
@@ -149,8 +228,10 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The entire form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   * @param bool $is_translating
+   *   Whether we are on a translation form or not.
    */
-  protected function buildLinkSourceElements(FieldItemListInterface $items, int $delta, array &$element, array &$form, FormStateInterface $form_state): void {
+  protected function buildLinkSourceElements(FieldItemListInterface $items, int $delta, array &$element, array &$form, FormStateInterface $form_state, bool $is_translating): void {
     /** @var \Drupal\oe_link_lists\Entity\LinkListInterface $link_list */
     $link_list = $form_state->getBuildInfo()['callback_object']->getEntity();
 
@@ -211,6 +292,11 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
         '#process' => [[get_class($this), 'processPluginConfiguration']],
         '#plugin' => $plugin,
       ];
+
+      if ($is_translating) {
+        $element['link_source']['plugin_configuration_wrapper'][$plugin_id]['#process'][] = [get_class($this), 'processDisabledForTranslation'];
+        $element['link_source']['plugin_configuration_wrapper'][$plugin_id]['#translatable_parents'] = $this->linkListConfigurationManager->getTranslatableParents($items->first());
+      }
     }
   }
 
@@ -227,8 +313,10 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
    *   The entire form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   * @param bool $is_translating
+   *   Whether we are on a translation form or not.
    */
-  protected function buildLinkDisplayElements(FieldItemListInterface $items, int $delta, array &$element, array &$form, FormStateInterface $form_state): void {
+  protected function buildLinkDisplayElements(FieldItemListInterface $items, int $delta, array &$element, array &$form, FormStateInterface $form_state, bool $is_translating): void {
     $parents = array_merge($element['#field_parents'], [
       $items->getName(),
       $delta,
@@ -279,6 +367,11 @@ class LinkListConfigurationWidget extends WidgetBase implements ContainerFactory
         '#process' => [[get_class($this), 'processPluginConfiguration']],
         '#plugin' => $plugin,
       ];
+
+      if ($is_translating) {
+        $element['link_display']['plugin_configuration_wrapper'][$plugin_id]['#process'][] = [get_class($this), 'processDisabledForTranslation'];
+        $element['link_display']['plugin_configuration_wrapper'][$plugin_id]['#translatable_parents'] = $this->linkListConfigurationManager->getTranslatableParents($items->first());
+      }
     }
 
     $this->buildGeneralConfigurationForm($items, $delta, $element, $form, $form_state);
