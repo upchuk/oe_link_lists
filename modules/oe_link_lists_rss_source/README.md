@@ -19,53 +19,20 @@ Adjusting this behavior possible by adding new custom permissions for `Item` ent
 ```
 view feed items:
   title: 'View feed items'
+  description: 'Allows website users to view only RSS feed items.'
 ```
 
-Implement own entity access control class:
-
-```
-<?php
-
-declare(strict_types = 1);
-
-namespace Drupal\yourmodule;
-
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Entity\EntityAccessControlHandler;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Session\AccountInterface;
-
-/**
- * Defines an access control handler for the item entity.
- *
- * @see \Drupal\aggregator\Entity\Item
- */
-class FeedItemAccessControlHandler extends EntityAccessControlHandler {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    switch ($operation) {
-      case 'view':
-        return AccessResult::allowedIfHasPermission($account, 'view feed items');
-
-      default:
-        return AccessResult::allowedIfHasPermission($account, 'administer news feeds');
-    }
-  }
-
-}
-```
-and replace existing access control class for 'Item' entity type (in your custom module):
+and implementing hook_ENTITY_TYPE_access in your custom module:
 
 ```
 /**
- * Implements hook_entity_type_alter().
+ * Implements hook_ENTITY_TYPE_access().
  */
-function yourmodule_entity_type_alter(array &$entity_types) {
-  if (isset($entity_types['aggregator_item'])) {
-    $entity_types['aggregator_item']->setAccessClass('Drupal\yourmodule\FeedItemAccessControlHandler');
+function yourmodule_aggregator_item_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  if ($operation === 'view') {
+    return AccessResult::allowedIfHasPermission($account, 'view feed items');
   }
+
+  return AccessResult::neutral();
 }
 ```
