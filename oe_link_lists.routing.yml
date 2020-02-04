@@ -1,7 +1,0 @@
-entity.link_list.collection:
-  path: '/admin/content/link_lists'
-  defaults:
-    _entity_list: 'link_list'
-    _title: 'Link lists'
-  requirements:
-    _permission: 'access link list overview'

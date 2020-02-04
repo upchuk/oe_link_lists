@@ -31,7 +31,7 @@ use Drupal\oe_link_lists\LinkListConfigurationManager;
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\oe_link_lists\Routing\LinkListRouteProvider",
  *     },
  *   },
  *   base_table = "link_list",
