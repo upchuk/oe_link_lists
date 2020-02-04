@@ -24,10 +24,22 @@ class LinkListRouteAccessTest extends EntityKernelTestBase {
    * Test access for collection route.
    */
   public function testCollectionRouteAccess() {
-    $user = $this->drupalCreateUser(['access link list overview']);
     $access_manager = $this->container->get('access_manager');
-    $this->assertTrue($access_manager->checkNamedRoute('entity.link_list.collection', [], $user, TRUE)
-      ->isAllowed());
+
+    // Administrator.
+    $user = $this->drupalCreateUser(['administer link_lists']);
+    $actual = $access_manager->checkNamedRoute('entity.link_list.collection', [], $user, TRUE);
+    $this->assertTrue($actual->isAllowed());
+
+    // User with access link list overview permission.
+    $user = $this->drupalCreateUser(['access link list overview']);
+    $actual = $access_manager->checkNamedRoute('entity.link_list.collection', [], $user, TRUE);
+    $this->assertTrue($actual->isAllowed());
+
+    // User without permissions.
+    $user = $this->drupalCreateUser([]);
+    $actual = $access_manager->checkNamedRoute('entity.link_list.collection', [], $user, TRUE);
+    $this->assertTrue($actual->isNeutral());
   }
 
 }
