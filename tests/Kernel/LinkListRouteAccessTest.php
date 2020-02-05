@@ -7,7 +7,7 @@ namespace Drupal\Tests\oe_link_lists\Kernel;
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 
 /**
- * Provides method for testing collection route access.
+ * Tests link list routes access.
  */
 class LinkListRouteAccessTest extends EntityKernelTestBase {
 
