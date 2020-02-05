@@ -1,10 +1,23 @@
 # Change Log
 
+## [0.3.0](https://github.com/openeuropa/oe_link_lists/tree/0.3.0) (2020-02-05)
+[Full Changelog](https://github.com/openeuropa/oe_link_lists/compare/0.2.0...0.3.0)
+
+**Merged pull requests:**
+
+- OPENEUROPA-2578: Fixes the configuration setter translatability bug when forcefully changing plugins [\#43](https://github.com/openeuropa/oe_link_lists/pull/43) ([upchuk](https://github.com/upchuk))
+- OPENEUROPA-2735: Remove html tags from rss link titles. [\#42](https://github.com/openeuropa/oe_link_lists/pull/42) ([nagyad](https://github.com/nagyad))
+- OPENEUROPA-2731: Remove content overview admin path of link\_list\_link. [\#41](https://github.com/openeuropa/oe_link_lists/pull/41) ([nagyad](https://github.com/nagyad))
+- OPENEUROPA-2611: Additional test coverage. [\#40](https://github.com/openeuropa/oe_link_lists/pull/40) ([brummbar](https://github.com/brummbar))
+- OPENEUROPA-2507: \[oe\_link\_lists\] Add extra validation for the "See all" target field. [\#38](https://github.com/openeuropa/oe_link_lists/pull/38) ([sergepavle](https://github.com/sergepavle))
+- OPENEUROPA- 2578 - Link list translatability [\#36](https://github.com/openeuropa/oe_link_lists/pull/36) ([upchuk](https://github.com/upchuk))
+
 ## [0.2.0](https://github.com/openeuropa/oe_link_lists/tree/0.2.0) (2019-12-16)
 [Full Changelog](https://github.com/openeuropa/oe_link_lists/compare/0.1.0...0.2.0)
 
 **Merged pull requests:**
 
+- Update CHANGELOG.md for release 0.2.0. [\#39](https://github.com/openeuropa/oe_link_lists/pull/39) ([ademarco](https://github.com/ademarco))
 - OPENEUROPA-2596: Delete referenced links when manual link list deleted. [\#37](https://github.com/openeuropa/oe_link_lists/pull/37) ([nagyad](https://github.com/nagyad))
 - OPENEUROPA-2597: Add missed test coverage. [\#35](https://github.com/openeuropa/oe_link_lists/pull/35) ([sergepavle](https://github.com/sergepavle))
 - OPENEUROPA-2512: Make sure the manual links source respects the limit parameter. [\#34](https://github.com/openeuropa/oe_link_lists/pull/34) ([imanoleguskiza](https://github.com/imanoleguskiza))
