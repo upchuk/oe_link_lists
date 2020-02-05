@@ -5,13 +5,15 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists\Kernel;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Access\AccessResultInterface;
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
+use Drupal\Tests\oe_link_lists\Traits\AssertAccessTrait;
 
 /**
  * Test the link list access control handler.
  */
 class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
+
+  use AssertAccessTrait;
 
   /**
    * {@inheritdoc}
@@ -70,7 +72,7 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
       $link_list->save();
 
       $user = $this->drupalCreateUser($test_data['permissions']);
-      $this->assertAccess(
+      $this->assertAccessResult(
         $test_data['expected_result'],
         $this->accessControlHandler->access($link_list, $test_data['operation'], $user, TRUE),
         sprintf('Failed asserting access for "%s" scenario.', $scenario)
@@ -85,7 +87,7 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
     $scenarios = $this->createAccessDataProvider();
     foreach ($scenarios as $scenario => $test_data) {
       $user = $this->drupalCreateUser($test_data['permissions']);
-      $this->assertAccess(
+      $this->assertAccessResult(
         $test_data['expected_result'],
         $this->accessControlHandler->createAccess('test', $user, [], TRUE),
         sprintf('Failed asserting access for "%s" scenario.', $scenario)
@@ -202,35 +204,6 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
         'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
       ],
     ];
-  }
-
-  /**
-   * Asserts link list access correctly grants or denies access.
-   *
-   * @param \Drupal\Core\Access\AccessResultInterface $expected
-   *   The expected result.
-   * @param \Drupal\Core\Access\AccessResultInterface $actual
-   *   The actual result.
-   * @param string $message
-   *   Failure message.
-   */
-  protected function assertAccess(AccessResultInterface $expected, AccessResultInterface $actual, string $message = '') {
-    $this->assertEquals($expected->isAllowed(), $actual->isAllowed(), $message);
-    $this->assertEquals($expected->isForbidden(), $actual->isForbidden(), $message);
-    $this->assertEquals($expected->isNeutral(), $actual->isNeutral(), $message);
-
-    $this->assertEquals($expected->getCacheMaxAge(), $actual->getCacheMaxAge(), $message);
-    $cache_types = [
-      'getCacheTags',
-      'getCacheContexts',
-    ];
-    foreach ($cache_types as $type) {
-      $expected_cache_data = $expected->{$type}();
-      $actual_cache_data = $actual->{$type}();
-      sort($expected_cache_data);
-      sort($actual_cache_data);
-      $this->assertEquals($expected_cache_data, $actual_cache_data, $message);
-    }
   }
 
 }
