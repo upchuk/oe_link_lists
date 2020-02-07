@@ -52,6 +52,7 @@ class InternalSourceTranslationTest extends InternalLinkSourceTestBase {
       'create dynamic link list',
       'edit dynamic link list',
       'view link list',
+      'access link list canonical page',
       'translate any entity',
     ]);
     $this->drupalLogin($web_user);

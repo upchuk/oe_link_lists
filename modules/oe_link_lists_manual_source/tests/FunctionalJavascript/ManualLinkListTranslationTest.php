@@ -46,6 +46,7 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
       'create manual link list',
       'edit manual link list',
       'view link list',
+      'access link list canonical page',
       'create internal link list link',
       'create external link list link',
       'edit external link list link',

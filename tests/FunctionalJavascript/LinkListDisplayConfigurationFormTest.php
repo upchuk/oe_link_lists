@@ -93,6 +93,7 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
       'create dynamic link list',
       'edit dynamic link list',
       'view link list',
+      'access link list canonical page',
     ]);
     $this->drupalLogin($web_user);
   }
