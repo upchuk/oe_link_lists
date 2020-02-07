@@ -8,6 +8,9 @@ administer link list types:
 access link list overview:
   title: 'Access list link overview'
   description: 'Users with this permission can access the link list overview page.'
+access link list canonical page:
+  title: 'Access list link canonical page'
+  description: 'Users with this permission can access the link list canonical page.'
 view link list:
   title: 'View link list'
   description: 'View any published link list'
