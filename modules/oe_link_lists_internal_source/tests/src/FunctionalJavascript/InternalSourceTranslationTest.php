@@ -49,7 +49,9 @@ class InternalSourceTranslationTest extends InternalLinkSourceTestBase {
     \Drupal::service('router.builder')->rebuild();
     $web_user = $this->drupalCreateUser([
       'bypass node access',
-      'administer link_lists',
+      'create dynamic link list',
+      'edit dynamic link list',
+      'view link list',
       'translate any entity',
     ]);
     $this->drupalLogin($web_user);

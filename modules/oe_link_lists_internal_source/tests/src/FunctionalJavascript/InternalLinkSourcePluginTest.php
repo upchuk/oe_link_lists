@@ -22,7 +22,10 @@ class InternalLinkSourcePluginTest extends InternalLinkSourceTestBase {
    * Tests the plugin configuration form.
    */
   public function testPluginConfigurationForm(): void {
-    $web_user = $this->drupalCreateUser(['administer link_lists']);
+    $web_user = $this->drupalCreateUser([
+      'create dynamic link list',
+      'edit dynamic link list',
+    ]);
     $this->drupalLogin($web_user);
 
     $this->drupalGet('link_list/add/dynamic');

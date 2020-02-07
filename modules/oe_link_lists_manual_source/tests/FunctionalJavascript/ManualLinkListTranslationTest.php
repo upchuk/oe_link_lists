@@ -43,8 +43,13 @@ class ManualLinkListTranslationTest extends ManualLinkListTestBase {
 
     $web_user = $this->drupalCreateUser([
       'bypass node access',
-      'administer link_lists',
-      'administer link list link entities',
+      'create manual link list',
+      'edit manual link list',
+      'view link list',
+      'create internal link list link',
+      'create external link list link',
+      'edit external link list link',
+      'edit internal link list link',
       'translate any entity',
     ]);
 
