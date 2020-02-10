@@ -21,6 +21,7 @@ use Drupal\oe_link_lists\LinkListConfigurationManager;
  *   handlers = {
  *     "view_builder" = "Drupal\oe_link_lists\LinkListViewBuilder",
  *     "list_builder" = "Drupal\oe_link_lists\LinkListListBuilder",
+ *     "access" = "Drupal\oe_link_lists\LinkListAccessControlHandler",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler",
  *     "form" = {
@@ -30,7 +31,7 @@ use Drupal\oe_link_lists\LinkListConfigurationManager;
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\oe_link_lists\Routing\LinkListRouteProvider",
  *     },
  *   },
  *   base_table = "link_list",

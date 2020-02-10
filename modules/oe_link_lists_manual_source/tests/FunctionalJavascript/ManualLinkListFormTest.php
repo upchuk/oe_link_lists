@@ -28,8 +28,12 @@ class ManualLinkListFormTest extends ManualLinkListTestBase {
 
     $web_user = $this->drupalCreateUser([
       'bypass node access',
-      'administer link list link entities',
-      'administer link_lists',
+      'create manual link list',
+      'edit manual link list',
+      'create internal link list link',
+      'create external link list link',
+      'edit external link list link',
+      'edit internal link list link',
     ]);
     $this->drupalLogin($web_user);
 

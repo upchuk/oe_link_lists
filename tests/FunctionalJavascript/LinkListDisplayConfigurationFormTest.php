@@ -89,7 +89,12 @@ class LinkListDisplayConfigurationFormTest extends WebDriverTestBase {
     $feed->save();
     $feed->refreshItems();
 
-    $web_user = $this->drupalCreateUser(['administer link_lists']);
+    $web_user = $this->drupalCreateUser([
+      'create dynamic link list',
+      'edit dynamic link list',
+      'view link list',
+      'access link list canonical page',
+    ]);
     $this->drupalLogin($web_user);
   }
 

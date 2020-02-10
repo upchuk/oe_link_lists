@@ -39,7 +39,10 @@ class InternalLinkSourceFilterTest extends InternalLinkSourceTestBase {
    * Tests the filter plugin configuration forms.
    */
   public function testFilterPluginsForm(): void {
-    $web_user = $this->drupalCreateUser(['administer link_lists']);
+    $web_user = $this->drupalCreateUser([
+      'create dynamic link list',
+      'edit dynamic link list',
+    ]);
     $this->drupalLogin($web_user);
 
     $this->drupalGet('link_list/add');

@@ -24,6 +24,7 @@ use Drupal\node\NodeInterface;
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\oe_link_lists_manual_source\LinkListLinkListBuilder",
+ *     "access" = "Drupal\oe_link_lists_manual_source\LinkListLinkAccessControlHandler",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler",
  *     "form" = {
