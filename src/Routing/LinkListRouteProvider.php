@@ -13,13 +13,7 @@ use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 class LinkListRouteProvider extends AdminHtmlRouteProvider {
 
   /**
-   * Gets the collection route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
+   * {@inheritdoc}
    */
   protected function getCollectionRoute(EntityTypeInterface $entity_type) {
     if ($route = parent::getCollectionRoute($entity_type)) {
@@ -29,13 +23,7 @@ class LinkListRouteProvider extends AdminHtmlRouteProvider {
   }
 
   /**
-   * Gets the canonical route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
+   * {@inheritdoc}
    */
   protected function getCanonicalRoute(EntityTypeInterface $entity_type) {
     if ($route = parent::getCanonicalRoute($entity_type)) {
