@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Contains Drupal hooks.
+ */
+
+declare(strict_types = 1);
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ */
+function oe_link_lists_aggregator_item_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  if ($operation === 'view') {
+    return AccessResult::allowedIfHasPermission($account, 'view feed items');
+  }
+
+  return AccessResult::neutral();
+}
