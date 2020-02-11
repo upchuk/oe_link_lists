@@ -36,3 +36,5 @@ function yourmodule_aggregator_item_access(EntityInterface $entity, $operation, 
   return AccessResult::neutral();
 }
 ```
+
+Also, for simplicity, you could enable **OpenEuropa RSS Link Lists Access** submodule.
