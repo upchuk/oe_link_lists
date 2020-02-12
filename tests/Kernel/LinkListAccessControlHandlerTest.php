@@ -57,7 +57,7 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
   /**
    * Ensures link list access is properly working.
    */
-  public function testAccess() {
+  public function testAccess(): void {
     $scenarios = $this->accessDataProvider();
     $link_list_storage = $this->container->get('entity_type.manager')->getStorage('link_list');
     $values = [
@@ -83,7 +83,7 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
   /**
    * Ensures link list create access is properly working.
    */
-  public function testCreateAccess() {
+  public function testCreateAccess(): void {
     $scenarios = $this->createAccessDataProvider();
     foreach ($scenarios as $scenario => $test_data) {
       $user = $this->drupalCreateUser($test_data['permissions']);
@@ -104,7 +104,7 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
    * @return array
    *   The data sets to test.
    */
-  protected function accessDataProvider() {
+  protected function accessDataProvider(): array {
     return [
       'user without permissions / published link list' => [
         'permissions' => [],
@@ -244,7 +244,7 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
    * @return array
    *   The data sets to test.
    */
-  protected function createAccessDataProvider() {
+  protected function createAccessDataProvider(): array {
     return [
       'user without permissions' => [
         'permissions' => [],
