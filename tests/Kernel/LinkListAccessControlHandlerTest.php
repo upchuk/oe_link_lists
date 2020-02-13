@@ -106,11 +106,17 @@ class LinkListAccessControlHandlerTest extends EntityKernelTestBase {
    */
   protected function accessDataProvider() {
     return [
-      'user without permissions' => [
+      'user without permissions / published link list' => [
         'permissions' => [],
         'operation' => 'view',
         'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
         'published' => TRUE,
+      ],
+      'user without permissions / unpublished link list' => [
+        'permissions' => [],
+        'operation' => 'view',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => FALSE,
       ],
       'admin view' => [
         'permissions' => ['administer link_lists'],
