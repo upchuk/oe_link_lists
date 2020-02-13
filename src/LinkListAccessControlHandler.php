@@ -26,10 +26,8 @@ class LinkListAccessControlHandler extends EntityAccessControlHandler {
     $type = $entity->bundle();
     switch ($operation) {
       case 'view':
-        if ($entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view link list');
-        }
-        return AccessResult::allowedIfHasPermission($account, 'view unpublished link list');
+        $permission = $entity->isPublished() ? 'view link list' : 'view unpublished link list';
+        return AccessResult::allowedIfHasPermission($account, $permission)->addCacheableDependency($entity);
 
       case 'update':
         return AccessResult::allowedIfHasPermission($account, 'edit ' . $type . ' link list');

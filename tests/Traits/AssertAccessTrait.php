@@ -23,7 +23,7 @@ trait AssertAccessTrait {
    * @param string $message
    *   Failure message.
    */
-  protected function assertAccessResult(AccessResultInterface $expected, AccessResultInterface $actual, string $message = '') {
+  protected function assertAccessResult(AccessResultInterface $expected, AccessResultInterface $actual, string $message = ''): void {
     $this->assertEquals($expected->isAllowed(), $actual->isAllowed(), $message);
     $this->assertEquals($expected->isForbidden(), $actual->isForbidden(), $message);
     $this->assertEquals($expected->isNeutral(), $actual->isNeutral(), $message);
