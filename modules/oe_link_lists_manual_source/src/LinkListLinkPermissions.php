@@ -8,7 +8,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\oe_link_lists_manual_source\Entity\LinkListLinkType;
 
 /**
- * Provides dynamic permissions for different link list types.
+ * Provides dynamic permissions for different link list link types.
  */
 class LinkListLinkPermissions {
 

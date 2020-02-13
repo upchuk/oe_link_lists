@@ -5,13 +5,15 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_link_lists_manual_source\Kernel;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Access\AccessResultInterface;
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
+use Drupal\Tests\oe_link_lists\Traits\AssertAccessTrait;
 
 /**
  * Test the link list link access control handler.
  */
 class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
+
+  use AssertAccessTrait;
 
   /**
    * {@inheritdoc}
@@ -71,20 +73,21 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
    * Ensures link list link access is properly working.
    */
   public function testAccess() {
-    $scenarios = $this->accessProvider();
+    $scenarios = $this->accessDataProvider();
     $link_list_link_storage = $this->entityTypeManager->getStorage('link_list_link');
     $values = [
       'bundle' => 'test',
-      'title' => 'My link list',
-      'administrative_title' => 'Link list 1',
+      'administrative_title' => $this->randomString(),
     ];
     foreach ($scenarios as $scenario => $test_data) {
-      $values['status'] = $test_data['status'];
-      $user = $this->drupalCreateUser($test_data['permissions']);
       // Create a link list link.
+      /** @var \Drupal\oe_link_lists_manual_source\Entity\LinkListLink $link_list_link */
       $link_list_link = $link_list_link_storage->create($values);
+      $link_list_link->setPublished($test_data['published']);
       $link_list_link->save();
-      $this->assertAccess(
+
+      $user = $this->drupalCreateUser($test_data['permissions']);
+      $this->assertAccessResult(
         $test_data['expected_result'],
         $this->accessControlHandler->access($link_list_link, $test_data['operation'], $user, TRUE),
         sprintf('Failed asserting access for "%s" scenario.', $scenario)
@@ -96,10 +99,10 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
    * Ensures link list link create access is properly working.
    */
   public function testCreateAccess() {
-    $scenarios = $this->createAccessProvider();
+    $scenarios = $this->createAccessDataProvider();
     foreach ($scenarios as $scenario => $test_data) {
       $user = $this->drupalCreateUser($test_data['permissions']);
-      $this->assertAccess(
+      $this->assertAccessResult(
         $test_data['expected_result'],
         $this->accessControlHandler->createAccess('test', $user, [], TRUE),
         sprintf('Failed asserting access for "%s" scenario.', $scenario)
@@ -110,59 +113,139 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
   /**
    * Data provider for testAccess().
    *
+   * This method is not declared as a real PHPUnit data provider to speed up
+   * test execution.
+   *
    * @return array
    *   The data sets to test.
    */
-  public function accessProvider() {
-
+  protected function accessDataProvider() {
     return [
-      'user without permissions' => [
+      'user without permissions / published link list link' => [
         'permissions' => [],
         'operation' => 'view',
         'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
       ],
-      'admin' => [
+      'user without permissions / unpublished link list link' => [
+        'permissions' => [],
+        'operation' => 'view',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => FALSE,
+      ],
+      'admin view' => [
         'permissions' => ['administer link list link entities'],
         'operation' => 'view',
         'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
       ],
-      'user with view access' => [
+      'admin view unpublished' => [
+        'permissions' => ['administer link list link entities'],
+        'operation' => 'view',
+        'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
+        'published' => FALSE,
+      ],
+      'admin update' => [
+        'permissions' => ['administer link list link entities'],
+        'operation' => 'update',
+        'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
+        'published' => TRUE,
+      ],
+      'admin delete' => [
+        'permissions' => ['administer link list link entities'],
+        'operation' => 'delete',
+        'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
+        'published' => TRUE,
+      ],
+      'user with view access / published link list link' => [
         'permissions' => ['view link list link'],
         'operation' => 'view',
         'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
       ],
-      'user with view unpublished access' => [
+      'user with view access / unpublished link list link' => [
+        'permissions' => ['view link list link'],
+        'operation' => 'view',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => FALSE,
+      ],
+      'user with view unpublished access / published link list link' => [
+        'permissions' => ['view unpublished link list link'],
+        'operation' => 'view',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => TRUE,
+      ],
+      'user with view unpublished access / unpublished link list link' => [
         'permissions' => ['view unpublished link list link'],
         'operation' => 'view',
         'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        'status' => 0,
+        'published' => FALSE,
+      ],
+      'user with create, update, delete access / published link list link' => [
+        'permissions' => [
+          'create test link list link',
+          'edit test link list link',
+          'delete test link list link',
+        ],
+        'operation' => 'view',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => TRUE,
+      ],
+      'user with create, update, delete access / unpublished link list link' => [
+        'permissions' => [
+          'create test link list link',
+          'edit test link list link',
+          'delete test link list link',
+        ],
+        'operation' => 'view',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => FALSE,
       ],
       'user with update access' => [
         'permissions' => ['edit test link list link'],
         'operation' => 'update',
         'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
       ],
       'user with update access on different bundle' => [
         'permissions' => ['edit internal link list link'],
         'operation' => 'update',
         'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
+      ],
+      'user with create, view, delete access' => [
+        'permissions' => [
+          'create test link list link',
+          'view link list link',
+          'view unpublished link list link',
+          'delete test link list link',
+        ],
+        'operation' => 'update',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => TRUE,
       ],
       'user with delete access' => [
         'permissions' => ['delete test link list link'],
         'operation' => 'delete',
         'expected_result' => AccessResult::allowed()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
       ],
       'user with delete access on different bundle' => [
         'permissions' => ['delete external link list link'],
         'operation' => 'delete',
         'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
-        'status' => 1,
+        'published' => TRUE,
+      ],
+      'user with create, view, update access' => [
+        'permissions' => [
+          'create test link list link',
+          'view link list link',
+          'view unpublished link list link',
+          'edit test link list link',
+        ],
+        'operation' => 'delete',
+        'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
+        'published' => TRUE,
       ],
     ];
   }
@@ -170,10 +253,13 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
   /**
    * Data provider for testCreateAccess().
    *
+   * This method is not declared as a real PHPUnit data provider to speed up
+   * test execution.
+   *
    * @return array
    *   The data sets to test.
    */
-  public function createAccessProvider() {
+  protected function createAccessDataProvider() {
     return [
       'user without permissions' => [
         'permissions' => [],
@@ -205,35 +291,6 @@ class LinkListLinkAccessControlHandlerTest extends EntityKernelTestBase {
         'expected_result' => AccessResult::neutral()->addCacheContexts(['user.permissions']),
       ],
     ];
-  }
-
-  /**
-   * Asserts link list link access correctly grants or denies access.
-   *
-   * @param \Drupal\Core\Access\AccessResultInterface $expected
-   *   The expected result.
-   * @param \Drupal\Core\Access\AccessResultInterface $actual
-   *   The actual result.
-   * @param string $message
-   *   Failure message.
-   */
-  protected function assertAccess(AccessResultInterface $expected, AccessResultInterface $actual, string $message = '') {
-    $this->assertEquals($expected->isAllowed(), $actual->isAllowed(), $message);
-    $this->assertEquals($expected->isForbidden(), $actual->isForbidden(), $message);
-    $this->assertEquals($expected->isNeutral(), $actual->isNeutral(), $message);
-
-    $this->assertEquals($expected->getCacheMaxAge(), $actual->getCacheMaxAge(), $message);
-    $cache_types = [
-      'getCacheTags',
-      'getCacheContexts',
-    ];
-    foreach ($cache_types as $type) {
-      $expected_cache_data = $expected->{$type}();
-      $actual_cache_data = $actual->{$type}();
-      sort($expected_cache_data);
-      sort($actual_cache_data);
-      $this->assertEquals($expected_cache_data, $actual_cache_data, $message);
-    }
   }
 
 }
