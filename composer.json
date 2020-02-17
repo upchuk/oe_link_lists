@@ -54,11 +54,6 @@
     "extra": {
         "composer-exit-on-patch-failure": true,
         "enable-patching": true,
-        "patches": {
-            "drupal/inline_entity_form": {
-                "https://www.drupal.org/project/inline_entity_form/issues/2367235": "https://www.drupal.org/files/issues/2019-10-07/inline_entity_form-2367235-131.patch"
-            }
-        },
         "installer-paths": {
             "build/core": ["type:drupal-core"],
             "build/profiles/contrib/{$name}": ["type:drupal-profile"],
