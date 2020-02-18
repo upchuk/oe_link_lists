@@ -46,9 +46,9 @@ class LinkListAggregatorItemAccessTest extends EntityKernelTestBase {
   }
 
   /**
-   * Test access to the aggregator module routes.
+   * Tests the view feed items permission.
    */
-  public function testFeedsAccess() {
+  public function testViewPermissionAccess() {
     // Create an aggregator feed.
     $aggregator_feed = Feed::create([
       'title' => $this->randomString(),
