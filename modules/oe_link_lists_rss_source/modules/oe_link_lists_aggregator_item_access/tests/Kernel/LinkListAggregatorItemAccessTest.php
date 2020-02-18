@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\Tests\oe_link_lists_rss_source_acces\Kernel;
+namespace Drupal\Tests\oe_link_lists_aggregator_item_access\Kernel;
 
 use Drupal\aggregator\Entity\Feed;
 use Drupal\aggregator\Entity\Item;
@@ -14,7 +14,7 @@ use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
  *
  * @group oe_link_lists
  */
-class LinkListRssAccessTest extends EntityKernelTestBase {
+class LinkListAggregatorItemAccessTest extends EntityKernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -22,7 +22,7 @@ class LinkListRssAccessTest extends EntityKernelTestBase {
   public static $modules = [
     'aggregator',
     'options',
-    'oe_link_lists_rss_source_access',
+    'oe_link_lists_aggregator_item_access',
   ];
 
   /**
