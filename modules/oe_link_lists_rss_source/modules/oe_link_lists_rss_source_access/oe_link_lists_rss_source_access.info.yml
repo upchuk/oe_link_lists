@@ -1,9 +1,9 @@
 name: OpenEuropa RSS Link Lists Access
-description: Provides access control changes for aggregator module routes.
+description: Provides a permission to view aggregator items.
 package: OpenEuropa
 
 type: module
 core: 8.x
 
 dependencies:
-  - oe_link_lists:oe_link_lists_rss_source
+  - drupal:aggregator
