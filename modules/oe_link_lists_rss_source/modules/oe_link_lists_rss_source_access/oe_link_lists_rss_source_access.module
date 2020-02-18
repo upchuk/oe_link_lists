@@ -14,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
 /**
  * Implements hook_ENTITY_TYPE_access().
  */
-function oe_link_lists_aggregator_item_access(EntityInterface $entity, $operation, AccountInterface $account) {
+function oe_link_lists_rss_source_access_aggregator_item_access(EntityInterface $entity, $operation, AccountInterface $account) {
   if ($operation === 'view') {
     return AccessResult::allowedIfHasPermission($account, 'view feed items');
   }
