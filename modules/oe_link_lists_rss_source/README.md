@@ -12,29 +12,5 @@ Granting this permission to users gives access to view the feed items but also e
 
 ### Access permission-based solution
 
-A quick solution is to declare a new permission to be used by the `aggregator_item` entity type.
-
-First, declare the permission like a normal Drupal permission inside `yourmodule.permissions.yml`:
-
-```
-view feed items:
-  title: 'View feed items'
-  description: 'Allows users to view aggregator feed items.'
-```
-
-Then implement `hook_ENTITY_TYPE_access` for the `aggregator_item` entity type:
-
-```
-/**
- * Implements hook_ENTITY_TYPE_access().
- */
-function yourmodule_aggregator_item_access(EntityInterface $entity, $operation, AccountInterface $account) {
-  if ($operation === 'view') {
-    return AccessResult::allowedIfHasPermission($account, 'view feed items');
-  }
-
-  return AccessResult::neutral();
-}
-```
-
-Also, for simplicity, you could enable **OpenEuropa RSS Link Lists Access** submodule.
+To solve this issue, we ship with an optional sub-module called "OpenEuropa Aggregator item access" (`oe_link_lists_aggregator_item_access`).\
+It provides a permission `view feed items` which grants users the capability to view feed item entities.

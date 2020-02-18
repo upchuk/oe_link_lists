@@ -1,5 +1,5 @@
-name: OpenEuropa RSS Link Lists Access
-description: Provides a permission to view aggregator items.
+name: OpenEuropa Aggregator item access
+description: Provides a permission to view aggregator feed items.
 package: OpenEuropa
 
 type: module
