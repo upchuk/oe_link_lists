@@ -13,4 +13,4 @@ Granting this permission to users gives access to view the feed items but also e
 ### Access permission-based solution
 
 To solve this issue, we ship with an optional sub-module called "OpenEuropa Aggregator item access" (`oe_link_lists_aggregator_item_access`).\
-It provides a permission `view feed items` which grants users the capability to view feed item entities.
+It provides the permission `view feed items` which grants users the capability to view feed item entities.
