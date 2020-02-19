@@ -10,11 +10,11 @@ use Drupal\aggregator\FeedStorageInterface;
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 
 /**
- * Tests that proper access checks are run on link list rendering.
+ * Tests access on the aggregator items.
  *
  * @group oe_link_lists
  */
-class LinkListAggregatorItemAccessTest extends EntityKernelTestBase {
+class AggregatorItemAccessTest extends EntityKernelTestBase {
 
   /**
    * {@inheritdoc}
