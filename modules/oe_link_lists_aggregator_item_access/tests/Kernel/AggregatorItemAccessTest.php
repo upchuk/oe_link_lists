@@ -6,7 +6,6 @@ namespace Drupal\Tests\oe_link_lists_aggregator_item_access\Kernel;
 
 use Drupal\aggregator\Entity\Feed;
 use Drupal\aggregator\Entity\Item;
-use Drupal\aggregator\FeedStorageInterface;
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 
 /**
@@ -34,11 +33,6 @@ class AggregatorItemAccessTest extends EntityKernelTestBase {
     $this->installConfig('aggregator');
     $this->installEntitySchema('aggregator_feed');
     $this->installEntitySchema('aggregator_item');
-
-    // Do not delete old aggregator items during these tests, since our sample
-    // feeds have hardcoded dates in them (which may be expired when this test
-    // is run).
-    $this->config('aggregator.settings')->set('items.expire', FeedStorageInterface::CLEAR_NEVER)->save();
 
     // Create a UID 1 user to be able to create test users with particular
     // permissions in the tests.
