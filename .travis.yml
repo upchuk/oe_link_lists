@@ -1,0 +1,33 @@
+sudo: required
+language: php
+
+php:
+- 7.1
+
+git:
+  depth: 1
+
+services:
+- docker
+
+env:
+  global:
+  - DOCKER_COMPOSE_VERSION=1.17.1
+
+before_install:
+- docker-compose up -d
+
+install:
+- docker-compose exec -u root web composer install
+- docker-compose exec -u root web chown -R www-data:www-data build
+
+before_script:
+- docker-compose exec -u www-data web ./vendor/bin/run drupal:site-install
+
+script:
+- docker-compose exec -u www-data web ./vendor/bin/grumphp run
+- docker-compose exec -u www-data web ./vendor/bin/phpunit
+- docker-compose exec -u www-data web ./vendor/bin/behat
+
+notifications:
+  email: false
